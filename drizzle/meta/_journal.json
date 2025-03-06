@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1739849575104,
+      "tag": "0000_ambitious_wild_pack",
+      "breakpoints": true
+    }
+  ]
+}
