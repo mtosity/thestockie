@@ -47,7 +47,7 @@ export const postRouter = createTRPCRouter({
             content: input.prompt,
           },
         ],
-        model: "gpt-4.5-preview",
+        model: "o3-mini",
         store: true,
       });
       const response = completion.choices[0]?.message.content;
