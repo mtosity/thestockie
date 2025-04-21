@@ -84,6 +84,7 @@
     "react-use": "^17.5.1",
     "react-virtualized": "^9.22.5",
     "recharts": "^2.14.1",
+    "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",
     "sonner": "^1.7.0",
     "superjson": "^2.2.2",

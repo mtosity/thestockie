@@ -8,11 +8,13 @@ import { api } from "~/trpc/react";
 import { useSymbol } from "~/hooks/use-symbol";
 import { useGenPrompt } from "~/hooks/use-gen-prompt";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const MarkdownWithColor = ({ content }: { content: string }) => {
   return (
     <div className="prose prose-invert max-w-none">
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         components={{
           p: ({ children }) => {
             return <p className="mt-2 text-white">{children}</p>;

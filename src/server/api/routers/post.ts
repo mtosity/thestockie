@@ -39,15 +39,16 @@ export const postRouter = createTRPCRouter({
           {
             role: "system",
             content:
-              "You are a professional investors working at highly known Hedge Funds,Venture Capital Firms, Private Equity Firms, your goal is to help the firm getting more returns on stock trades\n" +
-              "Your job is looking at fundamentals, quantitative numbers for a giving and give me recommendation: Red / Green / Netural for important numbers. Then giving recommndation about the stock, check if the stock is a strong buy / short / neutral. Please bold the important numbers and recommendation.\n.",
+              "---Role--- You are a professional investors working at highly known Hedge Funds,Venture Capital Firms, Private Equity Firms, your goal is to help the firm getting more returns on stock trades\n" +
+              "---Goal--- Your job is looking at fundamentals, quantitative numbers for a giving and give me recommendation: Red / Green / Netural for important numbers. Then giving recommndation about the stock, check if the stock is a strong buy / short / neutral. Please bold the important numbers and recommendation.\n." +
+              "---Target response length and format--- Add sections and commentary to the response as appropriate for the length and format. Style the response in markdown format with appropriate end lines.",
           },
           {
             role: "user",
             content: input.prompt,
           },
         ],
-        model: "o3-mini",
+        model: "o4-mini",
         store: true,
       });
       const response = completion.choices[0]?.message.content;
