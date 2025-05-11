@@ -12,6 +12,20 @@ import remarkGfm from "remark-gfm";
 import "~/styles/markdown.css";
 
 const MarkdownWithColor = ({ content }: { content: string }) => {
+  if (content.startsWith("```markdown")) {
+    const codeBlock = content.split("```markdown")[1];
+
+    if (codeBlock) {
+      return <MarkdownWithColor content={codeBlock} />;
+    }
+  }
+  if (content.startsWith("```")) {
+    const codeBlock = content.split("```")[1];
+
+    if (codeBlock) {
+      return <MarkdownWithColor content={codeBlock} />;
+    }
+  }
   return (
     <div className="prose prose-invert max-w-none">
       <ReactMarkdown
@@ -131,7 +145,9 @@ export const GPT = () => {
           </p>
           <div className="relative mt-2">
             <div className="scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 max-h-[500px] overflow-y-auto rounded-lg border border-gray-700 bg-gray-800/50 p-4 py-8">
-              <MarkdownWithColor content={data.response ?? ""} />
+              {data.response ? (
+                <MarkdownWithColor content={data.response} />
+              ) : null}
             </div>
             <div className="pointer-events-none absolute bottom-0 h-8 w-full bg-gradient-to-t from-gray-900 to-transparent" />
           </div>
