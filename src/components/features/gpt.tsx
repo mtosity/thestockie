@@ -9,6 +9,7 @@ import { useSymbol } from "~/hooks/use-symbol";
 import { useGenPrompt } from "~/hooks/use-gen-prompt";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import "~/styles/markdown.css";
 
 const MarkdownWithColor = ({ content }: { content: string }) => {
   return (
@@ -47,6 +48,11 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
             }
 
             return <strong className="font-semibold">{children}</strong>;
+          },
+          h1: ({ children }) => {
+            return (
+              <h1 className="text-2xl font-bold text-white">{children}</h1>
+            );
           },
         }}
       >

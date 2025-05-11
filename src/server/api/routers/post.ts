@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  // baseURL: "https://api.deepseek.com",
+  baseURL: "https://api.deepseek.com",
   apiKey: process.env.AI_API_KEY,
 });
 
@@ -33,7 +33,6 @@ export const postRouter = createTRPCRouter({
         return existingPost;
       }
 
-      // call deekseek API
       const completion = await openai.chat.completions.create({
         messages: [
           {
@@ -48,7 +47,7 @@ export const postRouter = createTRPCRouter({
             content: input.prompt,
           },
         ],
-        model: "o4-mini",
+        model: "deepseek-reasoner",
         store: true,
       });
       const response = completion.choices[0]?.message.content;
@@ -61,6 +60,7 @@ export const postRouter = createTRPCRouter({
             prompt: input.prompt,
             response,
             createdById: ctx.session.user.id,
+            createdAt: new Date(),
           })
           .where(eq(posts.id, input.symbol))
           .returning()
