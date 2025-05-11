@@ -12,22 +12,8 @@ import remarkGfm from "remark-gfm";
 import "~/styles/markdown.css";
 
 const MarkdownWithColor = ({ content }: { content: string }) => {
-  if (content.startsWith("```markdown")) {
-    const codeBlock = content.split("```markdown")[1];
-
-    if (codeBlock) {
-      return <MarkdownWithColor content={codeBlock} />;
-    }
-  }
-  if (content.startsWith("```")) {
-    const codeBlock = content.split("```")[1];
-
-    if (codeBlock) {
-      return <MarkdownWithColor content={codeBlock} />;
-    }
-  }
   return (
-    <div className="prose prose-invert max-w-none">
+    <div className="prose prose-invert max-w-none text-sm">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -67,6 +53,9 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
             return (
               <h1 className="text-2xl font-bold text-white">{children}</h1>
             );
+          },
+          code: ({ children }) => {
+            return <MarkdownWithColor content={String(children)} />;
           },
         }}
       >
