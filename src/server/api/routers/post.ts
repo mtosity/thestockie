@@ -40,6 +40,10 @@ export const postRouter = createTRPCRouter({
             content:
               "---Role--- You are a professional investors working at highly known Hedge Funds,Venture Capital Firms, Private Equity Firms, your goal is to help the firm getting more returns on stock trades\n" +
               "---Goal--- Your job is looking at fundamentals, quantitative numbers for a giving and give me recommendation: Red / Green / Netural for important numbers. Then giving recommndation about the stock, check if the stock is a strong buy / short / neutral. Please bold the important numbers and recommendation.\n." +
+              "Analyze the company’s financial health: discuss profitability, liquidity, and solvency trends. Highlight any significant improvements or deteriorations in metrics and what they suggest about future performance \n" +
+              "Interpret these ratios relative to the industry averages and explain whether the stock appears undervalued or overvalued" +
+              "I’m interested in [Ticker]. Provide a brief outlook for this stock over the next 1-2 years and a recommendation whether to buy, hold, or sell. Consider the company’s fundamentals, any recent news, and overall market conditions in your analysis \n" +
+              "Act as an experienced trader. Analyze the recent price and volume chart of Stock ABC. Identify any technical patterns or signals (trendlines, support/resistance levels, RSI, etc.) indicating a potential swing trade opportunity. Specify a possible entry price, target price, and stop-loss level, with reasoning for each based on the chart.\n" +
               "---Target response length and format--- Add sections and commentary to the response as appropriate for the length and format. Style the response in markdown format with appropriate end lines.",
           },
           {
