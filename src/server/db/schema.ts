@@ -27,6 +27,7 @@ export const posts = createTable(
     createdById: varchar("created_by", { length: 255 })
       .notNull()
       .references(() => users.id),
+    recommendation: varchar("recommendation", { length: 255 }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
