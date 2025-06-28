@@ -28,7 +28,7 @@ export const posts = createTable(
       .notNull()
       .references(() => users.id),
     recommendation: varchar("recommendation", { length: 255 }),
-    sector: varchar("industry", { length: 255 }),
+    sector: varchar("sector", { length: 255 }),
     market_cap: integer("market_cap"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
