@@ -7,15 +7,13 @@
  * need to use are documented accordingly near the end.
  */
 
-import NodeCache from "node-cache";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
-import { type MiddlewareResult } from "@trpc/server/unstable-core-do-not-import";
-import axios, { type AxiosError } from "axios";
+import { type AxiosError } from "axios";
 
 /**
  * 1. CONTEXT
@@ -84,72 +82,6 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
   },
 });
 
-// Initialize cache with 10 minute TTL
-const cache = new NodeCache({ stdTTL: 10 * 60 });
-
-// Cache middleware
-const cacheMiddleware = t.middleware(
-  async ({ path, next, getRawInput, type }) => {
-    const rawInput = await getRawInput();
-    // Skip caching for mutations
-    if (type === "mutation") return next();
-
-    // Create unique cache key from path and input
-    const cacheKey = `${path}-${JSON.stringify(rawInput)}`;
-
-    // Check cache
-    const cached = cache.get(cacheKey);
-    if (cached) {
-      return cached as MiddlewareResult<object>;
-    }
-
-    // Get fresh data
-    const result = await next();
-
-    if (result.ok) {
-      // Store in cache
-      cache.set(cacheKey, result);
-    }
-
-    return result;
-  },
-);
-
-// // Custom cache key generator
-// const generateCacheKey = (data: unknown): string => {
-//   const hash = createHash("sha256");
-//   hash.update(JSON.stringify(data));
-//   return hash.digest("hex").slice(0, 16);
-// };
-
-// const edgeCacheMiddleware = t.middleware(
-//   async ({ path, type, next, getRawInput, ctx }) => {
-//     const rawInput = getRawInput();
-//     if (type === "mutation") return next();
-
-//     const headers = new Headers(ctx.headers);
-
-//     // Generate unique cache key
-//     const cacheKey = generateCacheKey({ path, input: rawInput });
-//     headers.set("x-cache-key", cacheKey);
-//     headers.set(
-//       "Cache-Control",
-//       `public, s-maxage=${FIVE_MINUTES}, stale-while-revalidate=${ONE_MINUTE}`,
-//     );
-//     headers.set(
-//       "CDN-Cache-Control",
-//       `public, s-maxage=${FIVE_MINUTES}, stale-while-revalidate=${ONE_MINUTE}`,
-//     );
-//     headers.set(
-//       "Vercel-CDN-Cache-Control",
-//       `public, s-maxage=${FIVE_MINUTES}, stale-while-revalidate=${ONE_MINUTE}`,
-//     );
-
-//     const result = await next();
-//     return result;
-//   },
-// );
-
 /**
  * Create a server-side caller.
  *
@@ -201,10 +133,7 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure
-  .use(timingMiddleware)
-  // .use(edgeCacheMiddleware)
-  .use(cacheMiddleware);
+export const publicProcedure = t.procedure.use(timingMiddleware);
 
 /**
  * Protected (authenticated) procedure
