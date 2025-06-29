@@ -1,6 +1,4 @@
 "use client";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
 import React from "react";
 import { Button } from "../ui/button";
 import Image from "next/image";
@@ -66,7 +64,6 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
 };
 
 export const GPT = () => {
-  const { data: session } = useSession();
   const [symbol] = useSymbol();
   const { mutate, isPending, data, error } = api.post.create.useMutation();
   const prompt = useGenPrompt();
@@ -93,7 +90,7 @@ export const GPT = () => {
         <Button
           className="self-end border border-white bg-slate-900 text-white hover:bg-slate-600"
           variant="secondary"
-          disabled={isPending || typeof session?.user.id !== "string"}
+          disabled={isPending}
           onClick={() =>
             mutate({
               symbol,
@@ -115,18 +112,6 @@ export const GPT = () => {
         </Button>
       </div>
 
-      {typeof session?.user.id !== "string" ? (
-        <div className="flex min-h-96 flex-col items-center justify-center gap-8">
-          <strong>Sign in to generate LLM recommendations, free to use!</strong>
-          <Link
-            href={session ? "/api/auth/signout" : "/api/auth/signin"}
-            className="rounded bg-white/10 px-8 py-4 font-semibold no-underline shadow shadow-slate-400 transition hover:bg-white/20"
-          >
-            {session ? `Sign out - ${session.user?.name}` : "Sign in"}
-          </Link>
-        </div>
-      ) : null}
-
       {data && data.id === symbol ? (
         <div className="mt-4">
           <p className="text-sm text-gray-400">
@@ -140,6 +125,13 @@ export const GPT = () => {
             </div>
             <div className="pointer-events-none absolute bottom-0 h-8 w-full bg-gradient-to-t from-gray-900 to-transparent" />
           </div>
+        </div>
+      ) : null}
+
+      {!data && !isPending && !error ? (
+        <div className="mt-4 text-sm text-gray-400">
+          Empty report for this stock 😔. Try again later! Or email me to run it
+          manually. 🚀
         </div>
       ) : null}
 

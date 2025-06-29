@@ -12,23 +12,49 @@ export default async function Home() {
     <HydrateClient>
       <SessionProvider session={session}>
         <main className="min-h-screen bg-[#15162c] text-white">
-          <nav className="flex w-full items-center justify-between px-2 py-4">
-            <div className="flex-1">
-              <h1 className="hidden pl-2 text-lg font-bold md:block">
-                Stock Fundamentals Analysis Tool
-              </h1>
+          <nav className="px-2 py-4">
+            <div className="flex w-full items-center justify-between">
+              <div className="flex-1">
+                <h1 className="hidden pl-2 text-lg font-bold md:block">
+                  Stock Fundamentals Analysis Tool
+                </h1>
+              </div>
+              <div className="hidden md:flex flex-1 justify-center">
+                <Search />
+              </div>
+              <div className="hidden md:flex flex-1 justify-end gap-4">
+                <Link
+                  href="/screener"
+                  className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
+                >
+                  Screener
+                </Link>
+                <Link
+                  href={session ? "/api/auth/signout" : "/api/auth/signin"}
+                  className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
+                >
+                  {session ? `Sign out - ${session.user?.name}` : "Sign in"}
+                </Link>
+              </div>
             </div>
-            <div className="flex flex-1 justify-center">
-              {/* <Input type="text" placeholder="Search..." className="px-4 py-2" /> */}
-              <Search />
-            </div>
-            <div className="flex flex-1 justify-end">
-              <Link
-                href={session ? "/api/auth/signout" : "/api/auth/signin"}
-                className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
-              >
-                {session ? `Sign out - ${session.user?.name}` : "Sign in"}
-              </Link>
+            <div className="md:hidden space-y-4">
+              <div className="flex justify-center">
+                <Search />
+              </div>
+              <div className="flex justify-center gap-4">
+                <Link
+                  href="/screener"
+                  className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
+                >
+                  Screener
+                </Link>
+                <Link
+                  href={session ? "/api/auth/signout" : "/api/auth/signin"}
+                  className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
+                >
+                  {session ? `Sign out - ${session.user?.name}` : "Sign in"}
+                </Link>
+              </div>
             </div>
           </nav>
 
