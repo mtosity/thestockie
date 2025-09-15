@@ -65,7 +65,8 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
 
 export const GPT = () => {
   const [symbol] = useSymbol();
-  const { mutate, isPending, data, error } = api.post.create.useMutation();
+  const { mutate, isPending, data, error, isSuccess } =
+    api.post.create.useMutation();
   const prompt = useGenPrompt();
 
   if (!symbol) {
@@ -128,7 +129,7 @@ export const GPT = () => {
         </div>
       ) : null}
 
-      {!data && !isPending && !error ? (
+      {isSuccess && !data?.recommendation && !isPending && !error ? (
         <div className="mt-4 text-sm text-gray-400">
           Empty report for this stock 😔. Try again later! Or email me to run it
           manually. 🚀
