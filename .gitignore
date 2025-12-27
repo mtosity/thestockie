@@ -45,5 +45,3 @@ yarn-error.log*
 # idea files
 .idea
 .pnpm-store
-# npm lock file (project uses pnpm)
-package-lock.json

@@ -17,31 +17,31 @@ export const useSymbol = (): [string, (symbol: string) => void] => {
 
   const urlSymbol = searchParams.get("symbol");
 
-  // Initialize from localStorage to avoid reading searchParams during initial render
-  const [symbol, setSymbolState] = useState<string>(() => getStoredSymbol());
+  // Use state to ensure reactivity
+  const [symbol, setSymbolState] = useState<string>(() => {
+    if (urlSymbol) return urlSymbol.toUpperCase();
+    return getStoredSymbol();
+  });
 
-  // Keep URL as source of truth; sync state and localStorage, and initialize URL if missing
+  // Sync state with URL params when they change (handles back/forward navigation)
   useEffect(() => {
     if (urlSymbol) {
-      // URL has a symbol - use it as source of truth
       const upper = urlSymbol.toUpperCase();
       setSymbolState(upper);
       localStorage.setItem(STORAGE_KEY, upper);
-    } else {
-      // No URL symbol - check localStorage and update URL if needed
-      const stored = getStoredSymbol();
-      const upper = stored.toUpperCase();
-      setSymbolState(upper);
-      
-      // Only update URL if stored symbol is not the default
-      // This avoids unnecessary navigation on every mount
-      if (upper !== DEFAULT_SYMBOL) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("symbol", upper);
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-      }
     }
-  }, [urlSymbol, searchParams, router, pathname]);
+  }, [urlSymbol]);
+
+  // On mount, if no URL param but localStorage has a symbol, update URL
+  useEffect(() => {
+    if (!urlSymbol) {
+      const stored = getStoredSymbol();
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("symbol", stored);
+      router.replace(`${pathname}?${params.toString()}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const setSymbol = useCallback(
     (newSymbol: string) => {
