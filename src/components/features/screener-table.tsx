@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import {
@@ -35,7 +34,6 @@ interface ScreenerTableProps {
 export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter();
   const [, setSymbol] = useSymbol();
 
   const handleViewReport = (stock: Stock) => {
@@ -44,8 +42,7 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
   };
 
   const handleSelectStock = (symbol: string) => {
-    setSymbol(symbol);
-    router.push("/");
+    setSymbol(symbol, "/");
   };
 
   const getRecommendationColor = (recommendation: string | null) => {
