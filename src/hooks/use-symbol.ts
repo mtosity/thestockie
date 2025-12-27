@@ -17,31 +17,38 @@ export const useSymbol = (): [string, (symbol: string) => void] => {
 
   const urlSymbol = searchParams.get("symbol");
 
-  // Initialize from localStorage to avoid reading searchParams during initial render
-  const [symbol, setSymbolState] = useState<string>(() => getStoredSymbol());
+  // Use state to ensure reactivity
+  const [symbol, setSymbolState] = useState<string>(() => {
+    if (urlSymbol) return urlSymbol.toUpperCase();
+    return getStoredSymbol();
+  });
 
-  // Keep URL as source of truth; sync state and localStorage, and initialize URL if missing
+  // Track if this is the initial mount
+  const [isInitialMount, setIsInitialMount] = useState(true);
+
+  // Sync state with URL params when they change (handles back/forward navigation and manual URL edits)
   useEffect(() => {
     if (urlSymbol) {
-      // URL has a symbol - use it as source of truth
       const upper = urlSymbol.toUpperCase();
       setSymbolState(upper);
       localStorage.setItem(STORAGE_KEY, upper);
-    } else {
-      // No URL symbol - check localStorage and update URL if needed
+    } else if (!urlSymbol && !isInitialMount) {
+      // URL params were cleared after mount - reset to default
+      setSymbolState(DEFAULT_SYMBOL);
+      localStorage.setItem(STORAGE_KEY, DEFAULT_SYMBOL);
+    } else if (isInitialMount && !urlSymbol) {
+      // Initial mount with no URL param - set URL from localStorage
       const stored = getStoredSymbol();
-      const upper = stored.toUpperCase();
-      setSymbolState(upper);
-      
-      // Only update URL if stored symbol is not the default
-      // This avoids unnecessary navigation on every mount
-      if (upper !== DEFAULT_SYMBOL) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("symbol", upper);
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-      }
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("symbol", stored);
+      router.replace(`${pathname}?${params.toString()}`);
     }
-  }, [urlSymbol, searchParams, router, pathname]);
+  }, [urlSymbol, isInitialMount, searchParams, router, pathname]);
+
+  // Mark as no longer initial mount after first render
+  useEffect(() => {
+    setIsInitialMount(false);
+  }, []);
 
   const setSymbol = useCallback(
     (newSymbol: string) => {
