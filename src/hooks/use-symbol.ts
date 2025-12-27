@@ -35,7 +35,7 @@ export const useSymbol = (): [string, (symbol: string) => void] => {
       
       // Only update URL if stored symbol is not the default
       // This avoids unnecessary navigation on every mount
-      if (stored !== DEFAULT_SYMBOL) {
+      if (upper !== DEFAULT_SYMBOL) {
         const params = new URLSearchParams(searchParams.toString());
         params.set("symbol", upper);
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
