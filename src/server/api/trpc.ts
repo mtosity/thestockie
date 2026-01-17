@@ -32,6 +32,8 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   const origin = opts.headers.get("origin") ?? opts.headers.get("referer");
   const urls = [
     "http://localhost:3000/",
+    "http://localhost:3001/",
+    "http://localhost:3001",
     "https://thestockie.vercel.app/",
     "https://www.thestockie.vercel.app/",
     "https://thestockie.com/",
