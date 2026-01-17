@@ -1,0 +1,47 @@
+export interface FMPBalanceSheetGrowthResult {
+  date: string;
+  symbol: string;
+  calendarYear: string;
+  period: string;
+  growthCashAndCashEquivalents: number;
+  growthShortTermInvestments: number;
+  growthCashAndShortTermInvestments: number;
+  growthNetReceivables: number;
+  growthInventory: number;
+  growthOtherCurrentAssets: number;
+  growthTotalCurrentAssets: number;
+  growthPropertyPlantEquipmentNet: number;
+  growthGoodwill: number;
+  growthIntangibleAssets: number;
+  growthGoodwillAndIntangibleAssets: number;
+  growthLongTermInvestments: number;
+  growthTaxAssets: number;
+  growthOtherNonCurrentAssets: number;
+  growthTotalNonCurrentAssets: number;
+  growthOtherAssets: number;
+  growthTotalAssets: number;
+  growthAccountPayables: number;
+  growthShortTermDebt: number;
+  growthTaxPayables: number;
+  growthDeferredRevenue: number;
+  growthOtherCurrentLiabilities: number;
+  growthTotalCurrentLiabilities: number;
+  growthLongTermDebt: number;
+  growthDeferredRevenueNonCurrent: number;
+  growthDeferredTaxLiabilitiesNonCurrent: number;
+  growthOtherNonCurrentLiabilities: number;
+  growthTotalNonCurrentLiabilities: number;
+  growthOtherLiabilities: number;
+  growthTotalLiabilities: number;
+  growthCommonStock: number;
+  growthRetainedEarnings: number;
+  growthAccumulatedOtherComprehensiveIncomeLoss: number;
+  growthOthertotalStockholdersEquity: number;
+  growthTotalStockholdersEquity: number;
+  growthTotalLiabilitiesAndStockholdersEquity: number;
+  growthTotalInvestments: number;
+  growthTotalDebt: number;
+  growthNetDebt: number;
+}
+
+export type FMPBalanceSheetGrowthResponse = FMPBalanceSheetGrowthResult[];
