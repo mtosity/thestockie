@@ -24,6 +24,12 @@ export default async function Home() {
               </div>
               <div className="hidden md:flex flex-1 justify-end gap-4">
                 <Link
+                  href="/blogs"
+                  className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
+                >
+                  Blog
+                </Link>
+                <Link
                   href="/screener"
                   className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
                 >
@@ -42,6 +48,12 @@ export default async function Home() {
                 <Search />
               </div>
               <div className="flex justify-center gap-4">
+                <Link
+                  href="/blogs"
+                  className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
+                >
+                  Blog
+                </Link>
                 <Link
                   href="/screener"
                   className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
