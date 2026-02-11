@@ -6,7 +6,8 @@ export const metadata: Metadata = {
   title: "Blog | The Stockie - Investment Insights & Analysis",
   description:
     "Investment insights, guides, and analysis to help you make smarter decisions. Learn about stock fundamentals, market trends, and investment strategies.",
-  keywords: "investing, stocks, crypto, analysis, financial education, market trends",
+  keywords:
+    "investing, stocks, crypto, analysis, financial education, market trends",
   alternates: {
     canonical: "https://thestockie.com/blogs",
   },
