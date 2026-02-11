@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
-import { MDXRemote } from "next-mdx-remote/rsc";
-import rehypeHighlight from "rehype-highlight";
 import { Badge } from "~/components/ui/badge";
 import { getAllBlogSlugs, getBlogBySlug } from "~/lib/blog";
 import { formatBlogDate } from "~/lib/blog.shared";
+import { BlogContent } from "~/components/features/blog-content";
 
 interface BlogPageProps {
   params: Promise<{ slug: string }>;
@@ -110,14 +109,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       {/* Article Content */}
       <article className="px-4 py-12 md:px-8">
         <div className="prose prose-invert prose-purple mx-auto max-w-4xl prose-headings:text-white prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-gray-300 prose-a:text-purple-400 prose-a:no-underline hover:prose-a:text-purple-300 prose-strong:text-white prose-code:text-purple-300 prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10 prose-blockquote:border-purple-500 prose-blockquote:text-gray-400 prose-li:text-gray-300 prose-table:text-gray-300 prose-th:text-white prose-td:border-white/10 prose-th:border-white/10">
-          <MDXRemote
-            source={content}
-            options={{
-              mdxOptions: {
-                rehypePlugins: [rehypeHighlight],
-              },
-            }}
-          />
+          <BlogContent content={content} />
         </div>
       </article>
 
