@@ -19,10 +19,10 @@ export default async function Home() {
                   Stock Fundamentals Analysis Tool
                 </h1>
               </div>
-              <div className="hidden md:flex flex-1 justify-center">
+              <div className="hidden flex-1 justify-center md:flex">
                 <Search />
               </div>
-              <div className="hidden md:flex flex-1 items-center justify-end gap-1">
+              <div className="hidden flex-1 items-center justify-end gap-1 md:flex">
                 <Link
                   href="/blogs"
                   className="rounded-lg px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
@@ -43,7 +43,7 @@ export default async function Home() {
                 </Link>
               </div>
             </div>
-            <div className="md:hidden space-y-4">
+            <div className="space-y-4 md:hidden">
               <div className="flex justify-center">
                 <Search />
               </div>
