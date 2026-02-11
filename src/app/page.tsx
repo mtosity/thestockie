@@ -19,40 +19,52 @@ export default async function Home() {
                   Stock Fundamentals Analysis Tool
                 </h1>
               </div>
-              <div className="hidden md:flex flex-1 justify-center">
+              <div className="hidden flex-1 justify-center md:flex">
                 <Search />
               </div>
-              <div className="hidden md:flex flex-1 justify-end gap-4">
+              <div className="hidden flex-1 items-center justify-end gap-1 md:flex">
+                <Link
+                  href="/blogs"
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  Blog
+                </Link>
                 <Link
                   href="/screener"
-                  className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
                 >
                   Screener
                 </Link>
                 <Link
                   href={session ? "/api/auth/signout" : "/api/auth/signin"}
-                  className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
+                  className="ml-2 rounded-lg bg-purple-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-600"
                 >
-                  {session ? `Sign out - ${session.user?.name}` : "Sign in"}
+                  {session ? `Sign out` : "Sign in"}
                 </Link>
               </div>
             </div>
-            <div className="md:hidden space-y-4">
+            <div className="space-y-4 md:hidden">
               <div className="flex justify-center">
                 <Search />
               </div>
-              <div className="flex justify-center gap-4">
+              <div className="flex items-center justify-center gap-1">
+                <Link
+                  href="/blogs"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  Blog
+                </Link>
                 <Link
                   href="/screener"
-                  className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
                 >
                   Screener
                 </Link>
                 <Link
                   href={session ? "/api/auth/signout" : "/api/auth/signin"}
-                  className="rounded bg-white/10 px-4 py-2 font-semibold no-underline transition hover:bg-white/20"
+                  className="ml-1 rounded-lg bg-purple-500 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-600"
                 >
-                  {session ? `Sign out - ${session.user?.name}` : "Sign in"}
+                  {session ? `Sign out` : "Sign in"}
                 </Link>
               </div>
             </div>
