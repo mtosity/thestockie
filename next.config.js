@@ -16,6 +16,10 @@ const config = {
         protocol: "https",
         hostname: "*financialmodelingprep.com",
       },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
     ],
   },
 };

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
@@ -37,6 +38,7 @@ export async function generateMetadata({
       type: "article",
       publishedTime: blog.frontmatter.publishedAt,
       tags: blog.frontmatter.tags,
+      images: [{ url: blog.frontmatter.coverImage }],
     },
   };
 }
@@ -65,6 +67,22 @@ export default async function BlogPage({ params }: BlogPageProps) {
           </Link>
         </div>
       </nav>
+
+      {/* Hero Image */}
+      <div className="relative h-64 w-full md:h-80 lg:h-96">
+        <Image
+          src={frontmatter.coverImage}
+          alt={frontmatter.title}
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#15162c] via-[#15162c]/40 to-transparent" />
+        <span className="absolute bottom-3 right-4 text-xs text-white/40">
+          Photo via Unsplash
+        </span>
+      </div>
 
       {/* Article Header */}
       <header className="border-b border-white/10 px-4 py-12 md:px-8 md:py-16">

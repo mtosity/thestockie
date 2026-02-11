@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Clock, Calendar } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
@@ -24,12 +25,17 @@ export function BlogCard({ blog, className }: BlogCardProps) {
         )}
       >
         <div className="relative aspect-video overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20" />
-          <div className="flex h-full items-center justify-center bg-gradient-to-br from-purple-900/50 to-blue-900/50">
-            <span className="text-4xl font-bold text-white/20">
-              {frontmatter.title.charAt(0)}
-            </span>
-          </div>
+          <Image
+            src={frontmatter.coverImage}
+            alt={frontmatter.title}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <span className="absolute bottom-2 right-2 text-[10px] text-white/40">
+            Unsplash
+          </span>
         </div>
 
         <CardHeader className="space-y-2">
