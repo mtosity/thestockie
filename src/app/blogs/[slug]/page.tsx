@@ -29,16 +29,39 @@ export async function generateMetadata({
     };
   }
 
+  const url = `https://thestockie.com/blogs/${slug}`;
+
   return {
     title: `${blog.frontmatter.title} | The Stockie Blog`,
     description: blog.frontmatter.excerpt,
+    keywords: blog.frontmatter.tags?.join(", "),
+    alternates: {
+      canonical: url,
+    },
     openGraph: {
       title: blog.frontmatter.title,
       description: blog.frontmatter.excerpt,
       type: "article",
+      url,
+      siteName: "The Stockie",
       publishedTime: blog.frontmatter.publishedAt,
+      authors: ["The Stockie"],
       tags: blog.frontmatter.tags,
-      images: [{ url: blog.frontmatter.coverImage }],
+      images: [
+        {
+          url: blog.frontmatter.coverImage,
+          width: 1200,
+          height: 630,
+          alt: blog.frontmatter.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: blog.frontmatter.title,
+      description: blog.frontmatter.excerpt,
+      images: [blog.frontmatter.coverImage],
+      creator: "@mtosity",
     },
   };
 }
@@ -53,18 +76,49 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
   const { frontmatter, content, readingTime } = blog;
 
+  // JSON-LD structured data for SEO
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: frontmatter.title,
+    description: frontmatter.excerpt,
+    image: frontmatter.coverImage,
+    datePublished: frontmatter.publishedAt,
+    dateModified: frontmatter.publishedAt,
+    author: {
+      "@type": "Organization",
+      name: "The Stockie",
+      url: "https://thestockie.com",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "The Stockie",
+      url: "https://thestockie.com",
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://thestockie.com/blogs/${slug}`,
+    },
+    keywords: frontmatter.tags?.join(", "),
+  };
+
   return (
-    <main className="min-h-screen bg-[#15162c] text-white">
-      {/* Navigation */}
-      <nav className="border-b border-white/10 px-4 py-4 md:px-8">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
-          <Link
-            href="/blogs"
-            className="flex items-center gap-2 text-gray-400 transition-colors hover:text-white"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Blog</span>
-          </Link>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <main className="min-h-screen bg-[#15162c] text-white">
+        {/* Navigation */}
+        <nav className="border-b border-white/10 px-4 py-4 md:px-8">
+          <div className="mx-auto flex max-w-4xl items-center justify-between">
+            <Link
+              href="/blogs"
+              className="flex items-center gap-2 text-gray-400 transition-colors hover:text-white"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Blog</span>
+            </Link>
         </div>
       </nav>
 
@@ -161,6 +215,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
           </a>
         </div>
       </footer>
-    </main>
+      </main>
+    </>
   );
 }
