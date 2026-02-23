@@ -15,7 +15,7 @@ export default defineSchema({
 
   // thestockie_account → accounts
   accounts: defineTable({
-    userId: v.string(), // Convex _id of the user (after migration: supabaseId lookup)
+    userId: v.id("users"), // Convex _id of the user
     supabaseUserId: v.optional(v.string()), // FK to users.supabaseId (for migration compat)
     type: v.string(),
     provider: v.string(),
@@ -35,7 +35,7 @@ export default defineSchema({
   // thestockie_session → sessions
   sessions: defineTable({
     sessionToken: v.string(),
-    userId: v.string(), // Convex _id of the user
+    userId: v.id("users"), // Convex _id of the user
     supabaseUserId: v.optional(v.string()), // for migration compat
     expires: v.number(), // timestamp as ms
   })

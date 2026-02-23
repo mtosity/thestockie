@@ -6,14 +6,13 @@ import { api } from "../../../../convex/_generated/api";
 const recommendationEnum = z.enum(["strong_buy", "buy", "hold", "sell"]);
 
 export const postRouter = createTRPCRouter({
-  create: publicProcedure
+  getBySymbol: publicProcedure
     .input(
       z.object({
         symbol: z.string().min(1),
-        prompt: z.string().min(1),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const data = await ctx.convex.query(api.posts.getBySymbol, {
         symbol: input.symbol.toUpperCase(),
       });

@@ -4,7 +4,6 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import { api } from "~/trpc/react";
 import { useSymbol } from "~/hooks/use-symbol";
-import { useGenPrompt } from "~/hooks/use-gen-prompt";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "~/styles/markdown.css";
@@ -65,9 +64,11 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
 
 export const GPT = () => {
   const [symbol] = useSymbol();
-  const { mutate, isPending, data, error, isSuccess } =
-    api.post.create.useMutation();
-  const prompt = useGenPrompt();
+  const { isLoading: isPending, data, error, isSuccess } =
+    api.post.getBySymbol.useQuery(
+      { symbol: symbol ?? "" },
+      { enabled: !!symbol },
+    );
 
   if (!symbol) {
     return null;
@@ -92,12 +93,6 @@ export const GPT = () => {
           className="self-end border border-white bg-slate-900 text-white hover:bg-slate-600"
           variant="secondary"
           disabled={isPending}
-          onClick={() =>
-            mutate({
-              symbol,
-              prompt,
-            })
-          }
         >
           Generate{" "}
           <Image

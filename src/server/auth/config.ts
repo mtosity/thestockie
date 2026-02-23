@@ -5,9 +5,16 @@ import { ConvexHttpClient } from "convex/browser";
 
 import { createConvexAdapter } from "./convex-adapter";
 
-const convexClient = new ConvexHttpClient(
-  process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL ?? ""
-);
+const convexUrl = process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL;
+if (!convexUrl) {
+  throw new Error(
+    "CONVEX_URL (or NEXT_PUBLIC_CONVEX_URL) is not set. " +
+      "Please add it to your environment variables. " +
+      "You can find your deployment URL at https://dashboard.convex.dev"
+  );
+}
+
+const convexClient = new ConvexHttpClient(convexUrl);
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`

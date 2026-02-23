@@ -3,15 +3,18 @@
  * Migration script: Supabase → Convex for thestockie
  *
  * Prerequisites:
- *   1. Copy convex/schema.ts and convex/migrate.ts to your project's convex/ folder
+ *   1. Copy convex/schema.ts and migration/migrate1.ts into your project's convex/ folder
+ *      (migrate1.ts defines the insertUsers/insertAccounts/etc. mutations used below)
+ *      See: migration/migrate1.ts
  *   2. Run `npx convex dev` to deploy the schema + migration functions
+ *      Keep this running in a separate terminal
  *   3. Set environment variables:
- *      - DATABASE_URL: Your Supabase connection string
- *      - CONVEX_URL: Your Convex deployment URL (https://exciting-bee-603.convex.cloud)
- *   4. Install deps: npm install @supabase/supabase-js convex pg dotenv
+ *      - DATABASE_URL: Your Supabase connection string (Postgres)
+ *      - CONVEX_URL: Your Convex deployment URL (from https://dashboard.convex.dev)
+ *   4. Install deps: npm install pg dotenv
  *
  * Usage:
- *   npx tsx scripts/migrate.ts
+ *   npx tsx migration/migrate2.ts
  */
 
 import { ConvexHttpClient } from "convex/browser";
@@ -19,16 +22,21 @@ import { api } from "../convex/_generated/api";
 import pg from "pg";
 
 // ── Configuration ──────────────────────────────────────────────────────
-const CONVEX_URL = process.env.CONVEX_URL || "https://exciting-bee-603.convex.cloud";
-const DATABASE_URL = process.env.DATABASE_URL!;
+const CONVEX_URL = process.env.CONVEX_URL;
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!CONVEX_URL) {
+  console.error("❌ Set CONVEX_URL to your Convex deployment URL (find it at https://dashboard.convex.dev)");
+  process.exit(1);
+}
 
 if (!DATABASE_URL) {
   console.error("❌ Set DATABASE_URL to your Supabase Postgres connection string");
   process.exit(1);
 }
 
-const convex = new ConvexHttpClient(CONVEX_URL);
-const pool = new pg.Pool({ connectionString: DATABASE_URL });
+const convex = new ConvexHttpClient(CONVEX_URL!);
+const pool = new pg.Pool({ connectionString: DATABASE_URL! });
 
 // ── Helpers ────────────────────────────────────────────────────────────
 function toMs(ts: string | null): number | undefined {
@@ -170,7 +178,7 @@ async function migrateVerificationTokens() {
 async function main() {
   console.log("🚀 Starting Supabase → Convex migration for thestockie");
   console.log(`   Convex: ${CONVEX_URL}`);
-  console.log(`   Supabase: ${DATABASE_URL.replace(/:[^:@]+@/, ":***@")}`);
+  console.log(`   Supabase: ${DATABASE_URL!.replace(/:[^:@]+@/, ":***@")}`);
 
   try {
     // Order matters: users first (referenced by other tables)

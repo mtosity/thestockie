@@ -152,7 +152,8 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
         expires: expires ? expires.getTime() : undefined,
         userId: userId ? (userId as Id<"users">) : undefined,
       });
-      return { sessionToken, userId: userId ?? "", expires: expires ?? new Date() };
+      if (!userId) return null;
+      return { sessionToken, userId, expires: expires ?? new Date() };
     },
 
     async deleteSession(sessionToken) {
