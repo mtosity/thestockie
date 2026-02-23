@@ -10,9 +10,9 @@ interface StockResponseModalProps {
   isOpen: boolean;
   onClose: () => void;
   stock: {
-    id: string;
-    response: string | null;
-    prompt: string | null;
+    supabaseId: string;
+    response?: string;
+    prompt?: string;
   } | null;
 }
 
@@ -94,7 +94,7 @@ export function StockResponseModal({ isOpen, onClose, stock }: StockResponseModa
       <DialogContent className="max-w-4xl max-h-[80vh] bg-[#15162c] border-white/20 text-white">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white">
-            {stock.id} - Analysis Report
+            {stock.supabaseId} - Analysis Report
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">

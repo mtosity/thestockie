@@ -17,13 +17,13 @@ import { useSymbol } from "~/hooks/use-symbol";
 import { ArrowRight } from "lucide-react";
 
 interface Stock {
-  id: string;
-  prompt: string | null;
-  response: string | null;
-  sector: string | null;
-  market_cap: number | null;
-  recommendation: string | null;
-  createdAt: Date | null;
+  supabaseId: string;
+  prompt?: string;
+  response?: string;
+  sector?: string;
+  marketCap?: number;
+  recommendation?: string;
+  createdAt: number;
 }
 
 interface ScreenerTableProps {
@@ -129,23 +129,23 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
             <TableBody>
               {stocks.map((stock) => (
                 <TableRow
-                  key={stock.id}
+                  key={stock.supabaseId}
                   className="border-white/10 hover:bg-white/5"
                 >
                   <TableCell className="font-medium text-white">
-                    {stock.id}
+                    {stock.supabaseId}
                   </TableCell>
                   <TableCell className="text-gray-300">
                     {stock.sector ?? "N/A"}
                   </TableCell>
                   <TableCell className="text-gray-300">
-                    {formatMarketCap(stock.market_cap)}
+                    {formatMarketCap(stock.marketCap ?? null)}
                   </TableCell>
                   <TableCell>
                     <Badge
-                      className={getRecommendationColor(stock.recommendation)}
+                      className={getRecommendationColor(stock.recommendation ?? null)}
                     >
-                      {formatRecommendation(stock.recommendation)}
+                      {formatRecommendation(stock.recommendation ?? null)}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -161,14 +161,14 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
                   </TableCell>
                   <TableCell className="text-gray-300">
                     {stock.createdAt
-                      ? stock.createdAt.toLocaleDateString()
+                      ? new Date(stock.createdAt).toLocaleDateString()
                       : "N/A"}
                   </TableCell>
                   <TableCell>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleSelectStock(stock.id)}
+                      onClick={() => handleSelectStock(stock.supabaseId)}
                       className="border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/20"
                     >
                       <ArrowRight className="h-4 w-4" />

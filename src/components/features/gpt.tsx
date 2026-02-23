@@ -113,10 +113,10 @@ export const GPT = () => {
         </Button>
       </div>
 
-      {data && data.id === symbol ? (
+      {data && data.supabaseId === symbol ? (
         <div className="mt-4">
           <p className="text-sm text-gray-400">
-            {`Generated at: ${Intl.DateTimeFormat().format(data.createdAt)} (every week)`}
+            {`Generated at: ${Intl.DateTimeFormat().format(new Date(data.createdAt))} (every week)`}
           </p>
           <div className="relative mt-2">
             <div className="scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 max-h-[500px] overflow-y-auto rounded-lg border border-gray-700 bg-gray-800/50 p-4 py-8">

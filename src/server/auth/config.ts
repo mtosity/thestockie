@@ -1,15 +1,13 @@
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import GoogleProvider from "next-auth/providers/google";
+import { ConvexHttpClient } from "convex/browser";
 
-import { db } from "~/server/db";
-import {
-  accounts,
-  sessions,
-  users,
-  verificationTokens,
-} from "~/server/db/schema";
+import { createConvexAdapter } from "./convex-adapter";
+
+const convexClient = new ConvexHttpClient(
+  process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL ?? ""
+);
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -54,12 +52,7 @@ export const authConfig = {
       clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET,
     }),
   ],
-  adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-  }),
+  adapter: createConvexAdapter(convexClient),
   callbacks: {
     session: ({ session, user }) => ({
       ...session,
