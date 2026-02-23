@@ -9,7 +9,6 @@
  */
 
 import type * as auth from "../auth.js";
-import type * as migrate from "../migrate.js";
 import type * as posts from "../posts.js";
 
 import type {
@@ -20,7 +19,6 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  migrate: typeof migrate;
   posts: typeof posts;
 }>;
 
