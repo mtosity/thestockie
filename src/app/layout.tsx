@@ -5,6 +5,7 @@ import { type Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import { ConvexClientProvider } from "~/components/ConvexClientProvider";
 
 export const metadata: Metadata = {
   title: "thestockie - @mtosity",
@@ -38,7 +39,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <ConvexClientProvider>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </ConvexClientProvider>
         <Analytics />
       </body>
     </html>
