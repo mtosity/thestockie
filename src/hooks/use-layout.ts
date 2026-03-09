@@ -28,13 +28,8 @@ export const DEFAULT_LAYOUT: GridLayout.Layout[] = [
   { i: "valuation", x: 7, y: 76, w: 7, h: 14 },
   { i: "margin-trends", x: 14, y: 76, w: 7, h: 14 },
 
-  {
-    i: "metrics-table",
-    x: 0,
-    y: 90,
-    w: 21,
-    h: 80,
-    isDraggable: false,
-    isResizable: false,
-  },
+  // Row 5: Competitive & Risk analysis
+  { i: "stock-peers", x: 0, y: 90, w: 7, h: 22 },
+  { i: "analyst-ratings", x: 7, y: 90, w: 7, h: 22 },
+  { i: "insider-trading", x: 14, y: 90, w: 7, h: 22 },
 ];

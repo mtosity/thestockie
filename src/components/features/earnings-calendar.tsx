@@ -287,11 +287,11 @@ export function EarningsCalendar() {
                               <div className="border-b border-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
                                 {groupLabel}
                               </div>
-                              <div className="grid grid-cols-3 gap-0">
+                              <div className="grid gap-0" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(60px, 1fr))" }}>
                                 {group.map((company, idx) => (
                                   <div
                                     key={`${company.symbol}-${idx}`}
-                                    className="flex flex-col items-center gap-1 rounded-md p-1 transition-colors hover:bg-white/5"
+                                    className="flex max-w-[80px] flex-col items-center gap-1 rounded-md p-1 transition-colors hover:bg-white/5"
                                     title={company.name}
                                   >
                                     <CompanyLogo symbol={company.symbol} />
@@ -339,9 +339,9 @@ function DayColumnSkeleton({ dateStr }: { dateStr: string }) {
         </div>
         <div className="h-5 w-6 animate-pulse rounded-full bg-white/10" />
       </div>
-      <div className="grid grid-cols-3 gap-0 p-2">
+      <div className="grid gap-0 p-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(60px, 1fr))" }}>
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="flex flex-col items-center gap-1 p-1">
+          <div key={i} className="flex max-w-[80px] flex-col items-center gap-1 p-1">
             <div className="h-10 w-10 animate-pulse rounded-md bg-white/10" />
             <div className="h-2.5 w-8 animate-pulse rounded bg-white/10" />
           </div>

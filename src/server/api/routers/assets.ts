@@ -23,6 +23,10 @@ import { type FMPEarningsResponse } from "../schema/FMP/FMPEarnings";
 import { type FMPKeyMetricsResponse } from "../schema/FMP/FMPKeyMetrics";
 import { type FMPStockNewsResponse } from "../schema/FMP/FMPStockNews";
 import { type FMPIncomeStatementResponse } from "../schema/FMP/FMPIncomeStatement";
+import { type FMPStockPeersResponse } from "../schema/FMP/FMPStockPeers";
+import { type FMPInsiderTradingResponse } from "../schema/FMP/FMPInsiderTrading";
+import { type FMPAnalystRecommendationResponse } from "../schema/FMP/FMPAnalystRecommendation";
+import { type FMPStockGradeResponse } from "../schema/FMP/FMPStockGrade";
 import { type NewsCompanyResponse } from "../schema/NewsCompany";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import axios from "axios";
@@ -945,4 +949,46 @@ export const assetsRouter = createTRPCRouter({
 
       return grouped;
     }),
+
+  stockPeers: publicProcedure.input(String).query(async ({ input }) => {
+    const res = await fmp.get<FMPStockPeersResponse>(
+      `/api/v4/stock_peers`,
+      { params: { symbol: input, apikey: process.env.FMP_API_KEY } },
+    );
+    const peers = res?.data?.[0]?.peersList ?? [];
+    if (peers.length === 0) return [];
+
+    // Fetch quotes for all peers to get price, change, marketCap
+    const symbols = peers.join(",");
+    const quotesRes = await fmp.get<
+      { symbol: string; name: string; price: number; change: number; changesPercentage: number; marketCap: number }[]
+    >(`/api/v3/quote/${symbols}`, {
+      params: { apikey: process.env.FMP_API_KEY },
+    });
+    return quotesRes?.data ?? [];
+  }),
+
+  insiderTrading: publicProcedure.input(String).query(async ({ input }) => {
+    const res = await fmp.get<FMPInsiderTradingResponse>(
+      `/api/v4/insider-trading`,
+      { params: { symbol: input, page: 0, apikey: process.env.FMP_API_KEY } },
+    );
+    return res?.data ?? [];
+  }),
+
+  analystRecommendations: publicProcedure.input(String).query(async ({ input }) => {
+    const res = await fmp.get<FMPAnalystRecommendationResponse>(
+      `/api/v3/analyst-stock-recommendations/${input}`,
+      { params: { apikey: process.env.FMP_API_KEY } },
+    );
+    return res?.data ?? [];
+  }),
+
+  stockGrades: publicProcedure.input(String).query(async ({ input }) => {
+    const res = await fmp.get<FMPStockGradeResponse>(
+      `/api/v3/grade/${input}`,
+      { params: { apikey: process.env.FMP_API_KEY } },
+    );
+    return res?.data ?? [];
+  }),
 });

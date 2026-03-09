@@ -12,13 +12,16 @@ import dynamic from "next/dynamic";
 import { CashGrowth } from "./cash_growth";
 import { DEFAULT_LAYOUT } from "~/hooks/use-layout";
 import { useIsMobile } from "~/hooks/use-mobile";
-import { MetricsTable } from "./metrics-table";
+
 import { CompanyProfile } from "./company-profile";
 import { GPT } from "./gpt";
 import { Revenue, EBITDA, NetIncome, EPS, Expenses, SharesOutstanding, MarginTrends } from "./income-statement-charts";
 import { CashDebt } from "./cash-debt";
 import { Dividends } from "./dividends";
 import { ValuationChart } from "./valuation-chart";
+import { StockPeers } from "./stock-peers";
+import { InsiderTrading } from "./insider-trading";
+import { AnalystRatings } from "./analyst-ratings";
 
 const Grid = () => {
   const { width, height } = useWindowSize();
@@ -103,9 +106,17 @@ const Grid = () => {
           <MarginTrends />
         </div>
 
-        <div key="metrics-table">
-          <MetricsTable />
+        {/* Competitive & Risk Analysis */}
+        <div key="stock-peers" className={clx}>
+          <StockPeers />
         </div>
+        <div key="analyst-ratings" className={clx}>
+          <AnalystRatings />
+        </div>
+        <div key="insider-trading" className={clx}>
+          <InsiderTrading />
+        </div>
+
       </GridLayout>
       <div className="pb-20"></div>
     </>
