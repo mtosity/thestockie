@@ -725,7 +725,7 @@ function SuggestedPeers({
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-const DEFAULT_SYMBOLS = ["AAPL", "MSFT", "GOOGL"];
+const DEFAULT_SYMBOLS = ["AAPL"];
 
 export function StockComparison() {
   const searchParams = useSearchParams();
