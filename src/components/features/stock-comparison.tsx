@@ -130,8 +130,7 @@ const fmtPctPlain = (v: number | null) =>
   v != null ? `${v.toFixed(2)}%` : "N/A";
 const fmtMoney = (v: number | null) =>
   v != null ? `$${formatLargeNumber(v)}` : "N/A";
-const fmtRatio = (v: number | null) =>
-  v != null ? `${v.toFixed(2)}x` : "N/A";
+const fmtRatio = (v: number | null) => (v != null ? `${v.toFixed(2)}x` : "N/A");
 
 // ─── Reference / benchmark ranges for typical S&P 500 stocks ─────────────────
 
@@ -517,7 +516,9 @@ function StockSearchPopover({
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0" align="start">
         <Command
-          shouldFilter={!!isReady && !!stocks?.length && !!debouncedSearch?.length}
+          shouldFilter={
+            !!isReady && !!stocks?.length && !!debouncedSearch?.length
+          }
           filter={(_v, _s, keywords) => {
             if (
               keywords?.some((kw) =>
@@ -604,12 +605,12 @@ function StockHeader({
         {stock.name}
       </span>
       <div className="flex items-center gap-1">
-        <span className="text-xs font-mono text-gray-200">
+        <span className="font-mono text-xs text-gray-200">
           ${stock.price.toFixed(2)}
         </span>
         <span
           className={cn(
-            "text-[10px] font-mono",
+            "font-mono text-[10px]",
             stock.changesPercentage >= 0 ? "text-green-400" : "text-red-400",
           )}
         >
@@ -620,7 +621,7 @@ function StockHeader({
       <div className="flex gap-2 text-[9px] text-gray-500">
         <span>{stock.sector}</span>
       </div>
-      <span className="text-[10px] font-mono text-gray-400">
+      <span className="font-mono text-[10px] text-gray-400">
         MCap: {formatLargeNumber(stock.marketCap)}
       </span>
     </div>
@@ -819,10 +820,7 @@ export function StockComparison() {
               />
             ))}
         {symbols.length < 6 && (
-          <StockSearchPopover
-            onSelect={addSymbol}
-            existingSymbols={symbols}
-          />
+          <StockSearchPopover onSelect={addSymbol} existingSymbols={symbols} />
         )}
       </div>
 
@@ -889,9 +887,7 @@ export function StockComparison() {
                     {/* Metric rows */}
                     {!isCollapsed &&
                       section.metrics.map((metric) => {
-                        const values = stocks.map((s) =>
-                          metric.getValue(s),
-                        );
+                        const values = stocks.map((s) => metric.getValue(s));
                         const validValues = values.filter(
                           (v): v is number => v != null && isFinite(v),
                         );
@@ -902,9 +898,7 @@ export function StockComparison() {
                           metric.better !== "neutral" &&
                           validValues.length > 1
                         ) {
-                          const sorted = [...validValues].sort(
-                            (a, b) => a - b,
-                          );
+                          const sorted = [...validValues].sort((a, b) => a - b);
                           const best =
                             metric.better === "higher"
                               ? sorted[sorted.length - 1]
@@ -1105,8 +1099,8 @@ export function StockComparison() {
             Compare Stocks Side by Side
           </h2>
           <p className="mb-6 max-w-md text-sm text-gray-500">
-            Add up to 6 stocks to compare their fundamentals, valuations,
-            growth metrics, profitability, and more.
+            Add up to 6 stocks to compare their fundamentals, valuations, growth
+            metrics, profitability, and more.
           </p>
           <StockSearchPopover onSelect={addSymbol} existingSymbols={[]} />
         </div>

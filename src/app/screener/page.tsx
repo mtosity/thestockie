@@ -12,7 +12,7 @@ import { BackButton } from "~/components/ui/back-button";
 function ScreenerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const [sector, setSector] = useState("all");
   const [recommendation, setRecommendation] = useState("all");
   const [marketCapMin, setMarketCapMin] = useState("");
@@ -44,7 +44,7 @@ function ScreenerContent() {
   // Update URL when filters change
   const updateURL = (newParams: Record<string, string | number>) => {
     const params = new URLSearchParams(searchParams.toString());
-    
+
     Object.entries(newParams).forEach(([key, value]) => {
       if (value === "" || value === "all" || value === 1) {
         params.delete(key);
@@ -59,9 +59,16 @@ function ScreenerContent() {
 
   const filters = {
     sector: sector === "all" ? undefined : sector,
-    recommendation: recommendation === "all" ? undefined : (recommendation as "strong_buy" | "buy" | "hold" | "sell"),
-    marketCapMin: debouncedMarketCapMin ? parseInt(debouncedMarketCapMin) * 1000000 : undefined,
-    marketCapMax: debouncedMarketCapMax ? parseInt(debouncedMarketCapMax) * 1000000 : undefined,
+    recommendation:
+      recommendation === "all"
+        ? undefined
+        : (recommendation as "strong_buy" | "buy" | "hold" | "sell"),
+    marketCapMin: debouncedMarketCapMin
+      ? parseInt(debouncedMarketCapMin) * 1000000
+      : undefined,
+    marketCapMax: debouncedMarketCapMax
+      ? parseInt(debouncedMarketCapMax) * 1000000
+      : undefined,
     page,
     limit,
   };
@@ -111,46 +118,49 @@ function ScreenerContent() {
   };
 
   // Reset to page 1 when filters change
-  const handleFilterChange = (filterSetter: (value: string) => void) => (value: string) => {
-    filterSetter(value);
-    setPage(1);
+  const handleFilterChange =
+    (filterSetter: (value: string) => void) => (value: string) => {
+      filterSetter(value);
+      setPage(1);
 
-    const newFilters = {
-      sector: filterSetter === setSector ? value : sector,
-      recommendation: filterSetter === setRecommendation ? value : recommendation,
-      marketCapMin: filterSetter === setMarketCapMin ? value : marketCapMin,
-      marketCapMax: filterSetter === setMarketCapMax ? value : marketCapMax,
-      page: 1,
-      limit,
+      const newFilters = {
+        sector: filterSetter === setSector ? value : sector,
+        recommendation:
+          filterSetter === setRecommendation ? value : recommendation,
+        marketCapMin: filterSetter === setMarketCapMin ? value : marketCapMin,
+        marketCapMax: filterSetter === setMarketCapMax ? value : marketCapMax,
+        page: 1,
+        limit,
+      };
+
+      updateURL(newFilters);
     };
 
-    updateURL(newFilters);
-  };
+  const handleMarketCapChange =
+    (filterSetter: (value: string) => void) => (value: string) => {
+      filterSetter(value);
+      setPage(1);
 
-  const handleMarketCapChange = (filterSetter: (value: string) => void) => (value: string) => {
-    filterSetter(value);
-    setPage(1);
+      const newFilters = {
+        sector,
+        recommendation,
+        marketCapMin: filterSetter === setMarketCapMin ? value : marketCapMin,
+        marketCapMax: filterSetter === setMarketCapMax ? value : marketCapMax,
+        page: 1,
+        limit,
+      };
 
-    const newFilters = {
-      sector,
-      recommendation,
-      marketCapMin: filterSetter === setMarketCapMin ? value : marketCapMin,
-      marketCapMax: filterSetter === setMarketCapMax ? value : marketCapMax,
-      page: 1,
-      limit,
+      updateURL(newFilters);
     };
-
-    updateURL(newFilters);
-  };
 
   return (
-    <div className="min-h-screen bg-[#15162c] text-white pb-20">
+    <div className="min-h-screen bg-[#15162c] pb-20 text-white">
       <div className="p-4">
-        <div className="flex items-center gap-4 mb-6">
+        <div className="mb-6 flex items-center gap-4">
           <BackButton />
           <h1 className="text-3xl font-bold">Screener</h1>
         </div>
-        
+
         <ScreenerFilters
           sector={sector}
           recommendation={recommendation}

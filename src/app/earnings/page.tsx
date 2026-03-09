@@ -6,7 +6,13 @@ import { EarningsCalendar } from "~/components/features/earnings-calendar";
 
 export default function EarningsPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#15162c] text-white flex items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#15162c] text-white">
+          Loading...
+        </div>
+      }
+    >
       <main className="min-h-screen bg-[#15162c] text-white">
         <div className="px-4 pt-4">
           <div className="mb-6 flex items-center gap-4">

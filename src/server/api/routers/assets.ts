@@ -1040,78 +1040,82 @@ export const assetsRouter = createTRPCRouter({
 
       const results = await Promise.all(
         symbols.map(async (symbol) => {
-          const [profileRes, quoteRes, ratiosRes, incomeRes, metricsRes, peersRes] =
-            await Promise.all([
-              fmp
-                .get<
-                  {
-                    symbol: string;
-                    companyName: string;
-                    sector: string;
-                    industry: string;
-                    mktCap: number;
-                    image: string;
-                    description: string;
-                    country: string;
-                    exchange: string;
-                    currency: string;
-                    beta: number;
-                    lastDiv: number;
-                    ipoDate: string;
-                    fullTimeEmployees: string;
-                  }[]
-                >(`/api/v3/profile/${symbol}`, {
-                  params: { apikey: process.env.FMP_API_KEY },
-                })
-                .catch(() => ({ data: [] })),
-              fmp
-                .get<EquityQuoteResponse>(`/api/v3/quote/${symbol}`, {
-                  params: { apikey: process.env.FMP_API_KEY },
-                })
-                .catch(() => ({ data: [] })),
-              fmp
-                .get<FMPRatiosTTMResponse>(`/api/v3/ratios-ttm/${symbol}`, {
-                  params: { apikey: process.env.FMP_API_KEY },
-                })
-                .catch(() => ({ data: [] })),
-              fmp
-                .get<FMPIncomeStatementResponse>(
-                  `/api/v3/income-statement/${symbol}`,
-                  {
-                    params: {
-                      limit: 8,
-                      period: "quarter",
-                      apikey: process.env.FMP_API_KEY,
-                    },
-                  },
-                )
-                .catch(() => ({ data: [] })),
-              fmp
-                .get<FMPKeyMetricsResponse>(`/api/v3/key-metrics/${symbol}`, {
+          const [
+            profileRes,
+            quoteRes,
+            ratiosRes,
+            incomeRes,
+            metricsRes,
+            peersRes,
+          ] = await Promise.all([
+            fmp
+              .get<
+                {
+                  symbol: string;
+                  companyName: string;
+                  sector: string;
+                  industry: string;
+                  mktCap: number;
+                  image: string;
+                  description: string;
+                  country: string;
+                  exchange: string;
+                  currency: string;
+                  beta: number;
+                  lastDiv: number;
+                  ipoDate: string;
+                  fullTimeEmployees: string;
+                }[]
+              >(`/api/v3/profile/${symbol}`, {
+                params: { apikey: process.env.FMP_API_KEY },
+              })
+              .catch(() => ({ data: [] })),
+            fmp
+              .get<EquityQuoteResponse>(`/api/v3/quote/${symbol}`, {
+                params: { apikey: process.env.FMP_API_KEY },
+              })
+              .catch(() => ({ data: [] })),
+            fmp
+              .get<FMPRatiosTTMResponse>(`/api/v3/ratios-ttm/${symbol}`, {
+                params: { apikey: process.env.FMP_API_KEY },
+              })
+              .catch(() => ({ data: [] })),
+            fmp
+              .get<FMPIncomeStatementResponse>(
+                `/api/v3/income-statement/${symbol}`,
+                {
                   params: {
                     limit: 8,
                     period: "quarter",
                     apikey: process.env.FMP_API_KEY,
                   },
-                })
-                .catch(() => ({ data: [] })),
-              fmp
-                .get<FMPStockPeersResponse>(`/api/v4/stock_peers`, {
-                  params: { symbol, apikey: process.env.FMP_API_KEY },
-                })
-                .catch(() => ({ data: [] })),
-            ]);
+                },
+              )
+              .catch(() => ({ data: [] })),
+            fmp
+              .get<FMPKeyMetricsResponse>(`/api/v3/key-metrics/${symbol}`, {
+                params: {
+                  limit: 8,
+                  period: "quarter",
+                  apikey: process.env.FMP_API_KEY,
+                },
+              })
+              .catch(() => ({ data: [] })),
+            fmp
+              .get<FMPStockPeersResponse>(`/api/v4/stock_peers`, {
+                params: { symbol, apikey: process.env.FMP_API_KEY },
+              })
+              .catch(() => ({ data: [] })),
+          ]);
 
           const profile = profileRes?.data?.[0];
           const quote = quoteRes?.data?.[0];
           const ratios = ratiosRes?.data?.[0];
           const income = (incomeRes?.data ?? []).sort(
-            (a, b) =>
-              new Date(b.date).getTime() - new Date(a.date).getTime(),
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
           );
           const metrics = (metricsRes?.data ?? []).sort(
-            (a, b) =>
-              new Date(b.date).getTime() - new Date(a.date).getTime(),
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
           );
           const peers = peersRes?.data?.[0]?.peersList ?? [];
 
@@ -1131,10 +1135,7 @@ export const assetsRouter = createTRPCRouter({
           const prevRevenue = prev4.reduce((s, d) => s + d.revenue, 0);
           const prevNetIncome = prev4.reduce((s, d) => s + d.netIncome, 0);
           const prevEps = prev4.reduce((s, d) => s + d.epsdiluted, 0);
-          const prevGrossProfit = prev4.reduce(
-            (s, d) => s + d.grossProfit,
-            0,
-          );
+          const prevGrossProfit = prev4.reduce((s, d) => s + d.grossProfit, 0);
 
           // YoY growth (most recent quarter vs same quarter last year)
           const recentQ = income[0];
@@ -1163,8 +1164,7 @@ export const assetsRouter = createTRPCRouter({
               : null;
           const ttmNetIncomeGrowth =
             prevNetIncome !== 0
-              ? ((ttmNetIncome - prevNetIncome) / Math.abs(prevNetIncome)) *
-                100
+              ? ((ttmNetIncome - prevNetIncome) / Math.abs(prevNetIncome)) * 100
               : null;
 
           // Margins
@@ -1174,12 +1174,8 @@ export const assetsRouter = createTRPCRouter({
           const operatingMargin = ttmRevenue
             ? (ttmOperatingIncome / ttmRevenue) * 100
             : 0;
-          const netMargin = ttmRevenue
-            ? (ttmNetIncome / ttmRevenue) * 100
-            : 0;
-          const ebitdaMargin = ttmRevenue
-            ? (ttmEbitda / ttmRevenue) * 100
-            : 0;
+          const netMargin = ttmRevenue ? (ttmNetIncome / ttmRevenue) * 100 : 0;
+          const ebitdaMargin = ttmRevenue ? (ttmEbitda / ttmRevenue) * 100 : 0;
 
           // Per-share & valuation
           const price = quote?.price ?? 0;
@@ -1214,8 +1210,7 @@ export const assetsRouter = createTRPCRouter({
 
             // Valuation
             peRatio: ratios?.peRatioTTM ?? quote?.pe ?? 0,
-            forwardPE:
-              ratios?.priceEarningsRatioTTM ?? quote?.pe ?? 0,
+            forwardPE: ratios?.priceEarningsRatioTTM ?? quote?.pe ?? 0,
             pegRatio: ratios?.pegRatioTTM ?? 0,
             priceToSales: ratios?.priceToSalesRatioTTM ?? 0,
             priceToBook: ratios?.priceBookValueRatioTTM ?? 0,
@@ -1228,9 +1223,7 @@ export const assetsRouter = createTRPCRouter({
             ttmEps,
             ttmEpsGrowth,
             epsYoY,
-            earningsYield: m?.earningsYield
-              ? m.earningsYield * 100
-              : 0,
+            earningsYield: m?.earningsYield ? m.earningsYield * 100 : 0,
 
             // Revenue
             ttmRevenue,
@@ -1242,21 +1235,14 @@ export const assetsRouter = createTRPCRouter({
             operatingMargin,
             netMargin,
             ebitdaMargin,
-            roe: ratios?.returnOnEquityTTM
-              ? ratios.returnOnEquityTTM * 100
-              : 0,
-            roa: ratios?.returnOnAssetsTTM
-              ? ratios.returnOnAssetsTTM * 100
-              : 0,
+            roe: ratios?.returnOnEquityTTM ? ratios.returnOnEquityTTM * 100 : 0,
+            roa: ratios?.returnOnAssetsTTM ? ratios.returnOnAssetsTTM * 100 : 0,
             roic: m?.roic ? m.roic * 100 : 0,
 
             // Cash Flow
             fcfPerShare: ratios?.freeCashFlowPerShareTTM ?? 0,
-            fcfYield: m?.freeCashFlowYield
-              ? m.freeCashFlowYield * 100
-              : 0,
-            operatingCFPerShare:
-              ratios?.operatingCashFlowPerShareTTM ?? 0,
+            fcfYield: m?.freeCashFlowYield ? m.freeCashFlowYield * 100 : 0,
+            operatingCFPerShare: ratios?.operatingCashFlowPerShareTTM ?? 0,
 
             // Debt & Liquidity
             debtToEquity: ratios?.debtEquityRatioTTM ?? 0,
