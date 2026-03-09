@@ -34,17 +34,18 @@ export const convex = new ConvexHttpClient(
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await auth();
   const origin = opts.headers.get("origin") ?? opts.headers.get("referer");
-  const urls = [
-    "http://localhost:3000/",
-    "http://localhost:3001/",
-    "http://localhost:3001",
+  const productionUrls = [
     "https://thestockie.vercel.app/",
     "https://www.thestockie.vercel.app/",
     "https://thestockie.com/",
     "https://www.thestockie.com/",
-    "http://localhost:3000",
     "https://www.thestockie.com",
   ];
+  const developmentUrls = ["http://localhost:3000", "http://localhost:3001"];
+  const urls =
+    process.env.NODE_ENV === "production"
+      ? productionUrls
+      : [...productionUrls, ...developmentUrls];
   if (!origin || !urls.find((url) => origin.startsWith(url))) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
