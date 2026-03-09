@@ -89,7 +89,9 @@ export function EarningsCalendar() {
     }
     return getWeekRange(new Date()).from;
   });
-  const [usOnly, setUsOnly] = useState(() => searchParams.get("region") !== "global");
+  const [usOnly, setUsOnly] = useState(
+    () => searchParams.get("region") !== "global",
+  );
   const [minMarketCap, setMinMarketCap] = useState<McapOption>(() =>
     paramToMcap(searchParams.get("mcap")),
   );
@@ -101,7 +103,9 @@ export function EarningsCalendar() {
     if (!us) params.set("region", "global");
     if (mcap !== 1e9) params.set("mcap", mcapToParam(mcap));
     const query = params.toString();
-    router.replace(query ? `/earnings?${query}` : "/earnings", { scroll: false });
+    router.replace(query ? `/earnings?${query}` : "/earnings", {
+      scroll: false,
+    });
   };
 
   const weekEnd = new Date(weekStart);
@@ -142,24 +146,24 @@ export function EarningsCalendar() {
   const weekLabel = `${weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${weekEnd.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
 
   return (
-    <div className="min-h-screen bg-[#15162c] text-white pb-20">
+    <div className="min-h-screen bg-[#15162c] pb-20 text-white">
       <div className="p-3 md:p-4">
-
         {/* Controls row */}
         <div className="mb-4 flex flex-col gap-3">
-
           {/* Week navigation — full width on mobile */}
           <div className="flex items-center justify-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={goToPrevWeek}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30"
+              className="border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/20"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="flex w-56 flex-col items-center gap-0.5 sm:w-64">
-              <span className="text-sm font-semibold sm:text-base">{weekLabel}</span>
+              <span className="text-sm font-semibold sm:text-base">
+                {weekLabel}
+              </span>
               <button
                 onClick={goToCurrentWeek}
                 className="text-xs text-purple-400 transition-colors hover:text-purple-300"
@@ -171,7 +175,7 @@ export function EarningsCalendar() {
               variant="outline"
               size="sm"
               onClick={goToNextWeek}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30"
+              className="border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/20"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -184,14 +188,23 @@ export function EarningsCalendar() {
               {([0, 1e9, 10e9, 100e9] as const).map((cap) => (
                 <button
                   key={cap}
-                  onClick={() => { setMinMarketCap(cap); updateURL(weekStart, usOnly, cap); }}
+                  onClick={() => {
+                    setMinMarketCap(cap);
+                    updateURL(weekStart, usOnly, cap);
+                  }}
                   className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${
                     minMarketCap === cap
                       ? "bg-purple-600 text-white"
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
-                  {cap === 0 ? "All" : cap === 1e9 ? "1B+" : cap === 10e9 ? "10B+" : "100B+"}
+                  {cap === 0
+                    ? "All"
+                    : cap === 1e9
+                      ? "1B+"
+                      : cap === 10e9
+                        ? "10B+"
+                        : "100B+"}
                 </button>
               ))}
             </div>
@@ -199,17 +212,27 @@ export function EarningsCalendar() {
             {/* US / Global toggle */}
             <div className="flex items-center gap-0.5 rounded-lg bg-white/5 p-1">
               <button
-                onClick={() => { setUsOnly(true); updateURL(weekStart, true, minMarketCap); }}
+                onClick={() => {
+                  setUsOnly(true);
+                  updateURL(weekStart, true, minMarketCap);
+                }}
                 className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${
-                  usOnly ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"
+                  usOnly
+                    ? "bg-purple-600 text-white"
+                    : "text-gray-400 hover:text-white"
                 }`}
               >
                 🇺🇸 US Only
               </button>
               <button
-                onClick={() => { setUsOnly(false); updateURL(weekStart, false, minMarketCap); }}
+                onClick={() => {
+                  setUsOnly(false);
+                  updateURL(weekStart, false, minMarketCap);
+                }}
                 className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${
-                  !usOnly ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"
+                  !usOnly
+                    ? "bg-purple-600 text-white"
+                    : "text-gray-400 hover:text-white"
                 }`}
               >
                 Global
@@ -226,7 +249,9 @@ export function EarningsCalendar() {
           </div>
         ) : data && Object.keys(data).length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
-            <p className="text-lg font-semibold text-gray-300">No earnings data available</p>
+            <p className="text-lg font-semibold text-gray-300">
+              No earnings data available
+            </p>
             <p className="text-sm text-gray-500">
               Earnings data is typically available up to ~2 weeks ahead.
             </p>
@@ -256,10 +281,14 @@ export function EarningsCalendar() {
                     }`}
                   >
                     <div>
-                      <div className={`text-xs font-semibold uppercase tracking-wide ${today ? "text-purple-300" : "text-gray-400"}`}>
+                      <div
+                        className={`text-xs font-semibold uppercase tracking-wide ${today ? "text-purple-300" : "text-gray-400"}`}
+                      >
                         {label.weekday}
                       </div>
-                      <div className={`text-sm font-bold ${today ? "text-purple-200" : "text-white"}`}>
+                      <div
+                        className={`text-sm font-bold ${today ? "text-purple-200" : "text-white"}`}
+                      >
                         {label.date}
                       </div>
                     </div>
@@ -269,7 +298,10 @@ export function EarningsCalendar() {
                   </div>
 
                   {/* Company grid */}
-                  <div className="flex-1 overflow-y-auto" style={{ maxHeight: "calc(100vh - 260px)" }}>
+                  <div
+                    className="flex-1 overflow-y-auto"
+                    style={{ maxHeight: "calc(100vh - 260px)" }}
+                  >
                     {companies.length === 0 ? (
                       <div className="flex h-16 items-center justify-center text-xs text-gray-500">
                         No earnings
@@ -278,16 +310,27 @@ export function EarningsCalendar() {
                       (() => {
                         const bmo = companies.filter((c) => c.time === "bmo");
                         const amc = companies.filter((c) => c.time === "amc");
-                        const other = companies.filter((c) => c.time !== "bmo" && c.time !== "amc");
+                        const other = companies.filter(
+                          (c) => c.time !== "bmo" && c.time !== "amc",
+                        );
 
-                        const renderGroup = (group: typeof companies, groupLabel: string) => {
+                        const renderGroup = (
+                          group: typeof companies,
+                          groupLabel: string,
+                        ) => {
                           if (group.length === 0) return null;
                           return (
                             <div key={groupLabel}>
                               <div className="border-b border-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
                                 {groupLabel}
                               </div>
-                              <div className="grid gap-0" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(60px, 1fr))" }}>
+                              <div
+                                className="grid gap-0"
+                                style={{
+                                  gridTemplateColumns:
+                                    "repeat(auto-fill, minmax(60px, 1fr))",
+                                }}
+                              >
                                 {group.map((company, idx) => (
                                   <div
                                     key={`${company.symbol}-${idx}`}
@@ -332,16 +375,26 @@ function DayColumnSkeleton({ dateStr }: { dateStr: string }) {
     <div
       className={`rounded-lg border ${today ? "border-purple-500/60 bg-purple-900/10" : "border-[#424975] bg-[#151624]"}`}
     >
-      <div className={`flex items-center justify-between rounded-t-lg px-3 py-2 ${today ? "bg-purple-500/20" : "bg-white/5"}`}>
+      <div
+        className={`flex items-center justify-between rounded-t-lg px-3 py-2 ${today ? "bg-purple-500/20" : "bg-white/5"}`}
+      >
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">{label.weekday}</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+            {label.weekday}
+          </div>
           <div className="text-sm font-bold">{label.date}</div>
         </div>
         <div className="h-5 w-6 animate-pulse rounded-full bg-white/10" />
       </div>
-      <div className="grid gap-0 p-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(60px, 1fr))" }}>
+      <div
+        className="grid gap-0 p-2"
+        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(60px, 1fr))" }}
+      >
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="flex max-w-[80px] flex-col items-center gap-1 p-1">
+          <div
+            key={i}
+            className="flex max-w-[80px] flex-col items-center gap-1 p-1"
+          >
             <div className="h-10 w-10 animate-pulse rounded-md bg-white/10" />
             <div className="h-2.5 w-8 animate-pulse rounded bg-white/10" />
           </div>

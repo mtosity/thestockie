@@ -15,7 +15,15 @@ import { useIsMobile } from "~/hooks/use-mobile";
 
 import { CompanyProfile } from "./company-profile";
 import { GPT } from "./gpt";
-import { Revenue, EBITDA, NetIncome, EPS, Expenses, SharesOutstanding, MarginTrends } from "./income-statement-charts";
+import {
+  Revenue,
+  EBITDA,
+  NetIncome,
+  EPS,
+  Expenses,
+  SharesOutstanding,
+  MarginTrends,
+} from "./income-statement-charts";
 import { CashDebt } from "./cash-debt";
 import { Dividends } from "./dividends";
 import { ValuationChart } from "./valuation-chart";
@@ -34,7 +42,11 @@ const Grid = () => {
   return (
     <>
       <GridLayout
-        layout={isMobile ? DEFAULT_LAYOUT.map((l) => ({ ...l, x: 0, w: 14 })) : DEFAULT_LAYOUT}
+        layout={
+          isMobile
+            ? DEFAULT_LAYOUT.map((l) => ({ ...l, x: 0, w: 14 }))
+            : DEFAULT_LAYOUT
+        }
         cols={isMobile ? 14 : 21}
         rowHeight={30}
         maxRows={height / 15}
@@ -116,7 +128,6 @@ const Grid = () => {
         <div key="insider-trading" className={clx}>
           <InsiderTrading />
         </div>
-
       </GridLayout>
       <div className="pb-20"></div>
     </>

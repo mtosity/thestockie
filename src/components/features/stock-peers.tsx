@@ -38,7 +38,9 @@ export const StockPeers = () => {
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
           <Users className="h-4 w-4 text-purple-400" />
-          <span className="text-sm font-semibold text-gray-200">Competitors</span>
+          <span className="text-sm font-semibold text-gray-200">
+            Competitors
+          </span>
         </div>
         <div className="flex-1 space-y-2 p-4">
           {[1, 2, 3, 4, 5].map((i) => (
@@ -58,7 +60,9 @@ export const StockPeers = () => {
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
           <Users className="h-4 w-4 text-purple-400" />
-          <span className="text-sm font-semibold text-gray-200">Competitors</span>
+          <span className="text-sm font-semibold text-gray-200">
+            Competitors
+          </span>
         </div>
         <div className="flex flex-1 items-center justify-center text-sm text-gray-500">
           No peer data available
@@ -80,7 +84,9 @@ export const StockPeers = () => {
               <th className="px-3 py-1.5 text-left">Company</th>
               <th className="px-3 py-1.5 text-right">Price</th>
               <th className="px-3 py-1.5 text-right">Change</th>
-              <th className="hidden px-3 py-1.5 text-right sm:table-cell">Mkt Cap</th>
+              <th className="hidden px-3 py-1.5 text-right sm:table-cell">
+                Mkt Cap
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -108,7 +114,9 @@ export const StockPeers = () => {
                 <td className="px-3 py-1.5 text-right">
                   <span
                     className={`font-mono text-xs ${
-                      peer.changesPercentage >= 0 ? "text-green-400" : "text-red-400"
+                      peer.changesPercentage >= 0
+                        ? "text-green-400"
+                        : "text-red-400"
                     }`}
                   >
                     {peer.changesPercentage >= 0 ? "+" : ""}

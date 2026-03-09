@@ -41,46 +41,50 @@ const fmp = axios.create({
 
 // Log FMP API key status on startup (only first 4 chars for security)
 const apiKey = process.env.FMP_API_KEY;
-console.log("[FMP] API Key configured:", apiKey ? `${apiKey.substring(0, 4)}...` : "NOT SET");
-
+console.log(
+  "[FMP] API Key configured:",
+  apiKey ? `${apiKey.substring(0, 4)}...` : "NOT SET",
+);
 
 export const assetsRouter = createTRPCRouter({
   // Already using FMP - no changes needed
   companyProfile: publicProcedure.input(String).query(async ({ input }) => {
-    const res = await fmp.get<{
-      symbol: string;
-      price: number;
-      beta: number;
-      volAvg: number;
-      mktCap: number;
-      lastDiv: number;
-      range: string;
-      changes: number;
-      companyName: string;
-      currency: string;
-      cik: string;
-      isin: string;
-      exchange: string;
-      exchangeShortName: string;
-      industry: string;
-      website: string;
-      description: string;
-      ceo: string;
-      sector: string;
-      country: string;
-      fullTimeEmployees: string;
-      phone: string;
-      address: string;
-      city: string;
-      state: string;
-      zip: string;
-      dcfDiff: number;
-      dcf: number;
-      image: string;
-      ipoDate: string;
-      isEtf: boolean;
-      isActivelyTrading: boolean;
-    }[]>(`/api/v3/profile/${input}`, {
+    const res = await fmp.get<
+      {
+        symbol: string;
+        price: number;
+        beta: number;
+        volAvg: number;
+        mktCap: number;
+        lastDiv: number;
+        range: string;
+        changes: number;
+        companyName: string;
+        currency: string;
+        cik: string;
+        isin: string;
+        exchange: string;
+        exchangeShortName: string;
+        industry: string;
+        website: string;
+        description: string;
+        ceo: string;
+        sector: string;
+        country: string;
+        fullTimeEmployees: string;
+        phone: string;
+        address: string;
+        city: string;
+        state: string;
+        zip: string;
+        dcfDiff: number;
+        dcf: number;
+        image: string;
+        ipoDate: string;
+        isEtf: boolean;
+        isActivelyTrading: boolean;
+      }[]
+    >(`/api/v3/profile/${input}`, {
       params: { apikey: process.env.FMP_API_KEY },
     });
     return res?.data?.[0] ?? null;
@@ -89,7 +93,10 @@ export const assetsRouter = createTRPCRouter({
   equityQuote: publicProcedure.input(String).query(async ({ input }) => {
     try {
       console.log("[equityQuote] Input:", input);
-      console.log("[equityQuote] API Key:", process.env.FMP_API_KEY ? "SET" : "NOT SET");
+      console.log(
+        "[equityQuote] API Key:",
+        process.env.FMP_API_KEY ? "SET" : "NOT SET",
+      );
       const res = await fmp.get<EquityQuoteResponse>(`/api/v3/quote/${input}`, {
         params: {
           apikey: process.env.FMP_API_KEY,
@@ -200,7 +207,10 @@ export const assetsRouter = createTRPCRouter({
           },
         );
         console.log("[equityPriceHistoricalFMP] Response status:", res.status);
-        console.log("[equityPriceHistoricalFMP] Historical length:", res?.data?.historical?.length);
+        console.log(
+          "[equityPriceHistoricalFMP] Historical length:",
+          res?.data?.historical?.length,
+        );
         return res?.data;
       } catch (error) {
         console.error("[equityPriceHistoricalFMP] Error:", error);
@@ -317,7 +327,8 @@ export const assetsRouter = createTRPCRouter({
               average_receivables_ttm: 0,
               average_payables_ttm: 0,
               average_inventory_ttm: 0,
-              days_sales_outstanding_ttm: fmpData.daysOfSalesOutstandingTTM ?? 0,
+              days_sales_outstanding_ttm:
+                fmpData.daysOfSalesOutstandingTTM ?? 0,
               days_payables_outstanding_ttm:
                 fmpData.daysOfPayablesOutstandingTTM ?? 0,
               days_of_inventory_on_hand_ttm:
@@ -361,7 +372,8 @@ export const assetsRouter = createTRPCRouter({
         fiscal_period: r.period ?? "Q",
         fiscal_year: parseInt(r.calendarYear) || new Date().getFullYear(),
         symbol: r.symbol ?? input,
-        growth_cash_and_cash_equivalents: r.growthCashAndCashEquivalents ?? null,
+        growth_cash_and_cash_equivalents:
+          r.growthCashAndCashEquivalents ?? null,
         growth_short_term_investments: r.growthShortTermInvestments ?? null,
         growth_cash_and_short_term_investments:
           r.growthCashAndShortTermInvestments ?? null,
@@ -385,8 +397,10 @@ export const assetsRouter = createTRPCRouter({
         growth_short_term_debt: r.growthShortTermDebt ?? null,
         growth_tax_payables: r.growthTaxPayables ?? null,
         growth_deferred_revenue: r.growthDeferredRevenue ?? null,
-        growth_other_current_liabilities: r.growthOtherCurrentLiabilities ?? null,
-        growth_total_current_liabilities: r.growthTotalCurrentLiabilities ?? null,
+        growth_other_current_liabilities:
+          r.growthOtherCurrentLiabilities ?? null,
+        growth_total_current_liabilities:
+          r.growthTotalCurrentLiabilities ?? null,
         growth_long_term_debt: r.growthLongTermDebt ?? null,
         growth_deferred_revenue_non_current:
           r.growthDeferredRevenueNonCurrent ?? null,
@@ -402,7 +416,8 @@ export const assetsRouter = createTRPCRouter({
         growth_retained_earnings: r.growthRetainedEarnings ?? null,
         growth_accumulated_other_comprehensive_income:
           r.growthAccumulatedOtherComprehensiveIncomeLoss ?? null,
-        growth_total_shareholders_equity: r.growthTotalStockholdersEquity ?? null,
+        growth_total_shareholders_equity:
+          r.growthTotalStockholdersEquity ?? null,
         growth_total_liabilities_and_shareholders_equity:
           r.growthTotalLiabilitiesAndStockholdersEquity ?? null,
         growth_total_investments: r.growthTotalInvestments ?? null,
@@ -485,7 +500,8 @@ export const assetsRouter = createTRPCRouter({
         total_investments: r.totalInvestments ?? null,
         total_debt: r.totalDebt ?? null,
         net_debt: r.netDebt ?? null,
-        growthOthertotalStockholdersEquity: r.othertotalStockholdersEquity ?? null,
+        growthOthertotalStockholdersEquity:
+          r.othertotalStockholdersEquity ?? null,
       }));
 
       return {
@@ -720,7 +736,10 @@ export const assetsRouter = createTRPCRouter({
           },
         },
       );
-      console.log("[equityFundamentalMetrics] Response length:", res?.data?.length);
+      console.log(
+        "[equityFundamentalMetrics] Response length:",
+        res?.data?.length,
+      );
 
       // Transform FMP response to match existing interface
       const transformedResults = res?.data?.map((r) => ({
@@ -802,7 +821,9 @@ export const assetsRouter = createTRPCRouter({
 
   // Income statement - quarterly or annual
   equityFundamentalIncome: publicProcedure
-    .input(z.object({ symbol: z.string(), period: z.enum(["quarter", "annual"]) }))
+    .input(
+      z.object({ symbol: z.string(), period: z.enum(["quarter", "annual"]) }),
+    )
     .query(async ({ input }) => {
       const res = await fmp.get<FMPIncomeStatementResponse>(
         `/api/v3/income-statement/${input.symbol}`,
@@ -845,7 +866,14 @@ export const assetsRouter = createTRPCRouter({
       });
 
       console.log("[earningsCalendar] from:", input.from, "to:", input.to);
-      console.log("[earningsCalendar] FMP status:", calendarRes.status, "entries:", calendarRes.data?.length, "raw sample:", JSON.stringify(calendarRes.data?.slice(0, 2)));
+      console.log(
+        "[earningsCalendar] FMP status:",
+        calendarRes.status,
+        "entries:",
+        calendarRes.data?.length,
+        "raw sample:",
+        JSON.stringify(calendarRes.data?.slice(0, 2)),
+      );
 
       const entries = calendarRes.data ?? [];
       const symbols = [...new Set(entries.map((e) => e.symbol))];
@@ -865,7 +893,12 @@ export const assetsRouter = createTRPCRouter({
         batches.map(async (batch) => {
           try {
             const quoteRes = await fmp.get<
-              { symbol: string; name: string; marketCap: number | null; exchange: string | null }[]
+              {
+                symbol: string;
+                name: string;
+                marketCap: number | null;
+                exchange: string | null;
+              }[]
             >(`/api/v3/quote/${batch.join(",")}`, {
               params: { apikey: process.env.FMP_API_KEY },
             });
@@ -951,17 +984,23 @@ export const assetsRouter = createTRPCRouter({
     }),
 
   stockPeers: publicProcedure.input(String).query(async ({ input }) => {
-    const res = await fmp.get<FMPStockPeersResponse>(
-      `/api/v4/stock_peers`,
-      { params: { symbol: input, apikey: process.env.FMP_API_KEY } },
-    );
+    const res = await fmp.get<FMPStockPeersResponse>(`/api/v4/stock_peers`, {
+      params: { symbol: input, apikey: process.env.FMP_API_KEY },
+    });
     const peers = res?.data?.[0]?.peersList ?? [];
     if (peers.length === 0) return [];
 
     // Fetch quotes for all peers to get price, change, marketCap
     const symbols = peers.join(",");
     const quotesRes = await fmp.get<
-      { symbol: string; name: string; price: number; change: number; changesPercentage: number; marketCap: number }[]
+      {
+        symbol: string;
+        name: string;
+        price: number;
+        change: number;
+        changesPercentage: number;
+        marketCap: number;
+      }[]
     >(`/api/v3/quote/${symbols}`, {
       params: { apikey: process.env.FMP_API_KEY },
     });
@@ -976,19 +1015,20 @@ export const assetsRouter = createTRPCRouter({
     return res?.data ?? [];
   }),
 
-  analystRecommendations: publicProcedure.input(String).query(async ({ input }) => {
-    const res = await fmp.get<FMPAnalystRecommendationResponse>(
-      `/api/v3/analyst-stock-recommendations/${input}`,
-      { params: { apikey: process.env.FMP_API_KEY } },
-    );
-    return res?.data ?? [];
-  }),
+  analystRecommendations: publicProcedure
+    .input(String)
+    .query(async ({ input }) => {
+      const res = await fmp.get<FMPAnalystRecommendationResponse>(
+        `/api/v3/analyst-stock-recommendations/${input}`,
+        { params: { apikey: process.env.FMP_API_KEY } },
+      );
+      return res?.data ?? [];
+    }),
 
   stockGrades: publicProcedure.input(String).query(async ({ input }) => {
-    const res = await fmp.get<FMPStockGradeResponse>(
-      `/api/v3/grade/${input}`,
-      { params: { apikey: process.env.FMP_API_KEY } },
-    );
+    const res = await fmp.get<FMPStockGradeResponse>(`/api/v3/grade/${input}`, {
+      params: { apikey: process.env.FMP_API_KEY },
+    });
     return res?.data ?? [];
   }),
 });

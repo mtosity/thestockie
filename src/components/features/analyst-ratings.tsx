@@ -3,21 +3,64 @@
 import { useState } from "react";
 import { useSymbol } from "~/hooks/use-symbol";
 import { api } from "~/trpc/react";
-import { ThumbsUp, ArrowUp, ArrowDown, Minus, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ThumbsUp,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { format } from "date-fns";
 
 // Major firms ranked roughly by reputation / AUM influence
 const TIER1_FIRMS = new Set([
-  "Goldman Sachs", "Morgan Stanley", "JP Morgan", "JPMorgan Chase", "J.P. Morgan",
-  "Bank of America", "Barclays", "Citigroup", "Citi", "UBS", "Deutsche Bank",
-  "Credit Suisse", "Wells Fargo", "Jefferies", "RBC Capital", "RBC Capital Markets",
-  "Raymond James", "Piper Sandler", "Bernstein",
-  "Evercore ISI", "Evercore", "Wolfe Research", "Cowen", "TD Cowen",
-  "BMO Capital", "BMO Capital Markets", "Truist Financial", "Truist",
-  "Needham", "Stifel", "Stifel Nicolaus", "Oppenheimer", "KeyBanc",
-  "KeyBanc Capital Markets", "Mizuho", "HSBC", "Canaccord Genuity",
-  "Wedbush", "Loop Capital", "DA Davidson", "D.A. Davidson",
-  "Baird", "Robert W. Baird", "Rosenblatt", "Argus", "CFRA",
+  "Goldman Sachs",
+  "Morgan Stanley",
+  "JP Morgan",
+  "JPMorgan Chase",
+  "J.P. Morgan",
+  "Bank of America",
+  "Barclays",
+  "Citigroup",
+  "Citi",
+  "UBS",
+  "Deutsche Bank",
+  "Credit Suisse",
+  "Wells Fargo",
+  "Jefferies",
+  "RBC Capital",
+  "RBC Capital Markets",
+  "Raymond James",
+  "Piper Sandler",
+  "Bernstein",
+  "Evercore ISI",
+  "Evercore",
+  "Wolfe Research",
+  "Cowen",
+  "TD Cowen",
+  "BMO Capital",
+  "BMO Capital Markets",
+  "Truist Financial",
+  "Truist",
+  "Needham",
+  "Stifel",
+  "Stifel Nicolaus",
+  "Oppenheimer",
+  "KeyBanc",
+  "KeyBanc Capital Markets",
+  "Mizuho",
+  "HSBC",
+  "Canaccord Genuity",
+  "Wedbush",
+  "Loop Capital",
+  "DA Davidson",
+  "D.A. Davidson",
+  "Baird",
+  "Robert W. Baird",
+  "Rosenblatt",
+  "Argus",
+  "CFRA",
 ]);
 
 function isTier1(firm: string) {
@@ -30,29 +73,101 @@ function isTier1(firm: string) {
 
 function gradeColor(grade: string): string {
   const g = grade.toLowerCase();
-  if (g.includes("strong buy") || g.includes("conviction")) return "text-green-400";
-  if (g.includes("buy") || g.includes("outperform") || g.includes("overweight") || g.includes("positive") || g.includes("accumulate")) return "text-green-300";
-  if (g.includes("hold") || g.includes("neutral") || g.includes("equal") || g.includes("market perform") || g.includes("peer perform") || g.includes("sector perform") || g.includes("in-line")) return "text-yellow-300";
-  if (g.includes("sell") || g.includes("underperform") || g.includes("underweight") || g.includes("negative") || g.includes("reduce")) return "text-red-400";
+  if (g.includes("strong buy") || g.includes("conviction"))
+    return "text-green-400";
+  if (
+    g.includes("buy") ||
+    g.includes("outperform") ||
+    g.includes("overweight") ||
+    g.includes("positive") ||
+    g.includes("accumulate")
+  )
+    return "text-green-300";
+  if (
+    g.includes("hold") ||
+    g.includes("neutral") ||
+    g.includes("equal") ||
+    g.includes("market perform") ||
+    g.includes("peer perform") ||
+    g.includes("sector perform") ||
+    g.includes("in-line")
+  )
+    return "text-yellow-300";
+  if (
+    g.includes("sell") ||
+    g.includes("underperform") ||
+    g.includes("underweight") ||
+    g.includes("negative") ||
+    g.includes("reduce")
+  )
+    return "text-red-400";
   return "text-gray-300";
 }
 
 function gradeBgColor(grade: string): string {
   const g = grade.toLowerCase();
-  if (g.includes("strong buy") || g.includes("conviction")) return "bg-green-500/20";
-  if (g.includes("buy") || g.includes("outperform") || g.includes("overweight") || g.includes("positive") || g.includes("accumulate")) return "bg-green-500/10";
-  if (g.includes("hold") || g.includes("neutral") || g.includes("equal") || g.includes("market perform") || g.includes("peer perform") || g.includes("sector perform") || g.includes("in-line")) return "bg-yellow-500/10";
-  if (g.includes("sell") || g.includes("underperform") || g.includes("underweight") || g.includes("negative") || g.includes("reduce")) return "bg-red-500/10";
+  if (g.includes("strong buy") || g.includes("conviction"))
+    return "bg-green-500/20";
+  if (
+    g.includes("buy") ||
+    g.includes("outperform") ||
+    g.includes("overweight") ||
+    g.includes("positive") ||
+    g.includes("accumulate")
+  )
+    return "bg-green-500/10";
+  if (
+    g.includes("hold") ||
+    g.includes("neutral") ||
+    g.includes("equal") ||
+    g.includes("market perform") ||
+    g.includes("peer perform") ||
+    g.includes("sector perform") ||
+    g.includes("in-line")
+  )
+    return "bg-yellow-500/10";
+  if (
+    g.includes("sell") ||
+    g.includes("underperform") ||
+    g.includes("underweight") ||
+    g.includes("negative") ||
+    g.includes("reduce")
+  )
+    return "bg-red-500/10";
   return "bg-white/5";
 }
 
-function getDirection(prev: string, next: string): "upgrade" | "downgrade" | "same" {
+function getDirection(
+  prev: string,
+  next: string,
+): "upgrade" | "downgrade" | "same" {
   const rank = (g: string) => {
     const gl = g.toLowerCase();
     if (["strong buy", "conviction"].some((b) => gl.includes(b))) return 3;
-    if (["buy", "outperform", "overweight", "positive", "accumulate"].some((b) => gl.includes(b))) return 2;
-    if (["hold", "neutral", "equal", "market perform", "peer perform", "sector perform", "in-line"].some((n) => gl.includes(n))) return 1;
-    if (["sell", "underperform", "underweight", "negative", "reduce"].some((b) => gl.includes(b))) return 0;
+    if (
+      ["buy", "outperform", "overweight", "positive", "accumulate"].some((b) =>
+        gl.includes(b),
+      )
+    )
+      return 2;
+    if (
+      [
+        "hold",
+        "neutral",
+        "equal",
+        "market perform",
+        "peer perform",
+        "sector perform",
+        "in-line",
+      ].some((n) => gl.includes(n))
+    )
+      return 1;
+    if (
+      ["sell", "underperform", "underweight", "negative", "reduce"].some((b) =>
+        gl.includes(b),
+      )
+    )
+      return 0;
     return 1;
   };
   const diff = rank(next) - rank(prev);
@@ -86,7 +201,9 @@ export const AnalystRatings = () => {
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
           <ThumbsUp className="h-4 w-4 text-blue-400" />
-          <span className="text-sm font-semibold text-gray-200">Analyst Ratings</span>
+          <span className="text-sm font-semibold text-gray-200">
+            Analyst Ratings
+          </span>
         </div>
         <div className="flex-1 space-y-3 p-4">
           {[1, 2, 3, 4].map((i) => (
@@ -108,7 +225,9 @@ export const AnalystRatings = () => {
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
           <ThumbsUp className="h-4 w-4 text-blue-400" />
-          <span className="text-sm font-semibold text-gray-200">Analyst Ratings</span>
+          <span className="text-sm font-semibold text-gray-200">
+            Analyst Ratings
+          </span>
         </div>
         <div className="flex flex-1 items-center justify-center text-sm text-gray-500">
           No analyst data
@@ -126,11 +245,36 @@ export const AnalystRatings = () => {
   const total = strongBuy + buy + hold + sell + strongSell;
 
   const categories = [
-    { label: "Strong Buy", count: strongBuy, color: "bg-green-500", textColor: "text-green-400" },
-    { label: "Buy", count: buy, color: "bg-green-400", textColor: "text-green-300" },
-    { label: "Hold", count: hold, color: "bg-yellow-400", textColor: "text-yellow-300" },
-    { label: "Sell", count: sell, color: "bg-red-400", textColor: "text-red-300" },
-    { label: "Strong Sell", count: strongSell, color: "bg-red-500", textColor: "text-red-400" },
+    {
+      label: "Strong Buy",
+      count: strongBuy,
+      color: "bg-green-500",
+      textColor: "text-green-400",
+    },
+    {
+      label: "Buy",
+      count: buy,
+      color: "bg-green-400",
+      textColor: "text-green-300",
+    },
+    {
+      label: "Hold",
+      count: hold,
+      color: "bg-yellow-400",
+      textColor: "text-yellow-300",
+    },
+    {
+      label: "Sell",
+      count: sell,
+      color: "bg-red-400",
+      textColor: "text-red-300",
+    },
+    {
+      label: "Strong Sell",
+      count: strongSell,
+      color: "bg-red-500",
+      textColor: "text-red-400",
+    },
   ];
 
   const bullish = strongBuy + buy;
@@ -169,9 +313,13 @@ export const AnalystRatings = () => {
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
         <div className="flex items-center gap-2">
           <ThumbsUp className="h-4 w-4 text-blue-400" />
-          <span className="text-sm font-semibold text-gray-200">Analyst Ratings</span>
+          <span className="text-sm font-semibold text-gray-200">
+            Analyst Ratings
+          </span>
         </div>
-        <span className={`text-sm font-bold ${consensusColor}`}>{consensus}</span>
+        <span className={`text-sm font-bold ${consensusColor}`}>
+          {consensus}
+        </span>
       </div>
 
       <div className="flex-1 overflow-auto">
@@ -207,10 +355,9 @@ export const AnalystRatings = () => {
             </div>
             {displayGrades.map((grade, idx) => {
               const tier1 = isTier1(grade.gradingCompany);
-              const direction =
-                grade.previousGrade
-                  ? getDirection(grade.previousGrade, grade.newGrade)
-                  : "same";
+              const direction = grade.previousGrade
+                ? getDirection(grade.previousGrade, grade.newGrade)
+                : "same";
 
               return (
                 <div
