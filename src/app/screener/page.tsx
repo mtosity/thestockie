@@ -7,9 +7,7 @@ import { ScreenerFilters } from "~/components/features/screener-filters";
 import { ScreenerTable } from "~/components/features/screener-table";
 import { Pagination } from "~/components/features/pagination";
 import useDebounce from "~/hooks/use-debounce";
-import { Button } from "~/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { BackButton } from "~/components/ui/back-button";
 
 function ScreenerContent() {
   const router = useRouter();
@@ -149,16 +147,7 @@ function ScreenerContent() {
     <div className="min-h-screen bg-[#15162c] text-white pb-20">
       <div className="p-4">
         <div className="flex items-center gap-4 mb-6">
-          <Link href="/">
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Go back to home page
-            </Button>
-          </Link>
+          <BackButton />
           <h1 className="text-3xl font-bold">Screener</h1>
         </div>
         

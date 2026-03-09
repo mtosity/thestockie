@@ -1031,4 +1031,264 @@ export const assetsRouter = createTRPCRouter({
     });
     return res?.data ?? [];
   }),
+
+  // Batch comparison data for multiple stocks
+  compareStocks: publicProcedure
+    .input(z.object({ symbols: z.array(z.string()).min(1).max(6) }))
+    .query(async ({ input }) => {
+      const { symbols } = input;
+
+      const results = await Promise.all(
+        symbols.map(async (symbol) => {
+          const [profileRes, quoteRes, ratiosRes, incomeRes, metricsRes, peersRes] =
+            await Promise.all([
+              fmp
+                .get<
+                  {
+                    symbol: string;
+                    companyName: string;
+                    sector: string;
+                    industry: string;
+                    mktCap: number;
+                    image: string;
+                    description: string;
+                    country: string;
+                    exchange: string;
+                    currency: string;
+                    beta: number;
+                    lastDiv: number;
+                    ipoDate: string;
+                    fullTimeEmployees: string;
+                  }[]
+                >(`/api/v3/profile/${symbol}`, {
+                  params: { apikey: process.env.FMP_API_KEY },
+                })
+                .catch(() => ({ data: [] })),
+              fmp
+                .get<EquityQuoteResponse>(`/api/v3/quote/${symbol}`, {
+                  params: { apikey: process.env.FMP_API_KEY },
+                })
+                .catch(() => ({ data: [] })),
+              fmp
+                .get<FMPRatiosTTMResponse>(`/api/v3/ratios-ttm/${symbol}`, {
+                  params: { apikey: process.env.FMP_API_KEY },
+                })
+                .catch(() => ({ data: [] })),
+              fmp
+                .get<FMPIncomeStatementResponse>(
+                  `/api/v3/income-statement/${symbol}`,
+                  {
+                    params: {
+                      limit: 8,
+                      period: "quarter",
+                      apikey: process.env.FMP_API_KEY,
+                    },
+                  },
+                )
+                .catch(() => ({ data: [] })),
+              fmp
+                .get<FMPKeyMetricsResponse>(`/api/v3/key-metrics/${symbol}`, {
+                  params: {
+                    limit: 8,
+                    period: "quarter",
+                    apikey: process.env.FMP_API_KEY,
+                  },
+                })
+                .catch(() => ({ data: [] })),
+              fmp
+                .get<FMPStockPeersResponse>(`/api/v4/stock_peers`, {
+                  params: { symbol, apikey: process.env.FMP_API_KEY },
+                })
+                .catch(() => ({ data: [] })),
+            ]);
+
+          const profile = profileRes?.data?.[0];
+          const quote = quoteRes?.data?.[0];
+          const ratios = ratiosRes?.data?.[0];
+          const income = (incomeRes?.data ?? []).sort(
+            (a, b) =>
+              new Date(b.date).getTime() - new Date(a.date).getTime(),
+          );
+          const metrics = (metricsRes?.data ?? []).sort(
+            (a, b) =>
+              new Date(b.date).getTime() - new Date(a.date).getTime(),
+          );
+          const peers = peersRes?.data?.[0]?.peersList ?? [];
+
+          // TTM calculations from last 4 quarters
+          const last4 = income.slice(0, 4);
+          const prev4 = income.slice(4, 8);
+          const ttmRevenue = last4.reduce((s, d) => s + d.revenue, 0);
+          const ttmNetIncome = last4.reduce((s, d) => s + d.netIncome, 0);
+          const ttmGrossProfit = last4.reduce((s, d) => s + d.grossProfit, 0);
+          const ttmOperatingIncome = last4.reduce(
+            (s, d) => s + d.operatingIncome,
+            0,
+          );
+          const ttmEbitda = last4.reduce((s, d) => s + d.ebitda, 0);
+          const ttmEps = last4.reduce((s, d) => s + d.epsdiluted, 0);
+
+          const prevRevenue = prev4.reduce((s, d) => s + d.revenue, 0);
+          const prevNetIncome = prev4.reduce((s, d) => s + d.netIncome, 0);
+          const prevEps = prev4.reduce((s, d) => s + d.epsdiluted, 0);
+          const prevGrossProfit = prev4.reduce(
+            (s, d) => s + d.grossProfit,
+            0,
+          );
+
+          // YoY growth (most recent quarter vs same quarter last year)
+          const recentQ = income[0];
+          const prevYearQ = income[4];
+          const revenueYoY =
+            prevYearQ?.revenue && recentQ
+              ? ((recentQ.revenue - prevYearQ.revenue) /
+                  Math.abs(prevYearQ.revenue)) *
+                100
+              : null;
+          const epsYoY =
+            prevYearQ?.epsdiluted && recentQ
+              ? ((recentQ.epsdiluted - prevYearQ.epsdiluted) /
+                  Math.abs(prevYearQ.epsdiluted)) *
+                100
+              : null;
+
+          // TTM growth
+          const ttmRevenueGrowth =
+            prevRevenue > 0
+              ? ((ttmRevenue - prevRevenue) / Math.abs(prevRevenue)) * 100
+              : null;
+          const ttmEpsGrowth =
+            prevEps !== 0
+              ? ((ttmEps - prevEps) / Math.abs(prevEps)) * 100
+              : null;
+          const ttmNetIncomeGrowth =
+            prevNetIncome !== 0
+              ? ((ttmNetIncome - prevNetIncome) / Math.abs(prevNetIncome)) *
+                100
+              : null;
+
+          // Margins
+          const grossMargin = ttmRevenue
+            ? (ttmGrossProfit / ttmRevenue) * 100
+            : 0;
+          const operatingMargin = ttmRevenue
+            ? (ttmOperatingIncome / ttmRevenue) * 100
+            : 0;
+          const netMargin = ttmRevenue
+            ? (ttmNetIncome / ttmRevenue) * 100
+            : 0;
+          const ebitdaMargin = ttmRevenue
+            ? (ttmEbitda / ttmRevenue) * 100
+            : 0;
+
+          // Per-share & valuation
+          const price = quote?.price ?? 0;
+          const marketCap = quote?.marketCap ?? profile?.mktCap ?? 0;
+
+          const m = metrics[0];
+
+          return {
+            symbol,
+            name: profile?.companyName ?? quote?.name ?? symbol,
+            image: profile?.image ?? null,
+            sector: profile?.sector ?? "",
+            industry: profile?.industry ?? "",
+            country: profile?.country ?? "",
+            exchange: profile?.exchange ?? "",
+            ipoDate: profile?.ipoDate ?? "",
+            employees: profile?.fullTimeEmployees ?? "",
+            peers,
+
+            // Price & Market
+            price,
+            change: quote?.change ?? 0,
+            changesPercentage: quote?.changesPercentage ?? 0,
+            marketCap,
+            beta: profile?.beta ?? 0,
+            volume: quote?.volume ?? 0,
+            avgVolume: quote?.avgVolume ?? 0,
+            yearHigh: quote?.yearHigh ?? 0,
+            yearLow: quote?.yearLow ?? 0,
+            priceAvg50: quote?.priceAvg50 ?? 0,
+            priceAvg200: quote?.priceAvg200 ?? 0,
+
+            // Valuation
+            peRatio: ratios?.peRatioTTM ?? quote?.pe ?? 0,
+            forwardPE:
+              ratios?.priceEarningsRatioTTM ?? quote?.pe ?? 0,
+            pegRatio: ratios?.pegRatioTTM ?? 0,
+            priceToSales: ratios?.priceToSalesRatioTTM ?? 0,
+            priceToBook: ratios?.priceBookValueRatioTTM ?? 0,
+            evToEbitda: ratios?.enterpriseValueMultipleTTM ?? 0,
+            evToSales: m?.evToSales ?? 0,
+            priceToFCF: ratios?.priceToFreeCashFlowsRatioTTM ?? 0,
+
+            // Earnings
+            eps: quote?.eps ?? ttmEps,
+            ttmEps,
+            ttmEpsGrowth,
+            epsYoY,
+            earningsYield: m?.earningsYield
+              ? m.earningsYield * 100
+              : 0,
+
+            // Revenue
+            ttmRevenue,
+            ttmRevenueGrowth,
+            revenueYoY,
+
+            // Profitability
+            grossMargin,
+            operatingMargin,
+            netMargin,
+            ebitdaMargin,
+            roe: ratios?.returnOnEquityTTM
+              ? ratios.returnOnEquityTTM * 100
+              : 0,
+            roa: ratios?.returnOnAssetsTTM
+              ? ratios.returnOnAssetsTTM * 100
+              : 0,
+            roic: m?.roic ? m.roic * 100 : 0,
+
+            // Cash Flow
+            fcfPerShare: ratios?.freeCashFlowPerShareTTM ?? 0,
+            fcfYield: m?.freeCashFlowYield
+              ? m.freeCashFlowYield * 100
+              : 0,
+            operatingCFPerShare:
+              ratios?.operatingCashFlowPerShareTTM ?? 0,
+
+            // Debt & Liquidity
+            debtToEquity: ratios?.debtEquityRatioTTM ?? 0,
+            currentRatio: ratios?.currentRatioTTM ?? 0,
+            quickRatio: ratios?.quickRatioTTM ?? 0,
+            interestCoverage: ratios?.interestCoverageTTM ?? 0,
+
+            // Dividend
+            dividendYield: ratios?.dividendYielPercentageTTM ?? 0,
+            payoutRatio: ratios?.payoutRatioTTM
+              ? ratios.payoutRatioTTM * 100
+              : 0,
+            dividendPerShare: ratios?.dividendPerShareTTM ?? 0,
+
+            // Income details
+            ttmNetIncome,
+            ttmNetIncomeGrowth,
+            ttmGrossProfit,
+            ttmEbitda,
+            ttmOperatingIncome,
+
+            // Efficiency
+            sbcToRevenue: m?.stockBasedCompensationToRevenue
+              ? m.stockBasedCompensationToRevenue * 100
+              : 0,
+            rdToRevenue: m?.researchAndDdevelopementToRevenue
+              ? m.researchAndDdevelopementToRevenue * 100
+              : 0,
+          };
+        }),
+      );
+
+      return results;
+    }),
 });
