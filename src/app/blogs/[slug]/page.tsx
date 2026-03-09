@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { BackButton } from "~/components/ui/back-button";
 import { getAllBlogSlugs, getBlogBySlug } from "~/lib/blog";
 import { formatBlogDate } from "~/lib/blog.shared";
 import { BlogContent } from "~/components/features/blog-content";
@@ -112,13 +113,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         {/* Navigation */}
         <nav className="border-b border-white/10 px-4 py-4 md:px-8">
           <div className="mx-auto flex max-w-4xl items-center justify-between">
-            <Link
-              href="/blogs"
-              className="flex items-center gap-2 text-gray-400 transition-colors hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back to Blog</span>
-            </Link>
+            <BackButton href="/blogs" label="Back to Blog" />
           </div>
         </nav>
 

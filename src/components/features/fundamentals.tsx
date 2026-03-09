@@ -1,180 +1,202 @@
-import { Check, X } from "lucide-react";
-import React from "react";
+"use client";
 import { useSymbol } from "~/hooks/use-symbol";
 import { api } from "~/trpc/react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
-import { type EquityFundamentalsMultipleResponse } from "~/server/api/schema/EquityFundamentalsMultiple";
+import { formatLargeNumber } from "~/lib/utils";
 
-interface MetricCardProps {
-  title: string;
-  value: number;
-  threshold: number;
-  isHigherBetter: boolean;
-  format?: (value: number) => string;
-  explanation: string;
-}
-
-const MetricCard = ({
+const Section = ({
   title,
-  value,
-  threshold,
-  isHigherBetter,
-  format,
-  explanation,
-}: MetricCardProps) => {
-  const isGood = isHigherBetter ? value >= threshold : value <= threshold;
-  const formattedValue = format ? format(value) : value?.toFixed(2);
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="h-full w-44 cursor-help rounded-lg border border-gray-200 p-3 shadow-sm transition-colors hover:bg-gray-800/50">
-            <div className="flex items-center justify-between">
-              <h3 className="truncate text-xs font-medium text-gray-300 sm:text-sm">
-                {title}
-              </h3>
-              {isGood ? (
-                <Check className="h-4 w-4 flex-shrink-0 text-green-500 sm:h-5 sm:w-5" />
-              ) : (
-                <X className="h-4 w-4 flex-shrink-0 text-red-500 sm:h-5 sm:w-5" />
-              )}
-            </div>
-            <p className="mt-1 truncate text-lg font-semibold text-orange-50 sm:mt-2 sm:text-2xl">
-              {formattedValue}
-            </p>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs">
-          <p className="text-sm">{explanation}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {isHigherBetter
-              ? `Higher than ${threshold} is considered good`
-              : `Lower than ${threshold} is considered good`}
-          </p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-};
-
-interface MetricAnalysis {
+  children,
+}: {
   title: string;
-  value: number;
-  threshold: number;
-  isHigherBetter: boolean;
-  format?: (value: number) => string;
-  explanation: string;
-}
+  children: React.ReactNode;
+}) => (
+  <div className="w-48 shrink-0 space-y-0.5">
+    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[#5c6bc0]">
+      {title}
+    </p>
+    {children}
+  </div>
+);
 
-const createMetricCards = (
-  metrics: EquityFundamentalsMultipleResponse["results"][0],
-): MetricAnalysis[] => [
-  {
-    title: "P/E Ratio",
-    value: metrics.pe_ratio_ttm,
-    threshold: 20,
-    isHigherBetter: false,
-    explanation:
-      "Price-to-Earnings indicates valuation multiple. Below 20 suggests reasonable valuation, while high P/E may signal overvaluation or high growth expectations. Compare with industry average for context.",
-  },
-  {
-    title: "Current Ratio",
-    value: metrics.current_ratio_ttm,
-    threshold: 1.5,
-    isHigherBetter: true,
-    explanation:
-      "Liquidity measure showing ability to cover short-term obligations. Above 1.5 indicates strong working capital position. Below 1 signals potential liquidity risks. Critical for operational stability.",
-  },
-  {
-    title: "Debt to Equity",
-    value: metrics.debt_to_equity_ttm,
-    threshold: 0.5,
-    isHigherBetter: false,
-    explanation:
-      "Capital structure health indicator. Lower ratio suggests financial stability. High leverage can amplify returns but increases financial risk. Industry-dependent, but generally prefer below 0.5 for safety.",
-  },
-  {
-    title: "ROE",
-    value: metrics.roe_ttm,
-    threshold: 0.15,
-    isHigherBetter: true,
-    format: (value) => `${(value * 100).toFixed(1)}%`,
-    explanation:
-      "Return on Equity measures management's efficiency using shareholder capital. Above 15% indicates strong profitability and competitive advantage. Key metric for value creation.",
-  },
-  {
-    title: "ROIC",
-    value: metrics.roic_ttm,
-    threshold: 0.1, // 10% is generally considered good across industries
-    isHigherBetter: true,
-    format: (value) => `${(value * 100).toFixed(1)}%`,
-    explanation:
-      "Return on Invested Capital measures how efficiently a company uses all capital (equity + debt) to generate profits. Above 10% indicates strong competitive advantage and efficient capital allocation. Compare with WACC for value creation assessment. High ROIC suggests sustainable competitive moat and superior management execution. Critical for PE/VC investment decisions.",
-  },
-  {
-    title: "Free Cash Flow Yield",
-    value: metrics.free_cash_flow_yield_ttm,
-    threshold: 0.05,
-    isHigherBetter: true,
-    format: (value) => `${(value * 100).toFixed(1)}%`,
-    explanation:
-      "Cash generation vs market value. Higher FCF yield suggests undervaluation and strong cash generation. Above 5% indicates good value. Important for dividend sustainability and growth funding.",
-  },
-];
+const Row = ({
+  label,
+  value,
+  sub,
+  color,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  color?: string;
+}) => (
+  <div className="flex items-baseline justify-between gap-1">
+    <span className="shrink-0 text-xs text-gray-400">{label}</span>
+    <div className="text-right">
+      <span className={`font-mono text-sm font-medium ${color ?? "text-gray-200"}`}>
+        {value}
+      </span>
+      {sub && <div className="text-[10px] text-gray-500">{sub}</div>}
+    </div>
+  </div>
+);
 
 export const Fundamentals = () => {
   const [symbol] = useSymbol();
-  const { data, isLoading } = api.asset.equityFundamentalMultiples.useQuery(
+
+  const queryOpts = {
+    enabled: !!symbol,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+  } as const;
+
+  const { data: multiples, isLoading: loadingM } =
+    api.asset.equityFundamentalMultiples.useQuery(symbol ?? "", queryOpts);
+
+  const { data: quoteData } = api.asset.equityQuote.useQuery(symbol ?? "", queryOpts);
+
+  const { data: balanceData } = api.asset.equityFundamentalBalance.useQuery(
     symbol ?? "",
-    {
-      enabled: !!symbol,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-    },
+    queryOpts,
   );
 
-  if (isLoading) {
+  const { data: incomeData } = api.asset.equityFundamentalIncome.useQuery(
+    { symbol: symbol ?? "", period: "quarter" },
+    queryOpts,
+  );
+
+  if (loadingM) {
     return (
-      <div className="h-full w-full p-2">
-        <div className="flex flex-wrap items-stretch gap-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex min-h-[100px] min-w-[200px] flex-1 animate-pulse flex-col justify-between rounded-lg border border-gray-700 bg-[#121327] p-4"
-            >
-              <div className="h-4 w-24 rounded bg-gray-700"></div>
-              <div className="h-8 w-full rounded bg-gray-700"></div>
-            </div>
+      <div className="h-full w-full animate-pulse p-3">
+        <div className="flex flex-wrap gap-6">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="h-3 w-36 rounded bg-gray-700" />
           ))}
         </div>
       </div>
     );
   }
 
-  if (!data?.results?.[0]) return <div>No fundamental data available</div>;
-  const metrics = data.results[0];
+  const m = multiples?.results?.[0];
+  const q = quoteData?.[0];
+  if (!m) return null;
+
+  // Balance: most recent entry (FMP returns newest first)
+  const bal = balanceData?.results?.[0];
+  const cash = (bal?.cash_and_cash_equivalents ?? 0) + (bal?.short_term_investments ?? 0);
+  const debt = (bal?.long_term_debt ?? 0) + (bal?.short_term_debt ?? 0);
+  const netCash = cash - debt;
+
+  // Income: sorted descending (newest first)
+  const sortedIncome = (incomeData ?? [])
+    .slice()
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const last4 = sortedIncome.slice(0, 4);
+  const ttmRevenue = last4.reduce((s, d) => s + d.revenue, 0);
+  const ttmNetIncome = last4.reduce((s, d) => s + d.netIncome, 0);
+  const ttmOperatingIncome = last4.reduce((s, d) => s + d.operatingIncome, 0);
+
+  const profitMargin = ttmRevenue ? (ttmNetIncome / ttmRevenue) * 100 : 0;
+  const operatingMargin = ttmRevenue ? (ttmOperatingIncome / ttmRevenue) * 100 : 0;
+
+  // YoY: most recent quarter vs same quarter last year
+  const recent = sortedIncome[0];
+  const prevYear = sortedIncome[4];
+  const revenueYoY =
+    prevYear?.revenue && recent
+      ? ((recent.revenue - prevYear.revenue) / Math.abs(prevYear.revenue)) * 100
+      : null;
+  const epsYoY =
+    prevYear?.netIncome && recent
+      ? ((recent.netIncome - prevYear.netIncome) / Math.abs(prevYear.netIncome)) * 100
+      : null;
+
+  // FCF & SBC
+  const price = q?.price ?? 0;
+  const fcfPerShare = m.free_cash_flow_per_share_ttm;
+  const revenuePerShare = m.revenue_per_share_ttm;
+  const sbcPerShare = m.stock_based_compensation_to_revenue_ttm * revenuePerShare;
+  const adjFcfPerShare = fcfPerShare - sbcPerShare;
+  const fcfYield = price ? (fcfPerShare / price) * 100 : 0;
+  const adjFcfYield = price ? (adjFcfPerShare / price) * 100 : 0;
+  const sbcImpact = fcfPerShare ? (sbcPerShare / fcfPerShare) * 100 : 0;
+
+  const f2 = (v: number) => v.toFixed(2);
+  const fmtPct = (v: number) => `${v.toFixed(2)}%`;
+  const yoy = (v: number) =>
+    `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
 
   return (
-    <div className="h-full w-full overflow-auto p-2">
-      <div className="flex flex-wrap items-stretch justify-center gap-2">
-        {createMetricCards(metrics).map((metric, index) => (
-          <MetricCard
-            key={index}
-            title={metric.title}
-            value={metric.value}
-            threshold={metric.threshold}
-            isHigherBetter={metric.isHigherBetter}
-            format={metric.format}
-            explanation={metric.explanation}
+    <div className="h-full w-full overflow-y-auto p-3">
+      <div className="flex flex-wrap gap-x-10 gap-y-3">
+        {/* Valuation */}
+        <Section title="Valuation">
+          <Row
+            label="Market Cap"
+            value={`$${formatLargeNumber(q?.marketCap ?? m.market_cap_ttm)}`}
           />
-        ))}
+          <Row label="PE (TTM)" value={f2(m.pe_ratio_ttm)} />
+          <Row label="Price to Sales" value={f2(m.price_to_sales_ratio_ttm)} />
+          <Row label="EV / EBITDA" value={f2(m.enterprise_value_over_ebitda_ttm)} />
+          <Row label="Price to Book" value={f2(m.pb_ratio_ttm)} />
+        </Section>
+
+        {/* Cash Flow */}
+        <Section title="Cash Flow">
+          <Row
+            label="FCF Yield"
+            value={fmtPct(fcfYield)}
+            sub={`$${f2(fcfPerShare)} / $${f2(price)}`}
+          />
+          <Row
+            label="SBC Adj. FCF Yield"
+            value={fmtPct(adjFcfYield)}
+            sub={`$${f2(adjFcfPerShare)} / $${f2(price)}`}
+          />
+          <Row
+            label="SBC Impact"
+            value={`-${fmtPct(Math.abs(sbcImpact))}`}
+            color="text-red-400"
+          />
+        </Section>
+
+        {/* Margins & Growth */}
+        <Section title="Margins & Growth">
+          <Row label="Profit Margin" value={fmtPct(profitMargin)} />
+          <Row label="Operating Margin" value={fmtPct(operatingMargin)} />
+          {revenueYoY !== null && (
+            <Row
+              label="Revenue (YoY)"
+              value={yoy(revenueYoY)}
+              color={revenueYoY >= 0 ? "text-green-400" : "text-red-400"}
+            />
+          )}
+          {epsYoY !== null && (
+            <Row
+              label="Earnings (YoY)"
+              value={yoy(epsYoY)}
+              color={epsYoY >= 0 ? "text-green-400" : "text-red-400"}
+            />
+          )}
+        </Section>
+
+        {/* Balance */}
+        <Section title="Balance">
+          <Row label="Cash" value={`$${formatLargeNumber(cash)}`} />
+          <Row label="Debt" value={`$${formatLargeNumber(debt)}`} />
+          <Row
+            label="Net Cash"
+            value={`${netCash >= 0 ? "" : "-"}$${formatLargeNumber(Math.abs(netCash))}`}
+            color={netCash >= 0 ? "text-green-400" : "text-red-400"}
+          />
+        </Section>
+
+        {/* Dividend */}
+        <Section title="Dividend">
+          <Row label="Dividend Yield" value={fmtPct(m.dividend_yield_percentage_ttm)} />
+          <Row label="Payout Ratio" value={fmtPct(m.payout_ratio_ttm * 100)} />
+        </Section>
       </div>
     </div>
   );

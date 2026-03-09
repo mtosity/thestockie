@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { type EquityFundamentalBalanceResponse } from "../schema/EquityFundamentalBalance";
 import { type EquityFundamentalBalanceGrowthResponse } from "../schema/EquityFundamentalBalanceGrowth";
 import { type EquityFundamentalCashResponse } from "../schema/EquityFundamentalCash";
@@ -21,6 +22,11 @@ import { type FMPCashFlowGrowthResponse } from "../schema/FMP/FMPCashFlowGrowth"
 import { type FMPEarningsResponse } from "../schema/FMP/FMPEarnings";
 import { type FMPKeyMetricsResponse } from "../schema/FMP/FMPKeyMetrics";
 import { type FMPStockNewsResponse } from "../schema/FMP/FMPStockNews";
+import { type FMPIncomeStatementResponse } from "../schema/FMP/FMPIncomeStatement";
+import { type FMPStockPeersResponse } from "../schema/FMP/FMPStockPeers";
+import { type FMPInsiderTradingResponse } from "../schema/FMP/FMPInsiderTrading";
+import { type FMPAnalystRecommendationResponse } from "../schema/FMP/FMPAnalystRecommendation";
+import { type FMPStockGradeResponse } from "../schema/FMP/FMPStockGrade";
 import { type NewsCompanyResponse } from "../schema/NewsCompany";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import axios from "axios";
@@ -35,15 +41,62 @@ const fmp = axios.create({
 
 // Log FMP API key status on startup (only first 4 chars for security)
 const apiKey = process.env.FMP_API_KEY;
-console.log("[FMP] API Key configured:", apiKey ? `${apiKey.substring(0, 4)}...` : "NOT SET");
-
+console.log(
+  "[FMP] API Key configured:",
+  apiKey ? `${apiKey.substring(0, 4)}...` : "NOT SET",
+);
 
 export const assetsRouter = createTRPCRouter({
   // Already using FMP - no changes needed
+  companyProfile: publicProcedure.input(String).query(async ({ input }) => {
+    const res = await fmp.get<
+      {
+        symbol: string;
+        price: number;
+        beta: number;
+        volAvg: number;
+        mktCap: number;
+        lastDiv: number;
+        range: string;
+        changes: number;
+        companyName: string;
+        currency: string;
+        cik: string;
+        isin: string;
+        exchange: string;
+        exchangeShortName: string;
+        industry: string;
+        website: string;
+        description: string;
+        ceo: string;
+        sector: string;
+        country: string;
+        fullTimeEmployees: string;
+        phone: string;
+        address: string;
+        city: string;
+        state: string;
+        zip: string;
+        dcfDiff: number;
+        dcf: number;
+        image: string;
+        ipoDate: string;
+        isEtf: boolean;
+        isActivelyTrading: boolean;
+      }[]
+    >(`/api/v3/profile/${input}`, {
+      params: { apikey: process.env.FMP_API_KEY },
+    });
+    return res?.data?.[0] ?? null;
+  }),
+
   equityQuote: publicProcedure.input(String).query(async ({ input }) => {
     try {
       console.log("[equityQuote] Input:", input);
-      console.log("[equityQuote] API Key:", process.env.FMP_API_KEY ? "SET" : "NOT SET");
+      console.log(
+        "[equityQuote] API Key:",
+        process.env.FMP_API_KEY ? "SET" : "NOT SET",
+      );
       const res = await fmp.get<EquityQuoteResponse>(`/api/v3/quote/${input}`, {
         params: {
           apikey: process.env.FMP_API_KEY,
@@ -154,7 +207,10 @@ export const assetsRouter = createTRPCRouter({
           },
         );
         console.log("[equityPriceHistoricalFMP] Response status:", res.status);
-        console.log("[equityPriceHistoricalFMP] Historical length:", res?.data?.historical?.length);
+        console.log(
+          "[equityPriceHistoricalFMP] Historical length:",
+          res?.data?.historical?.length,
+        );
         return res?.data;
       } catch (error) {
         console.error("[equityPriceHistoricalFMP] Error:", error);
@@ -271,7 +327,8 @@ export const assetsRouter = createTRPCRouter({
               average_receivables_ttm: 0,
               average_payables_ttm: 0,
               average_inventory_ttm: 0,
-              days_sales_outstanding_ttm: fmpData.daysOfSalesOutstandingTTM ?? 0,
+              days_sales_outstanding_ttm:
+                fmpData.daysOfSalesOutstandingTTM ?? 0,
               days_payables_outstanding_ttm:
                 fmpData.daysOfPayablesOutstandingTTM ?? 0,
               days_of_inventory_on_hand_ttm:
@@ -315,7 +372,8 @@ export const assetsRouter = createTRPCRouter({
         fiscal_period: r.period ?? "Q",
         fiscal_year: parseInt(r.calendarYear) || new Date().getFullYear(),
         symbol: r.symbol ?? input,
-        growth_cash_and_cash_equivalents: r.growthCashAndCashEquivalents ?? null,
+        growth_cash_and_cash_equivalents:
+          r.growthCashAndCashEquivalents ?? null,
         growth_short_term_investments: r.growthShortTermInvestments ?? null,
         growth_cash_and_short_term_investments:
           r.growthCashAndShortTermInvestments ?? null,
@@ -339,8 +397,10 @@ export const assetsRouter = createTRPCRouter({
         growth_short_term_debt: r.growthShortTermDebt ?? null,
         growth_tax_payables: r.growthTaxPayables ?? null,
         growth_deferred_revenue: r.growthDeferredRevenue ?? null,
-        growth_other_current_liabilities: r.growthOtherCurrentLiabilities ?? null,
-        growth_total_current_liabilities: r.growthTotalCurrentLiabilities ?? null,
+        growth_other_current_liabilities:
+          r.growthOtherCurrentLiabilities ?? null,
+        growth_total_current_liabilities:
+          r.growthTotalCurrentLiabilities ?? null,
         growth_long_term_debt: r.growthLongTermDebt ?? null,
         growth_deferred_revenue_non_current:
           r.growthDeferredRevenueNonCurrent ?? null,
@@ -356,7 +416,8 @@ export const assetsRouter = createTRPCRouter({
         growth_retained_earnings: r.growthRetainedEarnings ?? null,
         growth_accumulated_other_comprehensive_income:
           r.growthAccumulatedOtherComprehensiveIncomeLoss ?? null,
-        growth_total_shareholders_equity: r.growthTotalStockholdersEquity ?? null,
+        growth_total_shareholders_equity:
+          r.growthTotalStockholdersEquity ?? null,
         growth_total_liabilities_and_shareholders_equity:
           r.growthTotalLiabilitiesAndStockholdersEquity ?? null,
         growth_total_investments: r.growthTotalInvestments ?? null,
@@ -439,7 +500,8 @@ export const assetsRouter = createTRPCRouter({
         total_investments: r.totalInvestments ?? null,
         total_debt: r.totalDebt ?? null,
         net_debt: r.netDebt ?? null,
-        growthOthertotalStockholdersEquity: r.othertotalStockholdersEquity ?? null,
+        growthOthertotalStockholdersEquity:
+          r.othertotalStockholdersEquity ?? null,
       }));
 
       return {
@@ -674,7 +736,10 @@ export const assetsRouter = createTRPCRouter({
           },
         },
       );
-      console.log("[equityFundamentalMetrics] Response length:", res?.data?.length);
+      console.log(
+        "[equityFundamentalMetrics] Response length:",
+        res?.data?.length,
+      );
 
       // Transform FMP response to match existing interface
       const transformedResults = res?.data?.map((r) => ({
@@ -752,5 +817,464 @@ export const assetsRouter = createTRPCRouter({
         chart: null,
         extra: { metadata: {} },
       } as EquityFundamentalMetricsResponse;
+    }),
+
+  // Income statement - quarterly or annual
+  equityFundamentalIncome: publicProcedure
+    .input(
+      z.object({ symbol: z.string(), period: z.enum(["quarter", "annual"]) }),
+    )
+    .query(async ({ input }) => {
+      const res = await fmp.get<FMPIncomeStatementResponse>(
+        `/api/v3/income-statement/${input.symbol}`,
+        {
+          params: {
+            limit: input.period === "quarter" ? 20 : 10,
+            period: input.period,
+            apikey: process.env.FMP_API_KEY,
+          },
+        },
+      );
+      return (res?.data ?? []).sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      );
+    }),
+
+  // Earnings calendar - grouped by date, sorted by market cap descending
+  earningsCalendar: publicProcedure
+    .input(z.object({ from: z.string(), to: z.string() }))
+    .query(async ({ input }) => {
+      // Fetch earnings calendar for the date range
+      const calendarRes = await fmp.get<
+        {
+          date: string;
+          symbol: string;
+          eps: number | null;
+          epsEstimated: number | null;
+          time: string;
+          revenue: number | null;
+          revenueEstimated: number | null;
+          fiscalDateEnding: string;
+          updatedFromDate: string;
+        }[]
+      >(`/api/v3/earning_calendar`, {
+        params: {
+          from: input.from,
+          to: input.to,
+          apikey: process.env.FMP_API_KEY,
+        },
+      });
+
+      console.log("[earningsCalendar] from:", input.from, "to:", input.to);
+      console.log(
+        "[earningsCalendar] FMP status:",
+        calendarRes.status,
+        "entries:",
+        calendarRes.data?.length,
+        "raw sample:",
+        JSON.stringify(calendarRes.data?.slice(0, 2)),
+      );
+
+      const entries = calendarRes.data ?? [];
+      const symbols = [...new Set(entries.map((e) => e.symbol))];
+
+      // Batch-fetch quotes (name + market cap + exchange) in groups of 50
+      const nameMap: Record<string, string> = {};
+      const marketCapMap: Record<string, number> = {};
+      const exchangeMap: Record<string, string> = {};
+      const countryMap: Record<string, string> = {};
+
+      const batches: string[][] = [];
+      for (let i = 0; i < symbols.length; i += 50) {
+        batches.push(symbols.slice(i, i + 50));
+      }
+
+      await Promise.all(
+        batches.map(async (batch) => {
+          try {
+            const quoteRes = await fmp.get<
+              {
+                symbol: string;
+                name: string;
+                marketCap: number | null;
+                exchange: string | null;
+              }[]
+            >(`/api/v3/quote/${batch.join(",")}`, {
+              params: { apikey: process.env.FMP_API_KEY },
+            });
+            // Fetch company profiles for country info
+            const profileRes = await fmp.get<
+              { symbol: string; country: string | null }[]
+            >(`/api/v3/profile/${batch.join(",")}`, {
+              params: { apikey: process.env.FMP_API_KEY },
+            });
+            for (const q of quoteRes.data ?? []) {
+              nameMap[q.symbol] = q.name ?? q.symbol;
+              marketCapMap[q.symbol] = q.marketCap ?? 0;
+              exchangeMap[q.symbol] = q.exchange ?? "";
+            }
+            for (const p of profileRes.data ?? []) {
+              countryMap[p.symbol] = p.country ?? "";
+            }
+          } catch {
+            // skip failed batches
+          }
+        }),
+      );
+
+      // Merge data and group by date
+      const grouped: Record<
+        string,
+        {
+          symbol: string;
+          name: string;
+          marketCap: number;
+          exchange: string;
+          country: string;
+          epsEstimated: number | null;
+          revenueEstimated: number | null;
+          time: string;
+          fiscalDateEnding: string;
+        }[]
+      > = {};
+
+      const seen = new Set<string>();
+      for (const entry of entries) {
+        const key = `${entry.date}:${entry.symbol}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        if (!grouped[entry.date]) grouped[entry.date] = [];
+        grouped[entry.date]!.push({
+          symbol: entry.symbol,
+          name: nameMap[entry.symbol] ?? entry.symbol,
+          marketCap: marketCapMap[entry.symbol] ?? 0,
+          exchange: exchangeMap[entry.symbol] ?? "",
+          country: countryMap[entry.symbol] ?? "",
+          epsEstimated: entry.epsEstimated,
+          revenueEstimated: entry.revenueEstimated,
+          time: entry.time,
+          fiscalDateEnding: entry.fiscalDateEnding,
+        });
+      }
+
+      // Sort each day: BMO first, then AMC, then other — within each group by market cap descending
+      const timeOrder = (time: string) => {
+        if (time === "bmo") return 0;
+        if (time === "amc") return 1;
+        return 2;
+      };
+
+      for (const date of Object.keys(grouped)) {
+        grouped[date]!.sort((a, b) => {
+          const timeDiff = timeOrder(a.time) - timeOrder(b.time);
+          if (timeDiff !== 0) return timeDiff;
+          return b.marketCap - a.marketCap;
+        });
+        // Keep only the highest market cap entry per company name (removes cross-listed duplicates)
+        const seenNames = new Set<string>();
+        grouped[date] = grouped[date]!.filter((c) => {
+          const key = c.name.toLowerCase();
+          if (seenNames.has(key)) return false;
+          seenNames.add(key);
+          return true;
+        });
+      }
+
+      return grouped;
+    }),
+
+  stockPeers: publicProcedure.input(String).query(async ({ input }) => {
+    const res = await fmp.get<FMPStockPeersResponse>(`/api/v4/stock_peers`, {
+      params: { symbol: input, apikey: process.env.FMP_API_KEY },
+    });
+    const peers = res?.data?.[0]?.peersList ?? [];
+    if (peers.length === 0) return [];
+
+    // Fetch quotes for all peers to get price, change, marketCap
+    const symbols = peers.join(",");
+    const quotesRes = await fmp.get<
+      {
+        symbol: string;
+        name: string;
+        price: number;
+        change: number;
+        changesPercentage: number;
+        marketCap: number;
+      }[]
+    >(`/api/v3/quote/${symbols}`, {
+      params: { apikey: process.env.FMP_API_KEY },
+    });
+    return quotesRes?.data ?? [];
+  }),
+
+  insiderTrading: publicProcedure.input(String).query(async ({ input }) => {
+    const res = await fmp.get<FMPInsiderTradingResponse>(
+      `/api/v4/insider-trading`,
+      { params: { symbol: input, page: 0, apikey: process.env.FMP_API_KEY } },
+    );
+    return res?.data ?? [];
+  }),
+
+  analystRecommendations: publicProcedure
+    .input(String)
+    .query(async ({ input }) => {
+      const res = await fmp.get<FMPAnalystRecommendationResponse>(
+        `/api/v3/analyst-stock-recommendations/${input}`,
+        { params: { apikey: process.env.FMP_API_KEY } },
+      );
+      return res?.data ?? [];
+    }),
+
+  stockGrades: publicProcedure.input(String).query(async ({ input }) => {
+    const res = await fmp.get<FMPStockGradeResponse>(`/api/v3/grade/${input}`, {
+      params: { apikey: process.env.FMP_API_KEY },
+    });
+    return res?.data ?? [];
+  }),
+
+  // Batch comparison data for multiple stocks
+  compareStocks: publicProcedure
+    .input(z.object({ symbols: z.array(z.string()).min(1).max(6) }))
+    .query(async ({ input }) => {
+      const { symbols } = input;
+
+      const results = await Promise.all(
+        symbols.map(async (symbol) => {
+          const [
+            profileRes,
+            quoteRes,
+            ratiosRes,
+            incomeRes,
+            metricsRes,
+            peersRes,
+          ] = await Promise.all([
+            fmp
+              .get<
+                {
+                  symbol: string;
+                  companyName: string;
+                  sector: string;
+                  industry: string;
+                  mktCap: number;
+                  image: string;
+                  description: string;
+                  country: string;
+                  exchange: string;
+                  currency: string;
+                  beta: number;
+                  lastDiv: number;
+                  ipoDate: string;
+                  fullTimeEmployees: string;
+                }[]
+              >(`/api/v3/profile/${symbol}`, {
+                params: { apikey: process.env.FMP_API_KEY },
+              })
+              .catch(() => ({ data: [] })),
+            fmp
+              .get<EquityQuoteResponse>(`/api/v3/quote/${symbol}`, {
+                params: { apikey: process.env.FMP_API_KEY },
+              })
+              .catch(() => ({ data: [] })),
+            fmp
+              .get<FMPRatiosTTMResponse>(`/api/v3/ratios-ttm/${symbol}`, {
+                params: { apikey: process.env.FMP_API_KEY },
+              })
+              .catch(() => ({ data: [] })),
+            fmp
+              .get<FMPIncomeStatementResponse>(
+                `/api/v3/income-statement/${symbol}`,
+                {
+                  params: {
+                    limit: 8,
+                    period: "quarter",
+                    apikey: process.env.FMP_API_KEY,
+                  },
+                },
+              )
+              .catch(() => ({ data: [] })),
+            fmp
+              .get<FMPKeyMetricsResponse>(`/api/v3/key-metrics/${symbol}`, {
+                params: {
+                  limit: 8,
+                  period: "quarter",
+                  apikey: process.env.FMP_API_KEY,
+                },
+              })
+              .catch(() => ({ data: [] })),
+            fmp
+              .get<FMPStockPeersResponse>(`/api/v4/stock_peers`, {
+                params: { symbol, apikey: process.env.FMP_API_KEY },
+              })
+              .catch(() => ({ data: [] })),
+          ]);
+
+          const profile = profileRes?.data?.[0];
+          const quote = quoteRes?.data?.[0];
+          const ratios = ratiosRes?.data?.[0];
+          const income = (incomeRes?.data ?? []).sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+          );
+          const metrics = (metricsRes?.data ?? []).sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+          );
+          const peers = peersRes?.data?.[0]?.peersList ?? [];
+
+          // TTM calculations from last 4 quarters
+          const last4 = income.slice(0, 4);
+          const prev4 = income.slice(4, 8);
+          const ttmRevenue = last4.reduce((s, d) => s + d.revenue, 0);
+          const ttmNetIncome = last4.reduce((s, d) => s + d.netIncome, 0);
+          const ttmGrossProfit = last4.reduce((s, d) => s + d.grossProfit, 0);
+          const ttmOperatingIncome = last4.reduce(
+            (s, d) => s + d.operatingIncome,
+            0,
+          );
+          const ttmEbitda = last4.reduce((s, d) => s + d.ebitda, 0);
+          const ttmEps = last4.reduce((s, d) => s + d.epsdiluted, 0);
+
+          const prevRevenue = prev4.reduce((s, d) => s + d.revenue, 0);
+          const prevNetIncome = prev4.reduce((s, d) => s + d.netIncome, 0);
+          const prevEps = prev4.reduce((s, d) => s + d.epsdiluted, 0);
+          const prevGrossProfit = prev4.reduce((s, d) => s + d.grossProfit, 0);
+
+          // YoY growth (most recent quarter vs same quarter last year)
+          const recentQ = income[0];
+          const prevYearQ = income[4];
+          const revenueYoY =
+            prevYearQ?.revenue && recentQ
+              ? ((recentQ.revenue - prevYearQ.revenue) /
+                  Math.abs(prevYearQ.revenue)) *
+                100
+              : null;
+          const epsYoY =
+            prevYearQ?.epsdiluted && recentQ
+              ? ((recentQ.epsdiluted - prevYearQ.epsdiluted) /
+                  Math.abs(prevYearQ.epsdiluted)) *
+                100
+              : null;
+
+          // TTM growth
+          const ttmRevenueGrowth =
+            prevRevenue > 0
+              ? ((ttmRevenue - prevRevenue) / Math.abs(prevRevenue)) * 100
+              : null;
+          const ttmEpsGrowth =
+            prevEps !== 0
+              ? ((ttmEps - prevEps) / Math.abs(prevEps)) * 100
+              : null;
+          const ttmNetIncomeGrowth =
+            prevNetIncome !== 0
+              ? ((ttmNetIncome - prevNetIncome) / Math.abs(prevNetIncome)) * 100
+              : null;
+
+          // Margins
+          const grossMargin = ttmRevenue
+            ? (ttmGrossProfit / ttmRevenue) * 100
+            : 0;
+          const operatingMargin = ttmRevenue
+            ? (ttmOperatingIncome / ttmRevenue) * 100
+            : 0;
+          const netMargin = ttmRevenue ? (ttmNetIncome / ttmRevenue) * 100 : 0;
+          const ebitdaMargin = ttmRevenue ? (ttmEbitda / ttmRevenue) * 100 : 0;
+
+          // Per-share & valuation
+          const price = quote?.price ?? 0;
+          const marketCap = quote?.marketCap ?? profile?.mktCap ?? 0;
+
+          const m = metrics[0];
+
+          return {
+            symbol,
+            name: profile?.companyName ?? quote?.name ?? symbol,
+            image: profile?.image ?? null,
+            sector: profile?.sector ?? "",
+            industry: profile?.industry ?? "",
+            country: profile?.country ?? "",
+            exchange: profile?.exchange ?? "",
+            ipoDate: profile?.ipoDate ?? "",
+            employees: profile?.fullTimeEmployees ?? "",
+            peers,
+
+            // Price & Market
+            price,
+            change: quote?.change ?? 0,
+            changesPercentage: quote?.changesPercentage ?? 0,
+            marketCap,
+            beta: profile?.beta ?? 0,
+            volume: quote?.volume ?? 0,
+            avgVolume: quote?.avgVolume ?? 0,
+            yearHigh: quote?.yearHigh ?? 0,
+            yearLow: quote?.yearLow ?? 0,
+            priceAvg50: quote?.priceAvg50 ?? 0,
+            priceAvg200: quote?.priceAvg200 ?? 0,
+
+            // Valuation
+            peRatio: ratios?.peRatioTTM ?? quote?.pe ?? 0,
+            forwardPE: ratios?.priceEarningsRatioTTM ?? quote?.pe ?? 0,
+            pegRatio: ratios?.pegRatioTTM ?? 0,
+            priceToSales: ratios?.priceToSalesRatioTTM ?? 0,
+            priceToBook: ratios?.priceBookValueRatioTTM ?? 0,
+            evToEbitda: ratios?.enterpriseValueMultipleTTM ?? 0,
+            evToSales: m?.evToSales ?? 0,
+            priceToFCF: ratios?.priceToFreeCashFlowsRatioTTM ?? 0,
+
+            // Earnings
+            eps: quote?.eps ?? ttmEps,
+            ttmEps,
+            ttmEpsGrowth,
+            epsYoY,
+            earningsYield: m?.earningsYield ? m.earningsYield * 100 : 0,
+
+            // Revenue
+            ttmRevenue,
+            ttmRevenueGrowth,
+            revenueYoY,
+
+            // Profitability
+            grossMargin,
+            operatingMargin,
+            netMargin,
+            ebitdaMargin,
+            roe: ratios?.returnOnEquityTTM ? ratios.returnOnEquityTTM * 100 : 0,
+            roa: ratios?.returnOnAssetsTTM ? ratios.returnOnAssetsTTM * 100 : 0,
+            roic: m?.roic ? m.roic * 100 : 0,
+
+            // Cash Flow
+            fcfPerShare: ratios?.freeCashFlowPerShareTTM ?? 0,
+            fcfYield: m?.freeCashFlowYield ? m.freeCashFlowYield * 100 : 0,
+            operatingCFPerShare: ratios?.operatingCashFlowPerShareTTM ?? 0,
+
+            // Debt & Liquidity
+            debtToEquity: ratios?.debtEquityRatioTTM ?? 0,
+            currentRatio: ratios?.currentRatioTTM ?? 0,
+            quickRatio: ratios?.quickRatioTTM ?? 0,
+            interestCoverage: ratios?.interestCoverageTTM ?? 0,
+
+            // Dividend
+            dividendYield: ratios?.dividendYielPercentageTTM ?? 0,
+            payoutRatio: ratios?.payoutRatioTTM
+              ? ratios.payoutRatioTTM * 100
+              : 0,
+            dividendPerShare: ratios?.dividendPerShareTTM ?? 0,
+
+            // Income details
+            ttmNetIncome,
+            ttmNetIncomeGrowth,
+            ttmGrossProfit,
+            ttmEbitda,
+            ttmOperatingIncome,
+
+            // Efficiency
+            sbcToRevenue: m?.stockBasedCompensationToRevenue
+              ? m.stockBasedCompensationToRevenue * 100
+              : 0,
+            rdToRevenue: m?.researchAndDdevelopementToRevenue
+              ? m.researchAndDdevelopementToRevenue * 100
+              : 0,
+          };
+        }),
+      );
+
+      return results;
     }),
 });

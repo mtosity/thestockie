@@ -19,12 +19,10 @@ import {
 } from "~/components/ui/collapsible";
 
 interface ScreenerFiltersProps {
-  symbol: string;
   sector: string;
   recommendation: string;
   marketCapMin: string;
   marketCapMax: string;
-  onSymbolChange: (value: string) => void;
   onSectorChange: (value: string) => void;
   onRecommendationChange: (value: string) => void;
   onMarketCapMinChange: (value: string) => void;
@@ -33,12 +31,10 @@ interface ScreenerFiltersProps {
 }
 
 export function ScreenerFilters({
-  symbol,
   sector,
   recommendation,
   marketCapMin,
   marketCapMax,
-  onSymbolChange,
   onSectorChange,
   onRecommendationChange,
   onMarketCapMinChange,
@@ -48,7 +44,6 @@ export function ScreenerFilters({
   const [isOpen, setIsOpen] = useState(false);
 
   const hasActiveFilters =
-    symbol !== "" ||
     sector !== "all" ||
     recommendation !== "all" ||
     marketCapMin !== "" ||
@@ -58,21 +53,7 @@ export function ScreenerFilters({
     <div className="mb-6">
       {/* Desktop Layout */}
       <div className="hidden rounded-lg bg-white/5 p-4 md:block">
-        <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-6">
-          <div className="space-y-2">
-            <Label htmlFor="symbol" className="text-white">
-              Symbol
-            </Label>
-            <Input
-              id="symbol"
-              type="text"
-              placeholder="e.g. AAPL"
-              value={symbol}
-              onChange={(e) => onSymbolChange(e.target.value.toUpperCase())}
-              className="uppercase"
-            />
-          </div>
-
+        <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-5">
           <div className="space-y-2">
             <Label htmlFor="sector" className="text-white">
               Sector
@@ -186,20 +167,6 @@ export function ScreenerFilters({
 
           <CollapsibleContent className="mt-4">
             <div className="space-y-4 rounded-lg bg-white/5 p-4">
-              <div className="space-y-2">
-                <Label htmlFor="symbol-mobile" className="text-white">
-                  Symbol
-                </Label>
-                <Input
-                  id="symbol-mobile"
-                  type="text"
-                  placeholder="e.g. AAPL"
-                  value={symbol}
-                  onChange={(e) => onSymbolChange(e.target.value.toUpperCase())}
-                  className="uppercase"
-                />
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="sector-mobile" className="text-white">
                   Sector

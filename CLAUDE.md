@@ -4,225 +4,122 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is "thestockie" - an advanced stock analysis tool with AI-powered insights built with Next.js 15, tRPC, Drizzle ORM, and PostgreSQL. The application provides comprehensive financial data analysis, including stock quotes, fundamentals, screening, and news.
+**TheStockie** - an advanced stock analysis tool with AI-powered insights. Provides comprehensive financial data analysis including stock quotes, fundamentals, screening, earnings calendars, and blog content. Licensed under GNU AGPL v3.
 
 ## Architecture
 
 ### Tech Stack
-- **Frontend**: Next.js 15 with React 19, Tailwind CSS, Radix UI components
-- **Backend**: tRPC for type-safe APIs, NextAuth for authentication
-- **Database**: PostgreSQL with Drizzle ORM
-- **State Management**: Jotai for global state, React Hook Form for forms
-- **Data Sources**: Financial Modeling Prep (FMP) API and OpenBB API integration
-- **Deployment**: Vercel with analytics integration
+
+- **Frontend**: Next.js 15 (App Router), React 19, Tailwind CSS 3, Radix UI / shadcn/ui
+- **Backend**: tRPC 11 for type-safe APIs, Convex for database & backend functions
+- **Authentication**: NextAuth 5 (beta) with Discord & Google OAuth, custom Convex adapter
+- **State Management**: Jotai (global state with localStorage), React Query (server state), React Hook Form + Zod (forms)
+- **Data Sources**: Financial Modeling Prep (FMP) API (primary), OpenBB (legacy, being replaced)
+- **Content**: MDX blog posts via next-mdx-remote 6, gray-matter
+- **Charts**: Recharts 2
+- **Deployment**: Vercel with analytics
 
 ### Key Directories
+
+- `convex/` - Convex backend: schema (`schema.ts`), queries/mutations (`posts.ts`, `auth.ts`), auto-generated types (`_generated/`)
 - `src/app/` - Next.js App Router pages and API routes
-- `src/components/features/` - Domain-specific components (charts, metrics, search)
-- `src/components/ui/` - Reusable UI components (shadcn/ui)
-- `src/server/api/` - tRPC routers and database logic
-- `src/server/api/schema/` - TypeScript schemas for external API responses
-- `src/hooks/` - Custom React hooks
-- `drizzle/` - Database migrations and snapshots
+- `src/server/api/routers/` - tRPC routers (`assets.ts` for financial data, `post.ts` for stock analysis)
+- `src/server/api/schema/` - Zod schemas for external API responses (FMP/, OpenBB)
+- `src/server/auth/` - NextAuth config (`config.ts`) + custom Convex adapter (`convex-adapter.ts`)
+- `src/components/features/` - Domain-specific components (charts, screener, earnings, blog, etc.)
+- `src/components/ui/` - Reusable shadcn/ui components (~50 components)
+- `src/hooks/` - Custom React hooks (`use-symbol.ts`, `use-debounce.ts`, `use-mobile.tsx`, etc.)
+- `src/lib/` - Utilities (`utils.ts`, `blog.ts`, `jsonToCSV.ts`)
+- `src/trpc/` - tRPC client setup & React Query bindings
+
+### Database (Convex)
+
+Schema in `convex/schema.ts`. Tables: `users`, `accounts`, `sessions`, `posts`, `verificationTokens`.
+
+- **posts** - Stock analysis data: `supabaseId` (ticker symbol), `prompt`, `response` (markdown), `recommendation` (strong_buy/buy/hold/sell), `marketCap`, `sector`, timestamps
+- Indexes on: supabaseId, createdBy, recommendation, sector, createdAt
+- Queries/mutations in `convex/posts.ts` and `convex/auth.ts`
+- Custom NextAuth adapter in `src/server/auth/convex-adapter.ts`
 
 ### API Architecture
-The application uses tRPC for type-safe API communication:
-- `assetsRouter` in `src/server/api/routers/assets.ts` handles all financial data endpoints
-- External APIs: OpenBB (https://openbb.thestockie.com) and Financial Modeling Prep
-- Environment variables: `OPENBB_AUTH_TOKEN`, `FMP_API_KEY`, `DATABASE_URL`
+
+tRPC routers in `src/server/api/routers/`:
+
+- **assetsRouter** (`assets.ts`) - All financial data from FMP API: quotes, search, screener, historical prices, fundamentals (balance sheet, cash flow, EPS, metrics, multiples), news, earnings calendar
+- **postRouter** (`post.ts`) - Stock analysis CRUD via Convex: `getBySymbol`, `getLatest`, `getAll` (paginated with filters: symbol, sector, recommendation, marketCap range)
+
+Context in `src/server/api/trpc.ts`: Convex HTTP client, NextAuth session, origin validation (localhost + thestockie.com), 5-min stale-while-revalidate caching. Timing middleware with artificial delay in dev.
 
 ## Common Commands
 
 ### Development
-- `pnpm dev` - Start development server with Turbo
-- `pnpm build` - Build for production
-- `pnpm start` - Start production server
+
+- `pnpm dev` - Start Next.js dev server (Turbo)
+- `npx convex dev` - Start Convex dev server (run alongside `pnpm dev`)
+- `pnpm build` - Production build
 - `pnpm preview` - Build and start production server
 
 ### Code Quality
-- `pnpm lint` - Run ESLint
-- `pnpm lint:fix` - Fix ESLint issues automatically
-- `pnpm typecheck` - Run TypeScript type checking
-- `pnpm check` - Run both lint and typecheck
-- `pnpm format:check` - Check Prettier formatting
-- `pnpm format:write` - Format code with Prettier
 
-### Database
-- `pnpm db:generate` - Generate Drizzle migrations
-- `pnpm db:migrate` - Run database migrations
-- `pnpm db:push` - Push schema changes to database
-- `pnpm db:studio` - Open Drizzle Studio
-- `./start-database.sh` - Start local PostgreSQL container
+- `pnpm check` - Run both lint and typecheck (use before committing)
+- `pnpm lint` / `pnpm lint:fix` - ESLint
+- `pnpm typecheck` - TypeScript type checking (`tsc --noEmit`)
+- `pnpm format:check` / `pnpm format:write` - Prettier (with Tailwind class sorting)
 
 ### Package Management
-- Uses `pnpm` as package manager
-- Lock file: `pnpm-lock.yaml`
 
-## Environment Setup
+- Uses **pnpm** as package manager
+- Path alias: `~/*` maps to `./src/*`
 
-1. Copy `.env.example` to `.env` and configure:
-   - `DATABASE_URL` - PostgreSQL connection string
-   - `OPENBB_AUTH_TOKEN` - OpenBB API authentication
-   - `FMP_API_KEY` - Financial Modeling Prep API key
-   - `NEXTAUTH_SECRET` - NextAuth secret for sessions
+## Environment Variables
 
-2. Start database: `./start-database.sh`
-3. Run migrations: `pnpm db:push`
-4. Start development: `pnpm dev`
+Key variables (see `.env.example`):
+
+- `CONVEX_URL` / `NEXT_PUBLIC_CONVEX_URL` - Convex deployment URL
+- `FMP_API_KEY` - Financial Modeling Prep API key
+- `AUTH_SECRET` - NextAuth secret (required in prod)
+- `AUTH_DISCORD_ID`, `AUTH_DISCORD_SECRET` - Discord OAuth
+- `AUTH_GOOGLE_CLIENT_ID`, `AUTH_GOOGLE_CLIENT_SECRET` - Google OAuth
+- `OPENBB_AUTH_TOKEN` - OpenBB API (legacy)
 
 ## Key Patterns
 
-### API Data Flow
+### Data Flow
+
 1. Components use tRPC hooks (e.g., `api.asset.equityQuote.useQuery()`)
-2. tRPC routers in `src/server/api/routers/` fetch from external APIs
-3. Response schemas in `src/server/api/schema/` ensure type safety
-4. Data flows through React components with proper loading/error states
+2. tRPC routers fetch from FMP API or Convex
+3. Zod schemas in `src/server/api/schema/` validate external API responses
+4. Data rendered with loading skeletons and error states
 
-### Component Organization
-- Feature components in `src/components/features/` handle specific financial data
-- UI components in `src/components/ui/` are generic, reusable components
-- Custom hooks in `src/hooks/` manage state and side effects
-- Global styles in `src/styles/globals.css` with Tailwind configuration
+### State Management
 
-## Database Schema
+- **Global symbol**: `useSymbol` hook (Jotai `atomWithStorage`) persists selected ticker across pages, syncs with URL. Default: "AAPL"
+- **Server state**: React Query via tRPC hooks with automatic caching
+- **URL state**: Screener page syncs all filters to URL params for deep linking
+- **Forms**: React Hook Form + Zod validation
 
-Located in `src/server/db/schema.ts` with Drizzle ORM. Table prefix: `thestockie_*`
+### Component Conventions
 
-## Stock Screener Feature
+- Feature components in `src/components/features/` - "use client", domain-specific
+- UI components in `src/components/ui/` - shadcn/ui primitives, no business logic
+- Mobile-first responsive design with Tailwind breakpoints (md = 768px)
+- Dark theme: navy background (`bg-[#15162c]`), CSS variable theming
+- Debounced text inputs (500ms) to prevent excessive API calls
+- Skeleton components for all loading states
 
-### Overview
-The screener page (`/screener`) provides advanced filtering and searching capabilities for stocks in the database. It includes comprehensive filtering, pagination, URL state management, and navigation to detailed stock analysis.
+### Pages
 
-### Key Files
-- `src/app/screener/page.tsx` - Main screener page component
-- `src/components/features/screener-filters.tsx` - Filter component (collapsible on mobile)
-- `src/components/features/screener-table.tsx` - Data table with action buttons
-- `src/components/features/table-skeleton.tsx` - Loading skeleton for table
-- `src/components/features/pagination.tsx` - Responsive pagination component
-- `src/components/features/stock-response-modal.tsx` - Modal for viewing analysis reports
-- `src/server/api/routers/post.ts` - Backend API with `getAll` endpoint
+- `/` - Dashboard with stock search, charts, fundamentals grid
+- `/screener` - Stock screener with filtering, pagination, URL state
+- `/blogs` / `/blogs/[slug]` - MDX blog posts with tag filtering
+- `/earnings` - Earnings calendar
 
-### Database Schema (Posts Table)
-The posts table (`thestockie_post`) stores stock analysis data:
-- `id` (VARCHAR) - Stock symbol (e.g., "AAPL") - Primary Key
-- `prompt` (TEXT) - Analysis prompt used for generating recommendations
-- `response` (TEXT) - AI-generated analysis report in markdown format
-- `sector` (VARCHAR) - Stock sector (e.g., "TECHNOLOGY", "FINANCIALS")
-- `recommendation` (VARCHAR) - Enum: "strong_buy", "buy", "hold", "sell"
-- `market_cap` (INTEGER) - Market capitalization in dollars
-- `created_by` (VARCHAR) - User ID who created the analysis
-- `created_at` (TIMESTAMP) - Creation timestamp
-- `updated_at` (TIMESTAMP) - Last update timestamp
+## Quality Checks
 
-### API Endpoints
+Always run `pnpm check` (lint + typecheck) before committing. No formal test framework is configured. Strict TypeScript with ESLint Next.js rules.
 
-#### `api.post.getAll.useQuery(filters)`
-Server-side paginated query with filtering support:
-- **Filters**: symbol, sector, recommendation, marketCapMin, marketCapMax, page, limit
-- **Returns**: `{ data: Stock[], pagination: { page, limit, total, totalPages, hasNext, hasPrev } }`
-- **Features**: Debounced queries (500ms), exact symbol matching, range filtering
+## Notes
 
-### Component Architecture
-
-#### ScreenerFilters
-- **Responsive design**: Desktop grid layout, mobile collapsible
-- **Active state indicator**: Shows "Active" badge when filters are applied
-- **Debounced inputs**: Symbol and market cap inputs use 500ms debouncing
-- **Filter types**:
-  - Symbol: Text input with auto-uppercase
-  - Sector: Dropdown with predefined options
-  - Recommendation: Dropdown with enum values
-  - Market Cap: Min/max numeric inputs
-  - Clear button: Resets all filters and URL
-
-#### ScreenerTable
-- **Sticky header**: Header remains visible during scroll
-- **Fixed height**: `max-h-[calc(100vh-300px)]` with scroll
-- **Action column**: Arrow button navigates to home page with auto-selected stock
-- **Report column**: Button opens modal with full analysis (markdown rendered)
-- **Responsive badges**: Color-coded recommendation badges
-- **Loading state**: Shows TableSkeleton component
-
-#### TableSkeleton
-- **Exact structure match**: Same column layout as real table
-- **Dark theme**: `bg-white/10` skeleton elements
-- **Proper hover**: `hover:bg-white/5` matching real rows
-- **Column-specific sizing**: Different skeleton sizes per column type
-
-#### Pagination
-- **Server-side**: Only loads requested page data
-- **Responsive layouts**: Desktop (full) vs mobile (compact)
-- **Smart page numbering**: Shows ellipsis for large page ranges
-- **Rows per page**: 10, 20, 50, 100 options
-- **URL integration**: Page and limit reflected in URL
-
-### URL State Management
-
-#### Supported Parameters
-- `symbol` - Stock symbol filter
-- `sector` - Sector selection
-- `recommendation` - Recommendation filter
-- `marketCapMin` - Minimum market cap (in millions)
-- `marketCapMax` - Maximum market cap (in millions)
-- `page` - Current page number
-- `limit` - Items per page
-
-#### URL Behavior
-- **Clean URLs**: Default values (page=1, sector=all) are omitted
-- **Shareable**: Complete filter state preserved in URL
-- **Browser integration**: Back/forward buttons work correctly
-- **Page refresh**: Filters persist after refresh
-- **Deep linking**: Direct access to filtered results
-
-### State Management Patterns
-
-#### Filter State Flow
-1. **URL → State**: `useSearchParams` initializes state from URL on mount
-2. **User Input → State**: Form inputs update local state
-3. **State → Debounced**: Text inputs debounced for API calls
-4. **State → URL**: Filter changes update URL via `router.replace`
-5. **Debounced → API**: API calls use debounced values
-
-#### Navigation Integration
-- **Home button**: Top-left navigation back to main dashboard
-- **Stock selection**: Action buttons use `useSymbol` hook from Jotai
-- **Symbol storage**: Persisted via `atomWithStorage` for cross-page state
-
-### Performance Optimizations
-- **Debouncing**: 500ms delay on text inputs prevents excessive API calls
-- **Server pagination**: Only loads current page data
-- **URL replace**: Uses `router.replace` with `scroll: false` to prevent jumping
-- **Skeleton loading**: Immediate visual feedback during data fetches
-- **Sticky headers**: Optimized scrolling experience
-
-### Mobile Responsiveness
-- **Collapsible filters**: Mobile filters hidden behind toggle button
-- **Compact pagination**: Simplified mobile pagination layout
-- **Responsive table**: Horizontal scroll for table on small screens
-- **Touch-friendly**: Proper button sizes and spacing
-
-### Common Issues & Solutions
-
-#### Filter State Not Updating
-- Check URL parameter names match exactly
-- Ensure `useEffect` dependency array includes `searchParams`
-- Verify `updateURL` function removes default values properly
-
-#### Pagination Issues
-- Always reset page to 1 when filters change
-- Include page and limit in URL update calls
-- Check server-side offset calculation: `(page - 1) * limit`
-
-#### Debouncing Problems
-- Use debounced values for API calls, raw values for UI
-- Don't debounce dropdown selections (only text inputs)
-- Ensure debounce delay matches UX expectations (500ms recommended)
-
-#### Modal/Table Interaction
-- Modal state is local to ScreenerTable component
-- Response field can be null - handle gracefully
-- Markdown rendering uses existing `MarkdownWithColor` component
-
-## Testing & Quality
-
-Always run both `pnpm lint` and `pnpm typecheck` before committing changes. The project uses strict TypeScript configuration and ESLint with Next.js rules.
+- ESLint config (`.eslintrc.cjs`) still references drizzle plugin rules from pre-migration - can be cleaned up
+- OpenBB endpoints being gradually replaced with FMP
+- Convex posts filtering happens in-memory in `convex/posts.ts`
