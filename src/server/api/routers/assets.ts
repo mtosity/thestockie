@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { type EquityFundamentalBalanceResponse } from "../schema/EquityFundamentalBalance";
 import { type EquityFundamentalBalanceGrowthResponse } from "../schema/EquityFundamentalBalanceGrowth";
 import { type EquityFundamentalCashResponse } from "../schema/EquityFundamentalCash";
@@ -752,5 +753,136 @@ export const assetsRouter = createTRPCRouter({
         chart: null,
         extra: { metadata: {} },
       } as EquityFundamentalMetricsResponse;
+    }),
+
+  // Earnings calendar - grouped by date, sorted by market cap descending
+  earningsCalendar: publicProcedure
+    .input(z.object({ from: z.string(), to: z.string() }))
+    .query(async ({ input }) => {
+      // Fetch earnings calendar for the date range
+      const calendarRes = await fmp.get<
+        {
+          date: string;
+          symbol: string;
+          eps: number | null;
+          epsEstimated: number | null;
+          time: string;
+          revenue: number | null;
+          revenueEstimated: number | null;
+          fiscalDateEnding: string;
+          updatedFromDate: string;
+        }[]
+      >(`/api/v3/earning_calendar`, {
+        params: {
+          from: input.from,
+          to: input.to,
+          apikey: process.env.FMP_API_KEY,
+        },
+      });
+
+      console.log("[earningsCalendar] from:", input.from, "to:", input.to);
+      console.log("[earningsCalendar] FMP status:", calendarRes.status, "entries:", calendarRes.data?.length, "raw sample:", JSON.stringify(calendarRes.data?.slice(0, 2)));
+
+      const entries = calendarRes.data ?? [];
+      const symbols = [...new Set(entries.map((e) => e.symbol))];
+
+      // Batch-fetch quotes (name + market cap + exchange) in groups of 50
+      const nameMap: Record<string, string> = {};
+      const marketCapMap: Record<string, number> = {};
+      const exchangeMap: Record<string, string> = {};
+      const countryMap: Record<string, string> = {};
+
+      const batches: string[][] = [];
+      for (let i = 0; i < symbols.length; i += 50) {
+        batches.push(symbols.slice(i, i + 50));
+      }
+
+      await Promise.all(
+        batches.map(async (batch) => {
+          try {
+            const quoteRes = await fmp.get<
+              { symbol: string; name: string; marketCap: number | null; exchange: string | null }[]
+            >(`/api/v3/quote/${batch.join(",")}`, {
+              params: { apikey: process.env.FMP_API_KEY },
+            });
+            // Fetch company profiles for country info
+            const profileRes = await fmp.get<
+              { symbol: string; country: string | null }[]
+            >(`/api/v3/profile/${batch.join(",")}`, {
+              params: { apikey: process.env.FMP_API_KEY },
+            });
+            for (const q of quoteRes.data ?? []) {
+              nameMap[q.symbol] = q.name ?? q.symbol;
+              marketCapMap[q.symbol] = q.marketCap ?? 0;
+              exchangeMap[q.symbol] = q.exchange ?? "";
+            }
+            for (const p of profileRes.data ?? []) {
+              countryMap[p.symbol] = p.country ?? "";
+            }
+          } catch {
+            // skip failed batches
+          }
+        }),
+      );
+
+      // Merge data and group by date
+      const grouped: Record<
+        string,
+        {
+          symbol: string;
+          name: string;
+          marketCap: number;
+          exchange: string;
+          country: string;
+          epsEstimated: number | null;
+          revenueEstimated: number | null;
+          time: string;
+          fiscalDateEnding: string;
+        }[]
+      > = {};
+
+      const seen = new Set<string>();
+      for (const entry of entries) {
+        const key = `${entry.date}:${entry.symbol}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        if (!grouped[entry.date]) grouped[entry.date] = [];
+        grouped[entry.date]!.push({
+          symbol: entry.symbol,
+          name: nameMap[entry.symbol] ?? entry.symbol,
+          marketCap: marketCapMap[entry.symbol] ?? 0,
+          exchange: exchangeMap[entry.symbol] ?? "",
+          country: countryMap[entry.symbol] ?? "",
+          epsEstimated: entry.epsEstimated,
+          revenueEstimated: entry.revenueEstimated,
+          time: entry.time,
+          fiscalDateEnding: entry.fiscalDateEnding,
+        });
+      }
+
+      // Sort each day: BMO first, then AMC, then other — within each group by market cap descending
+      const timeOrder = (time: string) => {
+        if (time === "bmo") return 0;
+        if (time === "amc") return 1;
+        return 2;
+      };
+
+      for (const date of Object.keys(grouped)) {
+        grouped[date]!.sort((a, b) => {
+          const timeDiff = timeOrder(a.time) - timeOrder(b.time);
+          if (timeDiff !== 0) return timeDiff;
+          return b.marketCap - a.marketCap;
+        });
+        // Keep only the highest market cap entry per company name (removes cross-listed duplicates)
+        const seenNames = new Set<string>();
+        grouped[date] = grouped[date]!.filter((c) => {
+          const key = c.name.toLowerCase();
+          if (seenNames.has(key)) return false;
+          seenNames.add(key);
+          return true;
+        });
+      }
+
+      return grouped;
     }),
 });
