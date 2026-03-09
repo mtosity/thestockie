@@ -33,28 +33,24 @@ const ArticleCard = ({
           />
         </div>
       )}
-      <div className="flex flex-col">
-        <h3 className="font-bold text-orange-50">{title}</h3>
+      <div className="flex flex-col gap-1">
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-bold text-orange-50 hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {title}
+        </a>
         <div className="flex items-center gap-2 text-sm text-gray-400">
           <time>{format(new Date(date), "MMM d, yyyy 'at' h:mm a")}</time>
           <span>•</span>
           <span>{source}</span>
         </div>
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="z-100 relative inline-block text-blue-400 hover:underline"
-          style={{ zIndex: 100 }}
-          onClick={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          Read more
-        </a>
+        <p className="text-sm">{text}</p>
       </div>
     </div>
-    <p className="mt-2 text-sm">{text}</p>
   </div>
 );
 

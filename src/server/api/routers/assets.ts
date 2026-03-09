@@ -22,6 +22,7 @@ import { type FMPCashFlowGrowthResponse } from "../schema/FMP/FMPCashFlowGrowth"
 import { type FMPEarningsResponse } from "../schema/FMP/FMPEarnings";
 import { type FMPKeyMetricsResponse } from "../schema/FMP/FMPKeyMetrics";
 import { type FMPStockNewsResponse } from "../schema/FMP/FMPStockNews";
+import { type FMPIncomeStatementResponse } from "../schema/FMP/FMPIncomeStatement";
 import { type NewsCompanyResponse } from "../schema/NewsCompany";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import axios from "axios";
@@ -41,6 +42,46 @@ console.log("[FMP] API Key configured:", apiKey ? `${apiKey.substring(0, 4)}...`
 
 export const assetsRouter = createTRPCRouter({
   // Already using FMP - no changes needed
+  companyProfile: publicProcedure.input(String).query(async ({ input }) => {
+    const res = await fmp.get<{
+      symbol: string;
+      price: number;
+      beta: number;
+      volAvg: number;
+      mktCap: number;
+      lastDiv: number;
+      range: string;
+      changes: number;
+      companyName: string;
+      currency: string;
+      cik: string;
+      isin: string;
+      exchange: string;
+      exchangeShortName: string;
+      industry: string;
+      website: string;
+      description: string;
+      ceo: string;
+      sector: string;
+      country: string;
+      fullTimeEmployees: string;
+      phone: string;
+      address: string;
+      city: string;
+      state: string;
+      zip: string;
+      dcfDiff: number;
+      dcf: number;
+      image: string;
+      ipoDate: string;
+      isEtf: boolean;
+      isActivelyTrading: boolean;
+    }[]>(`/api/v3/profile/${input}`, {
+      params: { apikey: process.env.FMP_API_KEY },
+    });
+    return res?.data?.[0] ?? null;
+  }),
+
   equityQuote: publicProcedure.input(String).query(async ({ input }) => {
     try {
       console.log("[equityQuote] Input:", input);
@@ -753,6 +794,25 @@ export const assetsRouter = createTRPCRouter({
         chart: null,
         extra: { metadata: {} },
       } as EquityFundamentalMetricsResponse;
+    }),
+
+  // Income statement - quarterly or annual
+  equityFundamentalIncome: publicProcedure
+    .input(z.object({ symbol: z.string(), period: z.enum(["quarter", "annual"]) }))
+    .query(async ({ input }) => {
+      const res = await fmp.get<FMPIncomeStatementResponse>(
+        `/api/v3/income-statement/${input.symbol}`,
+        {
+          params: {
+            limit: input.period === "quarter" ? 20 : 10,
+            period: input.period,
+            apikey: process.env.FMP_API_KEY,
+          },
+        },
+      );
+      return (res?.data ?? []).sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      );
     }),
 
   // Earnings calendar - grouped by date, sorted by market cap descending

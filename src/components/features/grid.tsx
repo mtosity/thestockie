@@ -10,17 +10,18 @@ import { News } from "./news";
 import { BalanceGrowth } from "./balance_growth";
 import dynamic from "next/dynamic";
 import { CashGrowth } from "./cash_growth";
-import { HistoricalEPS } from "./eps";
-import { HistoricalRevenue } from "./revenue";
-import { useLayout } from "~/hooks/use-layout";
+import { DEFAULT_LAYOUT } from "~/hooks/use-layout";
 import { useIsMobile } from "~/hooks/use-mobile";
 import { MetricsTable } from "./metrics-table";
-import { Quote } from "./quote";
+import { CompanyProfile } from "./company-profile";
 import { GPT } from "./gpt";
+import { Revenue, EBITDA, NetIncome, EPS, Expenses, SharesOutstanding, MarginTrends } from "./income-statement-charts";
+import { CashDebt } from "./cash-debt";
+import { Dividends } from "./dividends";
+import { ValuationChart } from "./valuation-chart";
 
 const Grid = () => {
   const { width, height } = useWindowSize();
-  const [layout, setLayout] = useLayout();
   const isMobile = useIsMobile(1200);
 
   if (!width || !height) return null;
@@ -30,18 +31,14 @@ const Grid = () => {
   return (
     <>
       <GridLayout
-        layout={isMobile ? layout.map((l) => ({ ...l, x: 0, w: 14 })) : layout}
-        cols={isMobile ? 14 : 20}
+        layout={isMobile ? DEFAULT_LAYOUT.map((l) => ({ ...l, x: 0, w: 14 })) : DEFAULT_LAYOUT}
+        cols={isMobile ? 14 : 21}
         rowHeight={30}
         maxRows={height / 15}
         width={width}
         autoSize={true}
-        isResizable={!isMobile}
-        isDraggable={!isMobile}
-        onLayoutChange={(l) => {
-          if (isMobile) return;
-          setLayout(l);
-        }}
+        isResizable={false}
+        isDraggable={false}
         resizeHandles={["se", "sw", "ne", "nw"]}
       >
         <div key="main-chart" className={clx}>
@@ -53,27 +50,59 @@ const Grid = () => {
         <div key="news" className={clx}>
           <News />
         </div>
-
         <div key="live-quote" className={clx}>
-          <Quote />
+          <CompanyProfile />
         </div>
-
         <div key="ai" className={clx}>
           <GPT />
         </div>
 
+        {/* Income Statement */}
+        <div key="revenue" className={clx}>
+          <Revenue />
+        </div>
+        <div key="ebitda" className={clx}>
+          <EBITDA />
+        </div>
+        <div key="net-income" className={clx}>
+          <NetIncome />
+        </div>
+        <div key="eps" className={clx}>
+          <EPS />
+        </div>
+        <div key="expenses" className={clx}>
+          <Expenses />
+        </div>
+
+        {/* Balance Sheet */}
         <div key="balance-growth" className={clx}>
           <BalanceGrowth />
         </div>
+        <div key="cash-debt" className={clx}>
+          <CashDebt />
+        </div>
+
+        {/* Cash Flow */}
         <div key="cash-growth" className={clx}>
           <CashGrowth />
         </div>
-        <div key="eps" className={clx}>
-          <HistoricalEPS />
+        <div key="dividends" className={clx}>
+          <Dividends />
         </div>
-        <div key="revenue" className={clx}>
-          <HistoricalRevenue />
+
+        {/* Capital Structure */}
+        <div key="shares-outstanding" className={clx}>
+          <SharesOutstanding />
         </div>
+
+        {/* Valuation & Ratios */}
+        <div key="valuation" className={clx}>
+          <ValuationChart />
+        </div>
+        <div key="margin-trends" className={clx}>
+          <MarginTrends />
+        </div>
+
         <div key="metrics-table">
           <MetricsTable />
         </div>

@@ -15,7 +15,6 @@ function ScreenerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const [symbol, setSymbol] = useState("");
   const [sector, setSector] = useState("all");
   const [recommendation, setRecommendation] = useState("all");
   const [marketCapMin, setMarketCapMin] = useState("");
@@ -25,7 +24,6 @@ function ScreenerContent() {
 
   // Initialize state from URL params on mount
   useEffect(() => {
-    const urlSymbol = searchParams.get("symbol") ?? "";
     const urlSector = searchParams.get("sector") ?? "all";
     const urlRecommendation = searchParams.get("recommendation") ?? "all";
     const urlMarketCapMin = searchParams.get("marketCapMin") ?? "";
@@ -33,7 +31,6 @@ function ScreenerContent() {
     const urlPage = parseInt(searchParams.get("page") ?? "1");
     const urlLimit = parseInt(searchParams.get("limit") ?? "20");
 
-    setSymbol(urlSymbol);
     setSector(urlSector);
     setRecommendation(urlRecommendation);
     setMarketCapMin(urlMarketCapMin);
@@ -43,7 +40,6 @@ function ScreenerContent() {
   }, [searchParams]);
 
   // Debounce text inputs to reduce API calls
-  const debouncedSymbol = useDebounce(symbol, 500);
   const debouncedMarketCapMin = useDebounce(marketCapMin, 500);
   const debouncedMarketCapMax = useDebounce(marketCapMax, 500);
 
@@ -64,7 +60,6 @@ function ScreenerContent() {
   };
 
   const filters = {
-    symbol: debouncedSymbol ? debouncedSymbol : undefined,
     sector: sector === "all" ? undefined : sector,
     recommendation: recommendation === "all" ? undefined : (recommendation as "strong_buy" | "buy" | "hold" | "sell"),
     marketCapMin: debouncedMarketCapMin ? parseInt(debouncedMarketCapMin) * 1000000 : undefined,
@@ -76,15 +71,13 @@ function ScreenerContent() {
   const { data: result, isLoading } = api.post.getAll.useQuery(filters);
 
   const handleClearFilters = () => {
-    setSymbol("");
     setSector("all");
     setRecommendation("all");
     setMarketCapMin("");
     setMarketCapMax("");
     setPage(1);
-    
+
     updateURL({
-      symbol: "",
       sector: "all",
       recommendation: "all",
       marketCapMin: "",
@@ -97,7 +90,6 @@ function ScreenerContent() {
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     updateURL({
-      symbol,
       sector,
       recommendation,
       marketCapMin,
@@ -111,7 +103,6 @@ function ScreenerContent() {
     setLimit(newLimit);
     setPage(1);
     updateURL({
-      symbol,
       sector,
       recommendation,
       marketCapMin,
@@ -125,9 +116,8 @@ function ScreenerContent() {
   const handleFilterChange = (filterSetter: (value: string) => void) => (value: string) => {
     filterSetter(value);
     setPage(1);
-    
+
     const newFilters = {
-      symbol: filterSetter === setSymbol ? value : symbol,
       sector: filterSetter === setSector ? value : sector,
       recommendation: filterSetter === setRecommendation ? value : recommendation,
       marketCapMin: filterSetter === setMarketCapMin ? value : marketCapMin,
@@ -135,16 +125,15 @@ function ScreenerContent() {
       page: 1,
       limit,
     };
-    
+
     updateURL(newFilters);
   };
 
   const handleMarketCapChange = (filterSetter: (value: string) => void) => (value: string) => {
     filterSetter(value);
     setPage(1);
-    
+
     const newFilters = {
-      symbol,
       sector,
       recommendation,
       marketCapMin: filterSetter === setMarketCapMin ? value : marketCapMin,
@@ -152,7 +141,7 @@ function ScreenerContent() {
       page: 1,
       limit,
     };
-    
+
     updateURL(newFilters);
   };
 
@@ -174,12 +163,10 @@ function ScreenerContent() {
         </div>
         
         <ScreenerFilters
-          symbol={symbol}
           sector={sector}
           recommendation={recommendation}
           marketCapMin={marketCapMin}
           marketCapMax={marketCapMax}
-          onSymbolChange={handleFilterChange(setSymbol)}
           onSectorChange={handleFilterChange(setSector)}
           onRecommendationChange={handleFilterChange(setRecommendation)}
           onMarketCapMinChange={handleMarketCapChange(setMarketCapMin)}
