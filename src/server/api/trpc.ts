@@ -47,7 +47,8 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
       ? productionUrls
       : [...productionUrls, ...developmentUrls];
   const isVercelPreview =
-    !!origin && /^https:\/\/thestockie-[^/]+\.vercel\.app(\/|$)/.test(origin);
+    !!origin &&
+    /^https:\/\/thestockie-[^/]+-mtositys-projects\.vercel\.app(\/|$)/.test(origin);
   if (!origin || (!isVercelPreview && !urls.find((url) => origin.startsWith(url)))) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
