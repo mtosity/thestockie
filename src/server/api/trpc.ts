@@ -46,7 +46,8 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     process.env.NODE_ENV === "production"
       ? productionUrls
       : [...productionUrls, ...developmentUrls];
-  if (!origin || !urls.find((url) => origin.startsWith(url))) {
+  const isVercelPreview = !!origin && /^https:\/\/[^/]+\.vercel\.app(\/|$)/.test(origin);
+  if (!origin || (!isVercelPreview && !urls.find((url) => origin.startsWith(url)))) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: `Invalid origin for ${origin}`,
