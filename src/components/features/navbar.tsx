@@ -72,39 +72,39 @@ export function Navbar() {
 
         {/* Right: Nav links + Auth */}
         <div className="flex flex-1 items-center justify-end gap-2">
-        {/* Nav links - hidden on mobile, shown on tablet+ */}
-        <div className="hidden shrink-0 items-center gap-0.5 md:flex">
-          {navLinks.map(({ href, icon: Icon, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 text-sm font-medium transition-colors lg:px-3",
-                isActive(href, pathname)
-                  ? "bg-white/10 text-white"
-                  : "text-gray-300 hover:bg-white/10 hover:text-white",
-              )}
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span className="hidden lg:inline">{label}</span>
-            </Link>
-          ))}
-        </div>
+          {/* Nav links - hidden on mobile, shown on tablet+ */}
+          <div className="hidden shrink-0 items-center gap-0.5 md:flex">
+            {navLinks.map(({ href, icon: Icon, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 text-sm font-medium transition-colors lg:px-3",
+                  isActive(href, pathname)
+                    ? "bg-white/10 text-white"
+                    : "text-gray-300 hover:bg-white/10 hover:text-white",
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="hidden lg:inline">{label}</span>
+              </Link>
+            ))}
+          </div>
 
-        {/* Auth button */}
-        <Link
-          href={session ? "/api/auth/signout" : "/api/auth/signin"}
-          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-purple-500 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-600"
-        >
-          {session ? (
-            <LogOut className="h-4 w-4" />
-          ) : (
-            <LogIn className="h-4 w-4" />
-          )}
-          <span className="hidden lg:inline">
-            {session ? "Sign out" : "Sign in"}
-          </span>
-        </Link>
+          {/* Auth button */}
+          <Link
+            href={session ? "/api/auth/signout" : "/api/auth/signin"}
+            className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-purple-500 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-600"
+          >
+            {session ? (
+              <LogOut className="h-4 w-4" />
+            ) : (
+              <LogIn className="h-4 w-4" />
+            )}
+            <span className="hidden lg:inline">
+              {session ? "Sign out" : "Sign in"}
+            </span>
+          </Link>
         </div>
       </div>
 
