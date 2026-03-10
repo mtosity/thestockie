@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import Image from "next/image";
 import {
   Plus,
@@ -514,8 +514,12 @@ function StockSearchPopover({
           <span className="text-xs text-gray-400">Add Stock</span>
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0" align="start">
+      <PopoverContent
+        className="w-[300px] border-white/10 bg-[#15162c] p-0 text-white"
+        align="start"
+      >
         <Command
+          className="bg-[#15162c] text-white"
           shouldFilter={
             !!isReady && !!stocks?.length && !!debouncedSearch?.length
           }
@@ -531,7 +535,8 @@ function StockSearchPopover({
         >
           <CommandInput
             placeholder="Search stocks..."
-            className="h-9"
+            className="h-9 text-white placeholder:text-white/50"
+            containerClassName="border-white/10"
             value={search}
             onValueChange={setSearch}
           />
@@ -550,6 +555,7 @@ function StockSearchPopover({
                     key={stock.value}
                     value={stock.value}
                     keywords={[stock.value, stock.label]}
+                    className="text-white hover:bg-white/10 aria-selected:bg-white/10"
                     onSelect={(val) => {
                       onSelect(val.toUpperCase());
                       setOpen(false);
@@ -568,6 +574,31 @@ function StockSearchPopover({
   );
 }
 
+// ─── Skeleton Header ────────────────────────────────────────────────────────
+
+function StockHeaderSkeleton() {
+  return (
+    <div className="flex w-[180px] animate-pulse flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-4">
+      <div className="h-10 w-10 rounded-lg bg-white/10" />
+      <div className="h-4 w-12 rounded bg-white/10" />
+      <div className="h-3 w-20 rounded bg-white/10" />
+      <div className="h-3 w-24 rounded bg-white/10" />
+      <div className="h-3 w-14 rounded bg-white/10" />
+      <div className="h-3 w-20 rounded bg-white/10" />
+    </div>
+  );
+}
+
+// ─── Skeleton Cell ──────────────────────────────────────────────────────────
+
+function MetricCellSkeleton() {
+  return (
+    <td className="px-3 py-2 text-center">
+      <div className="mx-auto h-5 w-16 animate-pulse rounded bg-white/10" />
+    </td>
+  );
+}
+
 // ─── Stock Column Header ─────────────────────────────────────────────────────
 
 function StockHeader({
@@ -579,7 +610,7 @@ function StockHeader({
 }) {
   const [imgFailed, setImgFailed] = useState(false);
   return (
-    <div className="group relative flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-4 transition-all hover:border-purple-400/30">
+    <div className="group relative flex w-[180px] flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-4 transition-all hover:border-purple-400/30">
       <button
         onClick={onRemove}
         className="absolute -right-2 -top-2 hidden rounded-full bg-red-500/90 p-1 text-white transition-all hover:bg-red-400 group-hover:block"
@@ -732,7 +763,7 @@ export function StockComparison() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Parse symbols from URL (or use defaults)
+  // Parse symbols from URL, or fall back to the globally selected symbol from localStorage
   const urlSymbols = searchParams.get("symbols");
   const [symbols, setSymbolsState] = useState<string[]>(() => {
     if (urlSymbols) {
@@ -742,12 +773,29 @@ export function StockComparison() {
         .filter(Boolean)
         .slice(0, 6);
     }
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("symbol");
+      if (stored) {
+        const cleaned = stored.replace(/^["']|["']$/g, "").toUpperCase();
+        if (cleaned) return [cleaned];
+      }
+    }
     return DEFAULT_SYMBOLS;
   });
 
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
     new Set(),
   );
+
+  // Sync URL on initial load when symbols came from localStorage
+  useEffect(() => {
+    if (!urlSymbols) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("symbols", symbols.join(","));
+      router.replace(`${pathname}?${params.toString()}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Sync URL
   const updateUrl = useCallback(
@@ -787,45 +835,54 @@ export function StockComparison() {
     });
   }, []);
 
-  // Fetch comparison data
-  const { data: stocks, isLoading } = api.asset.compareStocks.useQuery(
-    { symbols },
-    {
-      enabled: symbols.length > 0,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-    },
+  // Fetch each symbol independently so adding/removing doesn't refetch everything
+  const stockQueries = api.useQueries((t) =>
+    symbols.map((s) =>
+      t.asset.compareStock(
+        { symbol: s },
+        {
+          refetchOnMount: false,
+          refetchOnWindowFocus: false,
+        },
+      ),
+    ),
   );
 
+  // Separate loaded stocks from loading ones
+  const stocks = useMemo(() => {
+    const loaded: CompareStock[] = [];
+    for (const q of stockQueries) {
+      if (q.data) loaded.push(q.data);
+    }
+    return loaded;
+  }, [stockQueries]);
+
+  const totalColumns = symbols.length;
+
   return (
-    <div className="mx-auto max-w-[1600px] space-y-6 p-4 pb-16">
+    <div className="mx-auto max-w-[1600px] space-y-6 px-4 pb-16 pt-4">
       {/* Stock headers + add button */}
       <div className="flex flex-wrap items-start gap-3">
-        {isLoading
-          ? symbols.map((s) => (
-              <div
-                key={s}
-                className="flex h-[160px] w-[180px] animate-pulse flex-col items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5"
-              >
-                <div className="h-10 w-10 rounded-lg bg-white/10" />
-                <div className="h-4 w-12 rounded bg-white/10" />
-                <div className="h-3 w-20 rounded bg-white/10" />
-              </div>
-            ))
-          : stocks?.map((stock) => (
+        {symbols.map((s, i) => {
+          const query = stockQueries[i];
+          if (query?.data) {
+            return (
               <StockHeader
-                key={stock.symbol}
-                stock={stock}
-                onRemove={() => removeSymbol(stock.symbol)}
+                key={s}
+                stock={query.data}
+                onRemove={() => removeSymbol(s)}
               />
-            ))}
+            );
+          }
+          return <StockHeaderSkeleton key={s} />;
+        })}
         {symbols.length < 6 && (
           <StockSearchPopover onSelect={addSymbol} existingSymbols={symbols} />
         )}
       </div>
 
       {/* Suggested competitors */}
-      {stocks && stocks.length > 0 && (
+      {stocks.length > 0 && (
         <SuggestedPeers
           stocks={stocks}
           existingSymbols={symbols}
@@ -834,7 +891,7 @@ export function StockComparison() {
       )}
 
       {/* Comparison table */}
-      {stocks && stocks.length > 0 && (
+      {totalColumns > 0 && (
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full">
             <thead>
@@ -842,12 +899,12 @@ export function StockComparison() {
                 <th className="sticky left-0 z-10 min-w-[200px] bg-[#1a1b35] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">
                   Metric
                 </th>
-                {stocks.map((stock) => (
+                {symbols.map((s) => (
                   <th
-                    key={stock.symbol}
+                    key={s}
                     className="min-w-[140px] px-3 py-3 text-center text-sm font-bold text-white"
                   >
-                    {stock.symbol}
+                    {s}
                   </th>
                 ))}
                 <th className="min-w-[180px] px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -866,7 +923,7 @@ export function StockComparison() {
                       onClick={() => toggleSection(section.title)}
                     >
                       <td
-                        colSpan={stocks.length + 2}
+                        colSpan={totalColumns + 2}
                         className="sticky left-0 z-10 px-4 py-2.5"
                       >
                         <div className="flex items-center gap-2">
@@ -887,7 +944,11 @@ export function StockComparison() {
                     {/* Metric rows */}
                     {!isCollapsed &&
                       section.metrics.map((metric) => {
-                        const values = stocks.map((s) => metric.getValue(s));
+                        // Get values for loaded stocks, null for loading ones
+                        const values = symbols.map((_s, i) => {
+                          const data = stockQueries[i]?.data;
+                          return data ? metric.getValue(data) : null;
+                        });
                         const validValues = values.filter(
                           (v): v is number => v != null && isFinite(v),
                         );
@@ -909,7 +970,6 @@ export function StockComparison() {
                               : sorted[sorted.length - 1];
                           bestIdx = values.findIndex((v) => v === best);
                           worstIdx = values.findIndex((v) => v === worst);
-                          // Don't highlight if all values are the same
                           if (best === worst) {
                             bestIdx = -1;
                             worstIdx = -1;
@@ -926,16 +986,20 @@ export function StockComparison() {
                                 {metric.label}
                               </div>
                             </td>
-                            {stocks.map((stock, idx) => (
-                              <MetricCell
-                                key={stock.symbol}
-                                value={values[idx] ?? null}
-                                formatted={metric.format(values[idx] ?? null)}
-                                isBest={idx === bestIdx}
-                                isWorst={idx === worstIdx}
-                                better={metric.better}
-                              />
-                            ))}
+                            {symbols.map((s, idx) =>
+                              stockQueries[idx]?.data ? (
+                                <MetricCell
+                                  key={s}
+                                  value={values[idx] ?? null}
+                                  formatted={metric.format(values[idx] ?? null)}
+                                  isBest={idx === bestIdx}
+                                  isWorst={idx === worstIdx}
+                                  better={metric.better}
+                                />
+                              ) : (
+                                <MetricCellSkeleton key={s} />
+                              ),
+                            )}
                             <td className="px-3 py-2 text-center text-[10px] text-gray-500">
                               {BENCHMARKS[metric.key] ?? ""}
                             </td>
@@ -952,7 +1016,7 @@ export function StockComparison() {
                 onClick={() => toggleSection("__market")}
               >
                 <td
-                  colSpan={stocks.length + 2}
+                  colSpan={totalColumns + 2}
                   className="sticky left-0 z-10 px-4 py-2.5"
                 >
                   <div className="flex items-center gap-2">
@@ -970,120 +1034,75 @@ export function StockComparison() {
               </tr>
               {!collapsedSections.has("__market") && (
                 <>
-                  <tr className="border-b border-white/5 transition-colors hover:bg-white/[0.02]">
-                    <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
-                      Market Cap
-                    </td>
-                    {stocks.map((s) => (
-                      <td
-                        key={s.symbol}
-                        className="px-3 py-2 text-center font-mono text-sm text-gray-200"
-                      >
-                        {fmtMoney(s.marketCap)}
-                      </td>
-                    ))}
-                    <td className="px-3 py-2 text-center text-[10px] text-gray-500" />
-                  </tr>
-                  <tr className="border-b border-white/5 transition-colors hover:bg-white/[0.02]">
-                    <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
-                      52W Range
-                    </td>
-                    {stocks.map((s) => (
-                      <td
-                        key={s.symbol}
-                        className="px-3 py-2 text-center font-mono text-xs text-gray-300"
-                      >
-                        ${s.yearLow.toFixed(0)} – ${s.yearHigh.toFixed(0)}
-                      </td>
-                    ))}
-                    <td className="px-3 py-2 text-center text-[10px] text-gray-500" />
-                  </tr>
-                  <tr className="border-b border-white/5 transition-colors hover:bg-white/[0.02]">
-                    <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
-                      50-Day Avg
-                    </td>
-                    {stocks.map((s) => (
-                      <td
-                        key={s.symbol}
-                        className="px-3 py-2 text-center font-mono text-sm text-gray-200"
-                      >
-                        ${s.priceAvg50.toFixed(2)}
-                      </td>
-                    ))}
-                    <td className="px-3 py-2 text-center text-[10px] text-gray-500" />
-                  </tr>
-                  <tr className="border-b border-white/5 transition-colors hover:bg-white/[0.02]">
-                    <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
-                      200-Day Avg
-                    </td>
-                    {stocks.map((s) => (
-                      <td
-                        key={s.symbol}
-                        className="px-3 py-2 text-center font-mono text-sm text-gray-200"
-                      >
-                        ${s.priceAvg200.toFixed(2)}
-                      </td>
-                    ))}
-                    <td className="px-3 py-2 text-center text-[10px] text-gray-500" />
-                  </tr>
-                  <tr className="border-b border-white/5 transition-colors hover:bg-white/[0.02]">
-                    <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
-                      Avg Volume
-                    </td>
-                    {stocks.map((s) => (
-                      <td
-                        key={s.symbol}
-                        className="px-3 py-2 text-center font-mono text-sm text-gray-200"
-                      >
-                        {formatLargeNumber(s.avgVolume)}
-                      </td>
-                    ))}
-                    <td className="px-3 py-2 text-center text-[10px] text-gray-500" />
-                  </tr>
-                  <tr className="border-b border-white/5 transition-colors hover:bg-white/[0.02]">
-                    <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
-                      Employees
-                    </td>
-                    {stocks.map((s) => (
-                      <td
-                        key={s.symbol}
-                        className="px-3 py-2 text-center font-mono text-sm text-gray-200"
-                      >
-                        {s.employees
+                  {[
+                    {
+                      label: "Market Cap",
+                      render: (s: CompareStock) => fmtMoney(s.marketCap),
+                    },
+                    {
+                      label: "52W Range",
+                      render: (s: CompareStock) =>
+                        `$${s.yearLow.toFixed(0)} – $${s.yearHigh.toFixed(0)}`,
+                      className: "font-mono text-xs text-gray-300",
+                    },
+                    {
+                      label: "50-Day Avg",
+                      render: (s: CompareStock) =>
+                        `$${s.priceAvg50.toFixed(2)}`,
+                    },
+                    {
+                      label: "200-Day Avg",
+                      render: (s: CompareStock) =>
+                        `$${s.priceAvg200.toFixed(2)}`,
+                    },
+                    {
+                      label: "Avg Volume",
+                      render: (s: CompareStock) =>
+                        formatLargeNumber(s.avgVolume),
+                    },
+                    {
+                      label: "Employees",
+                      render: (s: CompareStock) =>
+                        s.employees
                           ? parseInt(s.employees).toLocaleString()
-                          : "N/A"}
+                          : "N/A",
+                    },
+                    {
+                      label: "Sector",
+                      render: (s: CompareStock) => s.sector || "N/A",
+                      className: "text-xs text-gray-300",
+                    },
+                    {
+                      label: "Industry",
+                      render: (s: CompareStock) => s.industry || "N/A",
+                      className: "text-xs text-gray-300",
+                    },
+                  ].map((row) => (
+                    <tr
+                      key={row.label}
+                      className="border-b border-white/5 transition-colors hover:bg-white/[0.02]"
+                    >
+                      <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
+                        {row.label}
                       </td>
-                    ))}
-                    <td className="px-3 py-2 text-center text-[10px] text-gray-500" />
-                  </tr>
-                  <tr className="border-b border-white/5 transition-colors hover:bg-white/[0.02]">
-                    <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
-                      Sector
-                    </td>
-                    {stocks.map((s) => (
-                      <td
-                        key={s.symbol}
-                        className="px-3 py-2 text-center text-xs text-gray-300"
-                      >
-                        {s.sector || "N/A"}
-                      </td>
-                    ))}
-                    <td className="px-3 py-2 text-center text-[10px] text-gray-500" />
-                  </tr>
-                  <tr className="border-b border-white/5 transition-colors hover:bg-white/[0.02]">
-                    <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
-                      Industry
-                    </td>
-                    {stocks.map((s) => (
-                      <td
-                        key={s.symbol}
-                        className="px-3 py-2 text-center text-xs text-gray-300"
-                      >
-                        {s.industry || "N/A"}
-                      </td>
-                    ))}
-                    <td className="px-3 py-2 text-center text-[10px] text-gray-500" />
-                  </tr>
+                      {symbols.map((s, i) =>
+                        stockQueries[i]?.data ? (
+                          <td
+                            key={s}
+                            className={cn(
+                              "px-3 py-2 text-center font-mono text-sm text-gray-200",
+                              row.className,
+                            )}
+                          >
+                            {row.render(stockQueries[i]!.data!)}
+                          </td>
+                        ) : (
+                          <MetricCellSkeleton key={s} />
+                        ),
+                      )}
+                      <td className="px-3 py-2 text-center text-[10px] text-gray-500" />
+                    </tr>
+                  ))}
                 </>
               )}
             </tbody>

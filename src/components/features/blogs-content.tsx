@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { BlogCard } from "~/components/features/blog-card";
 import { BlogTagFilter } from "~/components/features/blog-tag-filter";
 import type { BlogMeta } from "~/lib/blog.shared";
@@ -21,19 +20,6 @@ export function BlogsContent({ blogs, tags }: BlogsContentProps) {
 
   return (
     <main className="min-h-screen bg-[#15162c] text-white">
-      {/* Navigation */}
-      <nav className="border-b border-white/10 px-4 py-4 md:px-8">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-gray-400 transition-colors hover:text-white"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Home</span>
-          </Link>
-        </div>
-      </nav>
-
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-white/10 px-4 py-16 md:px-8 md:py-24">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10" />
@@ -45,13 +31,12 @@ export function BlogsContent({ blogs, tags }: BlogsContentProps) {
             <div className="rounded-xl bg-purple-500/20 p-3">
               <BookOpen className="h-8 w-8 text-purple-400" />
             </div>
-            <h1 className="text-4xl font-bold md:text-5xl">Blog</h1>
+            <p className="max-w-2xl text-lg text-gray-400">
+              Insights, guides, and analysis to help you make smarter investment
+              decisions. Learn about fundamentals, market trends, and investment
+              strategies.
+            </p>
           </div>
-          <p className="mt-4 max-w-2xl text-lg text-gray-400">
-            Insights, guides, and analysis to help you make smarter investment
-            decisions. Learn about fundamentals, market trends, and investment
-            strategies.
-          </p>
         </div>
       </div>
 
@@ -96,21 +81,6 @@ export function BlogsContent({ blogs, tags }: BlogsContentProps) {
           </div>
         )}
       </div>
-
-      {/* Footer */}
-      <footer className="border-t border-white/10">
-        <div className="flex h-16 items-center justify-center gap-8 text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()}</p>
-          <a
-            href="https://mtosity.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-white"
-          >
-            @mtosity
-          </a>
-        </div>
-      </footer>
     </main>
   );
 }

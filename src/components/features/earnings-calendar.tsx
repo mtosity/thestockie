@@ -147,7 +147,7 @@ export function EarningsCalendar() {
 
   return (
     <div className="min-h-screen bg-[#15162c] pb-20 text-white">
-      <div className="p-3 md:p-4">
+      <div className="px-4 pt-4">
         {/* Controls row */}
         <div className="mb-4 flex flex-col gap-3">
           {/* Week navigation — full width on mobile */}

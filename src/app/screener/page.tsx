@@ -7,7 +7,6 @@ import { ScreenerFilters } from "~/components/features/screener-filters";
 import { ScreenerTable } from "~/components/features/screener-table";
 import { Pagination } from "~/components/features/pagination";
 import useDebounce from "~/hooks/use-debounce";
-import { BackButton } from "~/components/ui/back-button";
 
 function ScreenerContent() {
   const router = useRouter();
@@ -155,9 +154,8 @@ function ScreenerContent() {
 
   return (
     <div className="min-h-screen bg-[#15162c] pb-20 text-white">
-      <div className="p-4">
-        <div className="mb-6 flex items-center gap-4">
-          <BackButton />
+      <div className="px-4 pt-4">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold">Screener</h1>
         </div>
 

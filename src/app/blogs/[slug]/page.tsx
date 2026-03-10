@@ -4,7 +4,6 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Calendar, Clock } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
-import { BackButton } from "~/components/ui/back-button";
 import { getAllBlogSlugs, getBlogBySlug } from "~/lib/blog";
 import { formatBlogDate } from "~/lib/blog.shared";
 import { BlogContent } from "~/components/features/blog-content";
@@ -110,13 +109,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <main className="min-h-screen bg-[#15162c] text-white">
-        {/* Navigation */}
-        <nav className="border-b border-white/10 px-4 py-4 md:px-8">
-          <div className="mx-auto flex max-w-4xl items-center justify-between">
-            <BackButton href="/blogs" label="Back to Blog" />
-          </div>
-        </nav>
-
         {/* Hero Image */}
         <div className="relative h-64 w-full md:h-80 lg:h-96">
           <Image
@@ -196,20 +188,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="border-t border-white/10">
-          <div className="flex h-16 items-center justify-center gap-8 text-sm text-gray-500">
-            <p>&copy; {new Date().getFullYear()}</p>
-            <a
-              href="https://mtosity.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-white"
-            >
-              @mtosity
-            </a>
-          </div>
-        </footer>
       </main>
     </>
   );
