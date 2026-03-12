@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/u
 import { ScrollArea } from "~/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { MermaidDiagram } from "./mermaid-diagram";
 import "~/styles/markdown.css";
 
 interface StockResponseModalProps {
@@ -75,7 +76,21 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
           li: ({ children }) => {
             return <li className="text-white">{children}</li>;
           },
-          code: ({ children }) => {
+          pre: ({ children }) => {
+            return <>{children}</>;
+          },
+          code: ({ className, children }) => {
+            const match = /language-mermaid/.exec(className ?? "");
+            if (match) {
+              return <MermaidDiagram content={String(children)} />;
+            }
+            if (className) {
+              return (
+                <pre className="overflow-x-auto rounded-md bg-white/10 p-3 text-sm text-gray-200">
+                  <code>{children}</code>
+                </pre>
+              );
+            }
             return <code className="bg-white/10 px-1 py-0.5 rounded text-sm text-gray-200">{children}</code>;
           },
         }}
@@ -91,24 +106,22 @@ export function StockResponseModal({ isOpen, onClose, stock }: StockResponseModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] bg-[#15162c] border-white/20 text-white">
+      <DialogContent className="max-w-5xl h-[80vh] bg-[#15162c] border-white/20 text-white flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white">
             {stock.supabaseId} - Analysis Report
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <ScrollArea className="h-[500px] w-full">
-              <div className="bg-white/5 border border-white/10 p-4 rounded-md">
-                {stock.response ? (
-                  <MarkdownWithColor content={stock.response} />
-                ) : (
-                  <p className="text-gray-400">No analysis available</p>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
+        <div className="flex-1 min-h-0">
+          <ScrollArea className="h-full w-full">
+            <div className="bg-white/5 border border-white/10 p-4 rounded-md">
+              {stock.response ? (
+                <MarkdownWithColor content={stock.response} />
+              ) : (
+                <p className="text-gray-400">No analysis available</p>
+              )}
+            </div>
+          </ScrollArea>
         </div>
       </DialogContent>
     </Dialog>

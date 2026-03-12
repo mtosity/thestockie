@@ -1,11 +1,14 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { api } from "~/trpc/react";
 import { useSymbol } from "~/hooks/use-symbol";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { MermaidDiagram } from "./mermaid-diagram";
+import { StockResponseModal } from "./stock-response-modal";
+import { Maximize2 } from "lucide-react";
 import "~/styles/markdown.css";
 
 const MarkdownWithColor = ({ content }: { content: string }) => {
@@ -51,7 +54,21 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
               <h1 className="text-2xl font-bold text-white">{children}</h1>
             );
           },
-          code: ({ children }) => {
+          pre: ({ children }) => {
+            return <>{children}</>;
+          },
+          code: ({ className, children }) => {
+            const match = /language-mermaid/.exec(className ?? "");
+            if (match) {
+              return <MermaidDiagram content={String(children)} />;
+            }
+            if (className) {
+              return (
+                <pre className="overflow-x-auto rounded-md bg-white/10 p-3 text-sm text-gray-200">
+                  <code>{children}</code>
+                </pre>
+              );
+            }
             return <MarkdownWithColor content={String(children)} />;
           },
         }}
@@ -64,11 +81,16 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
 
 export const GPT = () => {
   const [symbol] = useSymbol();
-  const { isLoading: isPending, data, error, isSuccess } =
-    api.post.getBySymbol.useQuery(
-      { symbol: symbol ?? "" },
-      { enabled: !!symbol },
-    );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const {
+    isLoading: isPending,
+    data,
+    error,
+    isSuccess,
+  } = api.post.getBySymbol.useQuery(
+    { symbol: symbol ?? "" },
+    { enabled: !!symbol },
+  );
 
   if (!symbol) {
     return null;
@@ -81,38 +103,41 @@ export const GPT = () => {
       onTouchStart={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <div className="flex gap-8">
-        <div>
-          <h3 className="text-lg font-bold">
-            LLM Stock recommendations - Powered by OpenAI
-          </h3>
-          <p>Input data: live quote, fundamental metrics, news summary</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div>
+            <h3 className="text-lg font-bold">
+              Stock recommendations - Powered by OpenAI
+            </h3>
+            <p>Input data: live quote, fundamental metrics, news summary</p>
+          </div>
+          <Button
+            className="self-end border border-white bg-slate-900 text-white hover:bg-slate-600"
+            variant="secondary"
+            disabled={isPending}
+          >
+            Generate{" "}
+            <Image
+              src="/assets/gpt.svg"
+              width={20}
+              height={20}
+              alt="gpt"
+              color="white"
+              style={{
+                animation: isPending ? "spin 1s linear infinite" : undefined,
+              }}
+            />
+          </Button>
         </div>
-
-        <Button
-          className="self-end border border-white bg-slate-900 text-white hover:bg-slate-600"
-          variant="secondary"
-          disabled={isPending}
-        >
-          Generate{" "}
-          <Image
-            src="/assets/gpt.svg"
-            width={20}
-            height={20}
-            alt="gpt"
-            color="white"
-            style={{
-              animation: isPending ? "spin 1s linear infinite" : undefined,
-            }}
-          />
-        </Button>
+        {data && data.supabaseId === symbol ? (
+          <p className="self-end text-xs text-gray-400">
+            {`Updated at: ${Intl.DateTimeFormat().format(new Date(data.updatedAt ?? data.createdAt))}`}
+          </p>
+        ) : null}
       </div>
 
       {data && data.supabaseId === symbol ? (
         <div className="mt-4">
-          <p className="text-sm text-gray-400">
-            {`Updated at: ${Intl.DateTimeFormat().format(new Date(data.updatedAt ?? data.createdAt))} (every week)`}
-          </p>
           <div className="relative mt-2">
             <div className="scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 max-h-[500px] overflow-y-auto rounded-lg border border-gray-700 bg-gray-800/50 p-4 py-8">
               {data.response ? (
@@ -120,6 +145,17 @@ export const GPT = () => {
               ) : null}
             </div>
             <div className="pointer-events-none absolute bottom-0 h-8 w-full bg-gradient-to-t from-gray-900 to-transparent" />
+            {data.response ? (
+              <Button
+                className="absolute right-2 top-2 h-8 w-8 border border-white/20 bg-gray-800/80 text-gray-300 hover:bg-white/20 hover:text-white"
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsModalOpen(true)}
+                title="Read Full Report"
+              >
+                <Maximize2 className="h-4 w-4" />
+              </Button>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -151,6 +187,14 @@ export const GPT = () => {
           </div>
           <p>Report to: mtosity@gmail.com. Thank you!</p>
         </div>
+      ) : null}
+
+      {data ? (
+        <StockResponseModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          stock={data}
+        />
       ) : null}
     </div>
   );

@@ -1,0 +1,42 @@
+/* Mermaid — compact sizing */
+.mermaid-container svg {
+  background: transparent !important;
+  max-height: 350px;
+  width: auto;
+  max-width: 100%;
+}
+
+.mermaid-container rect.background,
+.mermaid-container rect[class*="background"],
+.mermaid-container .main-svg > rect:first-child {
+  fill: transparent !important;
+  stroke: transparent !important;
+}
+
+/* Mermaid chart text overrides — force bright readable text */
+.mermaid-container text {
+  fill: #e2e8f0 !important;
+}
+
+.mermaid-container .tick text,
+.mermaid-container .axis text,
+.mermaid-container .xAxisLabel,
+.mermaid-container .yAxisLabel,
+.mermaid-container .legend text {
+  fill: #cbd5e1 !important;
+}
+
+.mermaid-container .title {
+  fill: #f1f5f9 !important;
+}
+
+/* Axis lines and ticks */
+.mermaid-container .tick line,
+.mermaid-container .domain {
+  stroke: rgba(148, 163, 184, 0.25) !important;
+}
+
+/* Grid lines */
+.mermaid-container .grid line {
+  stroke: rgba(148, 163, 184, 0.1) !important;
+}
