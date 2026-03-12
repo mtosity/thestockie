@@ -1,6 +1,11 @@
 "use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -62,16 +67,24 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
           },
           h2: ({ children }) => {
             return (
-              <h2 className="text-xl font-bold text-white mt-4 mb-2">{children}</h2>
+              <h2 className="mb-2 mt-4 text-xl font-bold text-white">
+                {children}
+              </h2>
             );
           },
           h3: ({ children }) => {
             return (
-              <h3 className="text-lg font-bold text-white mt-3 mb-2">{children}</h3>
+              <h3 className="mb-2 mt-3 text-lg font-bold text-white">
+                {children}
+              </h3>
             );
           },
           ul: ({ children }) => {
-            return <ul className="list-disc list-inside text-white space-y-1">{children}</ul>;
+            return (
+              <ul className="list-inside list-disc space-y-1 text-white">
+                {children}
+              </ul>
+            );
           },
           li: ({ children }) => {
             return <li className="text-white">{children}</li>;
@@ -91,7 +104,11 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
                 </pre>
               );
             }
-            return <code className="bg-white/10 px-1 py-0.5 rounded text-sm text-gray-200">{children}</code>;
+            return (
+              <code className="rounded bg-white/10 px-1 py-0.5 text-sm text-gray-200">
+                {children}
+              </code>
+            );
           },
         }}
       >
@@ -101,20 +118,24 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
   );
 };
 
-export function StockResponseModal({ isOpen, onClose, stock }: StockResponseModalProps) {
+export function StockResponseModal({
+  isOpen,
+  onClose,
+  stock,
+}: StockResponseModalProps) {
   if (!stock) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl h-[80vh] bg-[#15162c] border-white/20 text-white flex flex-col">
+      <DialogContent className="flex h-[80vh] max-w-5xl flex-col border-white/20 bg-[#15162c] text-white">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white">
             {stock.supabaseId} - Analysis Report
           </DialogTitle>
         </DialogHeader>
-        <div className="flex-1 min-h-0">
+        <div className="min-h-0 flex-1">
           <ScrollArea className="h-full w-full">
-            <div className="bg-white/5 border border-white/10 p-4 rounded-md">
+            <div className="rounded-md border border-white/10 bg-white/5 p-4">
               {stock.response ? (
                 <MarkdownWithColor content={stock.response} />
               ) : (

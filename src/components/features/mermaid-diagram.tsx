@@ -104,8 +104,7 @@ function getMermaid() {
               titleFontSize: 18,
               titleColor: "#e2e8f0",
             },
-            plotColorPalette:
-              "#6366f1,#38bdf8,#a78bfa,#34d399,#f472b6,#fb923c",
+            plotColorPalette: "#6366f1,#38bdf8,#a78bfa,#34d399,#f472b6,#fb923c",
           },
           // Quadrant
           quadrant1Fill: "rgba(99,102,241,0.08)",
@@ -184,7 +183,7 @@ export function MermaidDiagram({ content }: { content: string }) {
   return (
     <div
       ref={containerRef}
-      className="mermaid-container my-2 flex w-full justify-center overflow-x-auto [&>svg]:max-w-full [&>svg]:h-auto"
+      className="mermaid-container my-2 flex w-full justify-center overflow-x-auto [&>svg]:h-auto [&>svg]:max-w-full"
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );
