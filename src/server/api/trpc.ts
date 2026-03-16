@@ -15,6 +15,9 @@ import { ConvexHttpClient } from "convex/browser";
 import { auth } from "~/server/auth";
 import { type AxiosError } from "axios";
 
+const VERCEL_PREVIEW_ORIGIN_PATTERN =
+  /^https:\/\/thestockie-git-[a-z0-9]+(?:-[a-z0-9]+)*-[a-z0-9]+(?:-[a-z0-9]+)*\.vercel\.app$/i;
+
 export const convex = new ConvexHttpClient(
   process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL ?? ""
 );
@@ -54,9 +57,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     process.env.NODE_ENV === "production"
       ? productionOrigins
       : [...productionOrigins, ...developmentOrigins];
-  const isVercelPreview =
-    !!origin &&
-    /^https:\/\/thestockie-[a-z0-9-]+\.vercel\.app$/i.test(origin);
+  const isVercelPreview = !!origin && VERCEL_PREVIEW_ORIGIN_PATTERN.test(origin);
   if (!origin || (!isVercelPreview && !validOrigins.includes(origin))) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
