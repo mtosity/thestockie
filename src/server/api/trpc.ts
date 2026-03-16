@@ -15,6 +15,9 @@ import { ConvexHttpClient } from "convex/browser";
 import { auth } from "~/server/auth";
 import { type AxiosError } from "axios";
 
+const VERCEL_PREVIEW_ORIGIN_PATTERN =
+  /^https:\/\/thestockie-git-[a-z0-9]+(?:-[a-z0-9]+)*-[a-z0-9]+(?:-[a-z0-9]+)*\.vercel\.app$/i;
+
 export const convex = new ConvexHttpClient(
   process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL ?? ""
 );
@@ -33,26 +36,32 @@ export const convex = new ConvexHttpClient(
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await auth();
-  const origin = opts.headers.get("origin") ?? opts.headers.get("referer");
-  const productionUrls = [
-    "https://thestockie.vercel.app/",
-    "https://www.thestockie.vercel.app/",
-    "https://thestockie.com/",
-    "https://www.thestockie.com/",
+  const originHeader = opts.headers.get("origin") ?? opts.headers.get("referer");
+  const origin = (() => {
+    if (!originHeader) return null;
+
+    try {
+      return new URL(originHeader).origin;
+    } catch {
+      return null;
+    }
+  })();
+  const productionOrigins = [
+    "https://thestockie.vercel.app",
+    "https://www.thestockie.vercel.app",
+    "https://thestockie.com",
     "https://www.thestockie.com",
   ];
-  const developmentUrls = ["http://localhost:3000", "http://localhost:3001"];
-  const urls =
+  const developmentOrigins = ["http://localhost:3000", "http://localhost:3001"];
+  const validOrigins =
     process.env.NODE_ENV === "production"
-      ? productionUrls
-      : [...productionUrls, ...developmentUrls];
-  const isVercelPreview =
-    !!origin &&
-    /^https:\/\/thestockie-[^/]+-mtositys-projects\.vercel\.app(\/|$)/.test(origin);
-  if (!origin || (!isVercelPreview && !urls.find((url) => origin.startsWith(url)))) {
+      ? productionOrigins
+      : [...productionOrigins, ...developmentOrigins];
+  const isVercelPreview = !!origin && VERCEL_PREVIEW_ORIGIN_PATTERN.test(origin);
+  if (!origin || (!isVercelPreview && !validOrigins.includes(origin))) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
-      message: `Invalid origin for ${origin}`,
+      message: `Invalid origin for ${originHeader}`,
     });
   }
 
