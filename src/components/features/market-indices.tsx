@@ -9,7 +9,13 @@ const INDICES = [
   { symbol: "^IXIC", label: "NASDAQ" },
 ] as const;
 
-function MiniSparkline({ prices }: { prices: number[] }) {
+function MiniSparkline({
+  prices,
+  positive,
+}: {
+  prices: number[];
+  positive: boolean;
+}) {
   const path = useMemo(() => {
     if (prices.length < 2) return "";
     const min = Math.min(...prices);
@@ -32,7 +38,6 @@ function MiniSparkline({ prices }: { prices: number[] }) {
 
   if (!path) return null;
 
-  const positive = prices[prices.length - 1]! >= prices[0]!;
   const color = positive ? "#22c55e" : "#ef4444";
 
   return (
@@ -106,7 +111,7 @@ function IndexChip({ symbol, label }: { symbol: string; label: string }) {
     <div className="flex items-center gap-1.5">
       <span className="text-xs font-medium text-gray-400">{label}</span>
       {prices.length > 1 ? (
-        <MiniSparkline prices={prices} />
+        <MiniSparkline prices={prices} positive={positive} />
       ) : (
         <span
           className={`text-xs ${positive ? "text-green-400" : "text-red-400"}`}
