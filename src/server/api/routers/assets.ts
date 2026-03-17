@@ -46,6 +46,26 @@ console.log(
   apiKey ? `${apiKey.substring(0, 4)}...` : "NOT SET",
 );
 
+function formatDate(d: Date): string {
+  return d.toISOString().split("T")[0]!;
+}
+
+function getTodayDate(): string {
+  return formatDate(new Date());
+}
+
+function getDateNDaysAgo(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return formatDate(d);
+}
+
+function getDateNDaysFromNow(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return formatDate(d);
+}
+
 export const assetsRouter = createTRPCRouter({
   // Already using FMP - no changes needed
   companyProfile: publicProcedure.input(String).query(async ({ input }) => {
@@ -1271,4 +1291,109 @@ export const assetsRouter = createTRPCRouter({
           : 0,
       };
     }),
+
+  // ── Macro endpoints ──────────────────────────────────────────────
+
+  sectorPerformance: publicProcedure.query(async () => {
+    const res = await fmp.get<
+      {
+        sector: string;
+        changesPercentage: string;
+      }[]
+    >("/api/v3/sector-performance", {
+      params: { apikey: apiKey },
+    });
+    return res.data;
+  }),
+
+  treasuryRates: publicProcedure.query(async () => {
+    const res = await fmp.get<
+      {
+        date: string;
+        month1: number;
+        month2: number;
+        month3: number;
+        month6: number;
+        year1: number;
+        year2: number;
+        year3: number;
+        year5: number;
+        year7: number;
+        year10: number;
+        year20: number;
+        year30: number;
+      }[]
+    >("/api/v4/treasury", {
+      params: { apikey: apiKey, from: getDateNDaysAgo(30), to: getTodayDate() },
+    });
+    return res.data;
+  }),
+
+  economicCalendar: publicProcedure.query(async () => {
+    const res = await fmp.get<
+      {
+        event: string;
+        date: string;
+        country: string;
+        actual: number | null;
+        previous: number | null;
+        change: number | null;
+        changePercentage: number | null;
+        estimate: number | null;
+        impact: string;
+      }[]
+    >("/api/v3/economic_calendar", {
+      params: {
+        apikey: apiKey,
+        from: getTodayDate(),
+        to: getDateNDaysFromNow(14),
+      },
+    });
+    return res.data;
+  }),
+
+  generalNews: publicProcedure.query(async () => {
+    const res = await fmp.get<
+      {
+        title: string;
+        text: string;
+        url: string;
+        image: string;
+        publishedDate: string;
+        site: string;
+        symbol?: string;
+      }[]
+    >("/api/v4/general_news", {
+      params: { apikey: apiKey, page: 0 },
+    });
+    return res.data?.slice(0, 20) ?? [];
+  }),
+
+  forexQuote: publicProcedure.input(z.string()).query(async ({ input }) => {
+    const res = await fmp.get<
+      {
+        ticker: string;
+        bid: number;
+        ask: number;
+        open: number;
+        low: number;
+        high: number;
+        changes: number;
+        date: string;
+      }[]
+    >(`/api/v3/fx/${input}`, {
+      params: { apikey: apiKey },
+    });
+    return res.data?.[0] ?? null;
+  }),
+
+  forexHistorical: publicProcedure.input(z.string()).query(async ({ input }) => {
+    const res = await fmp.get<{
+      symbol: string;
+      historical: { date: string; close: number; open: number; high: number; low: number }[];
+    }>(`/api/v3/historical-price-full/${input}`, {
+      params: { apikey: apiKey, timeseries: 365 },
+    });
+    return res.data;
+  }),
 });
