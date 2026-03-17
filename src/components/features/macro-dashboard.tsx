@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   AreaChart,
   Area,
@@ -71,6 +77,12 @@ function SkeletonRows({ count = 4 }: { count?: number }) {
       ))}
     </div>
   );
+}
+
+function useMounted() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted;
 }
 
 function formatLargeNumber(n: number): string {
@@ -1091,6 +1103,20 @@ function CommoditiesCard() {
 
 export function MacroDashboard() {
   const [timeFrame, setTimeFrame] = useState<MacroTimeFrame>("1D");
+  const mounted = useMounted();
+
+  if (!mounted) {
+    return (
+      <div className="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-64 animate-pulse rounded-xl border border-[#424975] bg-[#151624]"
+          />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <TimeFrameContext.Provider value={timeFrame}>
