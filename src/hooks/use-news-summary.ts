@@ -53,6 +53,7 @@ export function useNewsSummary(
   articles: { title: string; text: string }[],
   cacheKey: string,
   context: string,
+  enabled = true,
 ): UseSummarizeResult {
   const [summary, setSummary] = useState("");
   const [status, setStatus] = useState<SummaryStatus>("idle");
@@ -131,16 +132,25 @@ export function useNewsSummary(
     }
   }, [articles, articleDigest]);
 
-  // Trigger summarization
+  // Trigger summarization — deferred to avoid blocking initial render
   useEffect(() => {
     if (
-      articles.length > 0 &&
-      status === "idle" &&
-      summarizedRef.current !== articleDigest
+      !enabled ||
+      articles.length === 0 ||
+      status !== "idle" ||
+      summarizedRef.current === articleDigest
     ) {
-      void summarize();
+      return;
     }
-  }, [articles, status, articleDigest, summarize]);
+
+    // Use requestIdleCallback to avoid blocking the main thread
+    if (typeof requestIdleCallback === "function") {
+      const id = requestIdleCallback(() => void summarize());
+      return () => cancelIdleCallback(id);
+    }
+    const id = setTimeout(() => void summarize(), 200);
+    return () => clearTimeout(id);
+  }, [enabled, articles, status, articleDigest, summarize]);
 
   return { summary, status, source };
 }
