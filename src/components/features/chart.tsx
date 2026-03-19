@@ -133,7 +133,7 @@ export function Chart() {
       refetchOnMount: false,
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,
-      enabled: timeFrame === "1D" && !!symbol,
+      enabled: (timeFrame === "1D" || timeFrame === "1W") && !!symbol,
     });
 
   if (!symbol) {
@@ -151,14 +151,39 @@ export function Chart() {
       price: result.close,
     }));
 
-  const chartData2 = data2?.results?.map((result) => ({
-    date: result.date,
-    price: result.close,
-  }));
+  const chartData2 = data2?.results
+    ?.map((result) => ({
+      date: result.date,
+      price: result.close,
+    }))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const latestIntradayDay = chartData2?.[chartData2.length - 1]?.date.split(" ")[0];
+  const oneDayData = latestIntradayDay
+    ? chartData2?.filter((result) => result.date.startsWith(latestIntradayDay))
+    : [];
+
+  const oneWeekData = chartData2?.length
+    ? (() => {
+        const latestDate = new Date(chartData2[chartData2.length - 1]!.date);
+        if (Number.isNaN(latestDate.getTime())) return chartData2;
+
+        const cutoff = new Date(latestDate);
+        cutoff.setDate(cutoff.getDate() - 7);
+        return chartData2.filter((result) => new Date(result.date) >= cutoff);
+      })()
+    : [];
 
   const filteredData = chartData
     ? filterDataByTimeFrame(chartData ?? [], timeFrame)
     : [];
+
+  const displayedData =
+    timeFrame === "1D"
+      ? oneDayData
+      : timeFrame === "1W" && oneWeekData.length > 5
+        ? oneWeekData
+        : filteredData;
 
   return (
     <div className="flex h-full flex-col">
@@ -184,14 +209,11 @@ export function Chart() {
             </button>
           ))}
         </div>
-        <PriceChange data={timeFrame === "1D" ? chartData2 : filteredData} />
+        <PriceChange data={displayedData} />
       </div>
 
       <ResponsiveContainer>
-        <AreaChart
-          accessibilityLayer
-          data={timeFrame === "1D" ? chartData2 : filteredData}
-        >
+        <AreaChart accessibilityLayer data={displayedData}>
           <defs>
             <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
