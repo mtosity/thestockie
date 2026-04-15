@@ -280,6 +280,118 @@ function VixCard() {
   );
 }
 
+// ── Fear & Greed Index ──────────────────────────────────────────────
+
+const FEAR_GREED_LEVELS = [
+  { max: 24, label: "Extreme Fear", color: "text-green-400", bgColor: "bg-green-500" },
+  { max: 44, label: "Fear", color: "text-blue-400", bgColor: "bg-blue-500" },
+  { max: 55, label: "Neutral", color: "text-yellow-400", bgColor: "bg-yellow-500" },
+  { max: 75, label: "Greed", color: "text-orange-400", bgColor: "bg-orange-500" },
+  { max: 100, label: "Extreme Greed", color: "text-red-400", bgColor: "bg-red-500" },
+] as const;
+
+function FearGreedCard() {
+  const { data, isLoading } = api.asset.fearGreedIndex.useQuery(
+    undefined,
+    REFETCH_OPTS,
+  );
+
+  // Create gauge segments for visualization
+  const gaugeSegments = useMemo(() => {
+    return FEAR_GREED_LEVELS.map((l, i) => {
+      const prevMax = i > 0 ? FEAR_GREED_LEVELS[i - 1]!.max : 0;
+      return {
+        ...l,
+        width: l.max - prevMax,
+        start: prevMax,
+      };
+    });
+  }, []);
+
+  return (
+    <CardShell title="CNN Fear & Greed Index">
+      {isLoading ? (
+        <SkeletonRows count={3} />
+      ) : data ? (
+        <div>
+          <div className="mb-2 flex items-baseline gap-3">
+            <span className="text-3xl font-bold text-white">
+              {data.value}
+            </span>
+            <div className="flex flex-col">
+              <ChangeDisplay 
+                changePercent={data.changePercentage} 
+                className="text-sm" 
+              />
+              <span className="text-xs text-gray-400">
+                vs previous close
+              </span>
+            </div>
+          </div>
+          
+          <span className={`text-sm font-medium ${data.colorClass}`}>
+            {data.classification}
+          </span>
+          
+          {/* Gauge visualization */}
+          <div className="mt-3">
+            <div className="relative h-2 w-full rounded-full bg-gray-700">
+              {gaugeSegments.map((seg, i) => (
+                <div
+                  key={i}
+                  className={`absolute h-full ${seg.bgColor} rounded-full`}
+                  style={{
+                    left: `${seg.start}%`,
+                    width: `${seg.width}%`,
+                  }}
+                />
+              ))}
+              <div
+                className="absolute top-1/2 h-4 w-4 -translate-y-1/2 -translate-x-1/2 rounded-full border-2 border-white bg-white shadow-lg"
+                style={{ left: `${data.value}%` }}
+              />
+            </div>
+            <div className="mt-1 flex justify-between text-xs text-gray-500">
+              <span>0</span>
+              <span>25</span>
+              <span>45</span>
+              <span>56</span>
+              <span>76</span>
+              <span>100</span>
+            </div>
+          </div>
+          
+          <div className="mt-3 text-xs text-gray-400">
+            <div className="flex justify-between">
+              <span>Previous Close:</span>
+              <span className="text-gray-300">{data.previousClose}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Change:</span>
+              <span className={`${data.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {data.change >= 0 ? '+' : ''}{data.change.toFixed(1)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Last Updated:</span>
+              <span className="text-gray-300">
+                {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+          </div>
+          
+          <div className="mt-3 text-xs text-gray-500">
+            Measures market sentiment from 0 (Extreme Fear) to 100 (Extreme Greed).
+            Extreme fear can indicate buying opportunities, while extreme greed may signal overbought conditions.
+          </div>
+        </div>
+      ) : (
+        <div className="text-gray-500">No data</div>
+      )}
+    </CardShell>
+  );
+}
+
 // ── USD/JPY ─────────────────────────────────────────────────────────
 
 function UsdJpyCard() {
@@ -1141,6 +1253,7 @@ export function MacroDashboard() {
           <div className="flex flex-col gap-4">
             <ForexCard />
             <CommoditiesCard />
+            <FearGreedCard />
           </div>
 
           {/* Row 3: Calendar & News */}
