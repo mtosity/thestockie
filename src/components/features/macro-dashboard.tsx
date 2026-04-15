@@ -39,6 +39,13 @@ const TIMEFRAME_TRADING_DAYS: Record<MacroTimeFrame, number> = {
   "1Y": 252,
 };
 
+const TIMEFRAME_CHART_POINTS: Record<MacroTimeFrame, number> = {
+  "1D": 5,
+  "1W": 10,
+  "1M": 30,
+  "1Y": 90,
+};
+
 // ── Shared ──────────────────────────────────────────────────────────
 
 const REFETCH_OPTS = {
@@ -204,9 +211,9 @@ function VixCard() {
     if (!histData?.historical) return [];
     return [...histData.historical]
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(-90)
+      .slice(-TIMEFRAME_CHART_POINTS[timeFrame])
       .map((d) => ({ date: d.date, value: d.close }));
-  }, [histData]);
+  }, [histData, timeFrame]);
 
   return (
     <CardShell title="VIX — Volatility Index">
@@ -428,9 +435,9 @@ function UsdJpyCard() {
     if (!histData?.historical) return [];
     return [...histData.historical]
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(-180)
+      .slice(-TIMEFRAME_CHART_POINTS[timeFrame])
       .map((d) => ({ date: d.date, value: d.close }));
-  }, [histData]);
+  }, [histData, timeFrame]);
 
   const distanceTo160 = 160 - rate;
   const nearWarning = rate >= 155;
