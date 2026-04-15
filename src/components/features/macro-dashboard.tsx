@@ -298,14 +298,25 @@ function FearGreedCard() {
 
   // Create gauge segments for visualization
   const gaugeSegments = useMemo(() => {
-    return FEAR_GREED_LEVELS.map((l, i) => {
-      const prevMax = i > 0 ? FEAR_GREED_LEVELS[i - 1]!.max : 0;
-      return {
-        ...l,
-        width: l.max - prevMax,
-        start: prevMax,
-      };
-    });
+    const segments: Array<{
+      max: number;
+      label: string;
+      color: string;
+      bgColor: string;
+      width: number;
+      start: number;
+    }> = [];
+    let start = 0;
+    for (const level of FEAR_GREED_LEVELS) {
+      const width = level.max - start;
+      segments.push({
+        ...level,
+        width,
+        start,
+      });
+      start = level.max;
+    }
+    return segments;
   }, []);
 
   return (
