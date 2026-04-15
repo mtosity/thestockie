@@ -1396,4 +1396,40 @@ export const assetsRouter = createTRPCRouter({
     });
     return res.data;
   }),
+
+  fearGreedIndex: publicProcedure.query(async () => {
+    // TODO: Replace with real FMP API endpoint when available
+    // For now, return mock data simulating CNN Fear & Greed Index
+    const mockValue = 65; // Example value in Greed territory
+    
+    // Determine classification based on value
+    let classification = "Neutral";
+    let colorClass = "text-yellow-400";
+    if (mockValue >= 76) {
+      classification = "Extreme Greed";
+      colorClass = "text-red-400";
+    } else if (mockValue >= 56) {
+      classification = "Greed";
+      colorClass = "text-orange-400";
+    } else if (mockValue >= 45) {
+      classification = "Neutral";
+      colorClass = "text-yellow-400";
+    } else if (mockValue >= 25) {
+      classification = "Fear";
+      colorClass = "text-blue-400";
+    } else {
+      classification = "Extreme Fear";
+      colorClass = "text-green-400";
+    }
+
+    return {
+      value: mockValue,
+      classification,
+      colorClass,
+      timestamp: new Date().toISOString(),
+      previousClose: 62, // Mock previous day value
+      change: mockValue - 62,
+      changePercentage: ((mockValue - 62) / 62) * 100,
+    };
+  }),
 });
