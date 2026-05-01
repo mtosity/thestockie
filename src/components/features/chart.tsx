@@ -223,8 +223,8 @@ export function Chart() {
 
   const srLevels = useMemo(() => {
     if (!indicatorData || !indicators.sr || !activeChartData.length) return [];
-    const latestPrice = activeChartData[activeChartData.length - 1]?.price;
-    if (latestPrice == null) return [];
+    const referencePrice = activeChartData[activeChartData.length - 1]?.price;
+    if (referencePrice == null) return [];
     const prices = activeChartData.map((d) => d.price);
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
@@ -237,7 +237,7 @@ export function Chart() {
       )
       .sort(
         (a, b) =>
-          Math.abs(a.level - latestPrice) - Math.abs(b.level - latestPrice),
+          Math.abs(a.level - referencePrice) - Math.abs(b.level - referencePrice),
       )
       .slice(0, 10);
   }, [indicatorData, indicators.sr, activeChartData]);

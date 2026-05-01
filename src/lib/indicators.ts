@@ -94,8 +94,10 @@ export function calculateRSI(
   avgGain /= period;
   avgLoss /= period;
 
+  // No price movement yields a neutral RSI value.
+  const NEUTRAL_RSI = 50;
   const toRSI = (ag: number, al: number) => {
-    if (ag === 0 && al === 0) return 50;
+    if (ag === 0 && al === 0) return NEUTRAL_RSI;
     if (al === 0) return 100;
     if (ag === 0) return 0;
     return 100 - 100 / (1 + ag / al);
