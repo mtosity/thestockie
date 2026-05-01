@@ -109,25 +109,21 @@ const filterDataByTimeFrame = <T extends { date: string }>(
   data: T[],
   timeFrame: TimeFrame,
 ): T[] => {
-  const sortedData = [...data].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-  );
-
   switch (timeFrame) {
     case "5Y":
-      return sortedData.slice(-252 * 5);
+      return data.slice(-252 * 5);
     case "1Y":
-      return sortedData.slice(-252);
+      return data.slice(-252);
     case "6M":
-      return sortedData.slice(-126);
+      return data.slice(-126);
     case "1M":
-      return sortedData.slice(-21);
+      return data.slice(-21);
     case "1W":
-      return sortedData.slice(-5);
+      return data.slice(-5);
     case "1D":
-      return sortedData.slice(-1);
+      return data.slice(-1);
     default:
-      return sortedData;
+      return data;
   }
 };
 
@@ -171,15 +167,17 @@ export function Chart() {
 
   const chartData2: ChartDataPoint[] = useMemo(() => {
     if (!data2?.results) return [];
-    return data2.results.map((r) => ({
-      date: r.date,
-      price: r.close,
-      open: r.open,
-      high: r.high,
-      low: r.low,
-      close: r.close,
-      volume: r.volume,
-    }));
+    return [...data2.results]
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .map((r) => ({
+        date: r.date,
+        price: r.close,
+        open: r.open,
+        high: r.high,
+        low: r.low,
+        close: r.close,
+        volume: r.volume,
+      }));
   }, [data2]);
 
   const activeChartData: ChartDataPoint[] = useMemo(() => {
@@ -225,6 +223,8 @@ export function Chart() {
 
   const srLevels = useMemo(() => {
     if (!indicatorData || !indicators.sr || !activeChartData.length) return [];
+    const latestPrice = activeChartData[activeChartData.length - 1]?.price;
+    if (latestPrice == null) return [];
     const prices = activeChartData.map((d) => d.price);
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
@@ -235,11 +235,23 @@ export function Chart() {
           lvl.level >= minPrice - range * 0.05 &&
           lvl.level <= maxPrice + range * 0.05,
       )
+      .sort(
+        (a, b) =>
+          Math.abs(a.level - latestPrice) - Math.abs(b.level - latestPrice),
+      )
       .slice(0, 10);
   }, [indicatorData, indicators.sr, activeChartData]);
 
-  const showRSI = indicators.rsi;
-  const showMACD = indicators.macd;
+  const showRSI =
+    indicators.rsi && !!indicatorData?.rsi.some((point) => point.rsi != null);
+  const showMACD =
+    indicators.macd &&
+    !!indicatorData?.macd.some(
+      (point) =>
+        point.macdLine != null ||
+        point.macdSignal != null ||
+        point.macdHistogram != null,
+    );
   const hasSubCharts = showRSI || showMACD;
 
   if (!symbol) return <NoSymbolMessage />;

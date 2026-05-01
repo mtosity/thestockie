@@ -26,24 +26,30 @@ export function useIndicatorPreferences(): [
 ] {
   const [preferences, setPreferences] =
     useState<IndicatorPreferences>(DEFAULT_PREFERENCES);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        setPreferences({ ...DEFAULT_PREFERENCES, ...(JSON.parse(stored) as Partial<IndicatorPreferences>) });
+        setPreferences({
+          ...DEFAULT_PREFERENCES,
+          ...(JSON.parse(stored) as Partial<IndicatorPreferences>),
+        });
       } catch {
         // ignore malformed stored data
       }
     }
+    setHasLoaded(true);
   }, []);
 
+  useEffect(() => {
+    if (!hasLoaded) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+  }, [hasLoaded, preferences]);
+
   const toggle = (key: keyof IndicatorPreferences) => {
-    setPreferences((prev) => {
-      const next = { ...prev, [key]: !prev[key] };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
+    setPreferences((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   return [preferences, toggle];

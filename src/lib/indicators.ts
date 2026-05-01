@@ -94,8 +94,12 @@ export function calculateRSI(
   avgGain /= period;
   avgLoss /= period;
 
-  const toRSI = (ag: number, al: number) =>
-    al === 0 ? 100 : 100 - 100 / (1 + ag / al);
+  const toRSI = (ag: number, al: number) => {
+    if (ag === 0 && al === 0) return 50;
+    if (al === 0) return 100;
+    if (ag === 0) return 0;
+    return 100 - 100 / (1 + ag / al);
+  };
 
   result[period] = { date: data[period]!.date, rsi: toRSI(avgGain, avgLoss) };
 
