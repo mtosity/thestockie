@@ -6,6 +6,7 @@ import {
   Filter,
   CalendarDays,
   ArrowLeftRight,
+  Radar,
   LogIn,
   LogOut,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const navLinks = [
   { href: "/", icon: Home, label: "Home" },
   { href: "/blogs", icon: BookOpen, label: "Blog" },
   { href: "/screener", icon: Filter, label: "Screener" },
+  { href: "/influencers", icon: Radar, label: "Influencers" },
   { href: "/earnings", icon: CalendarDays, label: "Earnings" },
   { href: "/compare", icon: ArrowLeftRight, label: "Compare" },
 ] as const;
@@ -27,6 +29,7 @@ const navLinks = [
 const PAGE_TITLES: Record<string, string> = {
   "/blogs": "Blog",
   "/screener": "Screener",
+  "/influencers": "Influencer Radar",
   "/earnings": "Earnings Calendar",
   "/compare": "Stock Comparison",
 };
