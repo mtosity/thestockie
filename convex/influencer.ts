@@ -429,12 +429,17 @@ export const aggregate = internalMutation({
         theses: a.theses,
       }));
 
+    // Split by sign so a symbol only appears in one column; bearish ordered
+    // most-negative-first.
+    const bullRanked = ranking.filter((a) => a.net > 0);
+    const bearRanked = ranking.filter((a) => a.net < 0).sort((a, b) => a.net - b.net);
+
     return {
       date: args.date,
       windowDays,
       symbolCount: ranking.length,
-      bullishLeaders: top(ranking),
-      bearishLeaders: top([...ranking].reverse()),
+      bullishLeaders: top(bullRanked),
+      bearishLeaders: top(bearRanked),
       macroNotes: macroNotes.map((m) => ({
         influencerId: m.influencerId,
         macroSummary: m.macroSummary,
