@@ -193,4 +193,72 @@ http.route({
   ),
 });
 
+// ── Super investors (13F) ────────────────────────────────────────────────────
+
+http.route({
+  path: "/investor/active",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorized(request)) return json({ error: "unauthorized" }, 401);
+    const result = await ctx.runQuery(internal.superInvestor.listActiveInvestors, {});
+    return json({ ok: true, result });
+  }),
+});
+
+http.route({
+  path: "/investor/seed",
+  method: "POST",
+  handler: endpoint((ctx, b) =>
+    ctx.runMutation(internal.superInvestor.upsertInvestor, {
+      name: b.name,
+      firm: b.firm,
+      style: b.style,
+      why: b.why,
+      cik: b.cik,
+      slug: b.slug,
+      avatar: b.avatar,
+      active: b.active,
+    })
+  ),
+});
+
+http.route({
+  path: "/investor/cusip/lookup",
+  method: "POST",
+  handler: endpoint((ctx, b) =>
+    ctx.runQuery(internal.superInvestor.cusipLookup, { cusips: b.cusips ?? [] })
+  ),
+});
+
+http.route({
+  path: "/investor/cusip/save",
+  method: "POST",
+  handler: endpoint((ctx, b) =>
+    ctx.runMutation(internal.superInvestor.cusipSave, { entries: b.entries ?? [] })
+  ),
+});
+
+http.route({
+  path: "/investor/filing",
+  method: "POST",
+  handler: endpoint((ctx, b) =>
+    ctx.runMutation(internal.superInvestor.saveFiling, {
+      cik: b.cik,
+      period: b.period,
+      reportDate: b.reportDate,
+      filingDate: b.filingDate,
+      totalValue: b.totalValue,
+      positions: b.positions ?? [],
+    })
+  ),
+});
+
+http.route({
+  path: "/investor/aggregate",
+  method: "POST",
+  handler: endpoint((ctx, b) =>
+    ctx.runMutation(internal.superInvestor.aggregateConsensus, { period: b.period })
+  ),
+});
+
 export default http;
