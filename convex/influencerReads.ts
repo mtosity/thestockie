@@ -39,18 +39,23 @@ export const sentimentRanking = query({
       .query("dailySentiment")
       .withIndex("by_date_symbol", (q) => q.eq("date", theDate!))
       .collect();
-    // Rank by net creator count (bullish − bearish), not conviction-weighted
-    // score — so hyperbole doesn't inflate a ranking. Tie-break by total mentions.
-    const score = (r: (typeof rows)[number]) => r.bullishCount - r.bearishCount;
-    const sorted = [...rows].sort(
-      (a, b) => score(b) - score(a) || b.mentionsCount - a.mentionsCount
-    );
+    // Rank purely by how many distinct creators hold the stance (not a
+    // conviction-weighted score, so hyperbole can't inflate it). Show every
+    // stock with a real consensus (>2 creators); if that's fewer than the
+    // target, fill with lighter (1–2 creator) names. Tie-break by total reach.
     const n = limit ?? 12;
+    const pick = (countOf: (r: (typeof rows)[number]) => number) => {
+      const ranked = rows
+        .filter((r) => countOf(r) > 0)
+        .sort((a, b) => countOf(b) - countOf(a) || b.mentionsCount - a.mentionsCount);
+      const strong = ranked.filter((r) => countOf(r) > 2);
+      return strong.length >= n ? strong : ranked.slice(0, n);
+    };
     return {
       date: theDate,
       total: rows.length,
-      bullish: sorted.filter((r) => score(r) > 0).slice(0, n),
-      bearish: sorted.filter((r) => score(r) < 0).reverse().slice(0, n),
+      bullish: pick((r) => r.bullishCount),
+      bearish: pick((r) => r.bearishCount),
     };
   },
 });

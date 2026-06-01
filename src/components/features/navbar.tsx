@@ -29,10 +29,10 @@ const primaryLinks = [
   { href: "/", icon: Home, label: "Home" },
   { href: "/macro", icon: Globe, label: "Macro" },
   { href: "/screener", icon: Filter, label: "Screener" },
-  { href: "/influencers", icon: Radar, label: "Influencers" },
 ] as const;
 
 const secondaryLinks = [
+  { href: "/influencers", icon: Radar, label: "Influencers" },
   { href: "/earnings", icon: CalendarDays, label: "Earnings" },
   { href: "/compare", icon: ArrowLeftRight, label: "Compare" },
   { href: "/blogs", icon: BookOpen, label: "Blog" },
