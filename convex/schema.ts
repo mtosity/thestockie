@@ -294,4 +294,96 @@ export default defineSchema({
     finishedAt: v.optional(v.number()),
     error: v.optional(v.string()),
   }).index("by_runAt", ["runAt"]),
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Super investors (SEC 13F) — populated by the superinvestor-job
+  // ───────────────────────────────────────────────────────────────────────────
+
+  superInvestors: defineTable({
+    name: v.string(),
+    firm: v.string(),
+    style: v.optional(v.string()),
+    why: v.optional(v.string()),
+    cik: v.string(),
+    slug: v.string(),
+    avatar: v.optional(v.string()),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_cik", ["cik"])
+    .index("by_slug", ["slug"])
+    .index("by_active", ["active"]),
+
+  // One row per (investor, quarter) 13F filing.
+  investor13fFilings: defineTable({
+    investorId: v.id("superInvestors"),
+    cik: v.string(),
+    period: v.string(), // "2026-Q1"
+    reportDate: v.number(), // quarter-end, ms
+    filingDate: v.number(), // ms
+    totalValue: v.number(), // portfolio $ value
+    holdingsCount: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_investor", ["investorId"])
+    .index("by_period", ["period"])
+    .index("by_investor_period", ["investorId", "period"]),
+
+  // One row per (investor, quarter, holding) with the quarter-over-quarter move.
+  investorPositions: defineTable({
+    investorId: v.id("superInvestors"),
+    period: v.string(),
+    cusip: v.string(),
+    ticker: v.optional(v.string()),
+    name: v.string(), // issuer name
+    shares: v.number(),
+    value: v.number(), // $ value
+    pctPortfolio: v.number(), // 0..100
+    changeType: v.union(
+      v.literal("new"),
+      v.literal("added"),
+      v.literal("reduced"),
+      v.literal("sold"),
+      v.literal("hold")
+    ),
+    changePct: v.optional(v.number()), // share change %, signed
+    prevShares: v.optional(v.number()),
+    isOption: v.optional(v.boolean()),
+    createdAt: v.number(),
+  })
+    .index("by_investor_period", ["investorId", "period"])
+    .index("by_ticker", ["ticker"])
+    .index("by_period", ["period"]),
+
+  // Cross-investor consensus per ticker for a period.
+  investorConsensus: defineTable({
+    period: v.string(),
+    ticker: v.string(),
+    name: v.optional(v.string()),
+    buyers: v.number(), // # investors new/added
+    sellers: v.number(), // # investors reduced/sold
+    holders: v.number(), // # investors holding (any)
+    net: v.number(), // buyers - sellers
+    consensus: v.union(
+      v.literal("strong_buy"),
+      v.literal("buy"),
+      v.literal("mixed"),
+      v.literal("sell"),
+      v.literal("strong_sell")
+    ),
+    buyerNames: v.array(v.string()),
+    sellerNames: v.array(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_period", ["period"])
+    .index("by_period_ticker", ["period", "ticker"]),
+
+  // CUSIP→ticker cache (filled from OpenFIGI).
+  cusipTickers: defineTable({
+    cusip: v.string(),
+    ticker: v.optional(v.string()),
+    name: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_cusip", ["cusip"]),
 });
