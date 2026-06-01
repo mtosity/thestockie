@@ -58,7 +58,8 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
       ? productionOrigins
       : [...productionOrigins, ...developmentOrigins];
   const isVercelPreview = !!origin && VERCEL_PREVIEW_ORIGIN_PATTERN.test(origin);
-  if (!origin || (!isVercelPreview && !validOrigins.includes(origin))) {
+  const isServerSide = !originHeader; // SSR during build has no origin
+  if (!origin || (!isVercelPreview && !isServerSide && !validOrigins.includes(origin))) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: `Invalid origin for ${originHeader}`,
