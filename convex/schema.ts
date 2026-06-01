@@ -213,6 +213,10 @@ export default defineSchema({
       v.literal("strong_bearish")
     ),
     influencerIds: v.array(v.id("influencers")),
+    // Creator names per stance, for the leaderboard hover tooltips.
+    bullishCreators: v.optional(v.array(v.string())),
+    bearishCreators: v.optional(v.array(v.string())),
+    neutralCreators: v.optional(v.array(v.string())),
     topTheses: v.array(
       v.object({
         influencerId: v.id("influencers"),

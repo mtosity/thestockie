@@ -4,10 +4,55 @@ import { type ReactNode } from "react";
 import { Flame, Snowflake } from "lucide-react";
 import { type RouterOutputs } from "~/trpc/react";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
-import { ConsensusBadge, netColor, formatNet } from "./influencer-shared";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import { ConsensusBadge } from "./influencer-shared";
 
 type Sentiment = RouterOutputs["influencer"]["sentiment"];
 type Row = Sentiment["bullish"][number];
+
+// A stance count (e.g. "10↑") that, on hover, lists the creators holding it.
+function CreatorCount({
+  count,
+  arrow,
+  color,
+  names,
+}: {
+  count: number;
+  arrow: string;
+  color: string;
+  names: string[];
+}) {
+  if (names.length === 0) {
+    return (
+      <span className={color}>
+        {count}
+        {arrow}
+      </span>
+    );
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className={`cursor-help ${color}`}>
+          {count}
+          {arrow}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="left" className="max-w-[240px]">
+        <ul className="space-y-0.5 text-xs leading-snug">
+          {names.map((n) => (
+            <li key={n}>{n}</li>
+          ))}
+        </ul>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 function SymbolRow({ row, rank }: { row: Row; rank: number }) {
   return (
@@ -22,17 +67,30 @@ function SymbolRow({ row, rank }: { row: Row; rank: number }) {
           <p className="truncate text-xs text-gray-500">{row.companyName}</p>
         )}
       </div>
-      <div className="shrink-0 text-right">
-        <div className={`font-mono text-sm font-semibold ${netColor(row.netScore)}`}>
-          {formatNet(row.netScore)}
-        </div>
-        <div className="text-[11px] text-gray-500">
-          <span className="text-emerald-400">{row.bullishCount}↑</span>{" "}
-          <span className="text-rose-400">{row.bearishCount}↓</span>
-          {row.neutralCount > 0 && (
-            <span className="text-slate-400"> {row.neutralCount}·</span>
-          )}
-        </div>
+      <div className="shrink-0 text-right text-sm">
+        <CreatorCount
+          count={row.bullishCount}
+          arrow="↑"
+          color="text-emerald-400"
+          names={row.bullishCreators ?? []}
+        />{" "}
+        <CreatorCount
+          count={row.bearishCount}
+          arrow="↓"
+          color="text-rose-400"
+          names={row.bearishCreators ?? []}
+        />
+        {row.neutralCount > 0 && (
+          <>
+            {" "}
+            <CreatorCount
+              count={row.neutralCount}
+              arrow="·"
+              color="text-slate-400"
+              names={row.neutralCreators ?? []}
+            />
+          </>
+        )}
       </div>
     </div>
   );
@@ -71,21 +129,23 @@ function LeaderCard({
 
 export function SentimentLeaderboard({ sentiment }: { sentiment: Sentiment }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <LeaderCard
-        title="Most bullish"
-        icon={<Flame className="h-4 w-4" />}
-        accent="text-emerald-400"
-        rows={sentiment.bullish}
-        empty="No bullish consensus yet."
-      />
-      <LeaderCard
-        title="Most bearish"
-        icon={<Snowflake className="h-4 w-4" />}
-        accent="text-rose-400"
-        rows={sentiment.bearish}
-        empty="No bearish consensus yet."
-      />
-    </div>
+    <TooltipProvider delayDuration={100}>
+      <div className="grid gap-4 md:grid-cols-2">
+        <LeaderCard
+          title="Most bullish"
+          icon={<Flame className="h-4 w-4" />}
+          accent="text-emerald-400"
+          rows={sentiment.bullish}
+          empty="No bullish consensus yet."
+        />
+        <LeaderCard
+          title="Most bearish"
+          icon={<Snowflake className="h-4 w-4" />}
+          accent="text-rose-400"
+          rows={sentiment.bearish}
+          empty="No bearish consensus yet."
+        />
+      </div>
+    </TooltipProvider>
   );
 }

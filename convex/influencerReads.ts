@@ -39,13 +39,18 @@ export const sentimentRanking = query({
       .query("dailySentiment")
       .withIndex("by_date_symbol", (q) => q.eq("date", theDate!))
       .collect();
-    const sorted = [...rows].sort((a, b) => b.netScore - a.netScore);
+    // Rank by net creator count (bullish − bearish), not conviction-weighted
+    // score — so hyperbole doesn't inflate a ranking. Tie-break by total mentions.
+    const score = (r: (typeof rows)[number]) => r.bullishCount - r.bearishCount;
+    const sorted = [...rows].sort(
+      (a, b) => score(b) - score(a) || b.mentionsCount - a.mentionsCount
+    );
     const n = limit ?? 12;
     return {
       date: theDate,
       total: rows.length,
-      bullish: sorted.filter((r) => r.netScore > 0).slice(0, n),
-      bearish: sorted.filter((r) => r.netScore < 0).reverse().slice(0, n),
+      bullish: sorted.filter((r) => score(r) > 0).slice(0, n),
+      bearish: sorted.filter((r) => score(r) < 0).reverse().slice(0, n),
     };
   },
 });
@@ -128,5 +133,34 @@ export const latestRun = query({
       .withIndex("by_runAt")
       .order("desc")
       .first();
+  },
+});
+
+// All discovered videos for a channel, with processing status — used to audit
+// which expected videos are missing/failed.
+export const videosByChannel = query({
+  args: { channelId: v.string() },
+  handler: async (ctx, { channelId }) => {
+    const inf = await ctx.db
+      .query("influencers")
+      .withIndex("by_channelId", (q) => q.eq("channelId", channelId))
+      .first();
+    if (!inf) return { found: false, name: null, videos: [] };
+    const vids = await ctx.db
+      .query("influencerVideos")
+      .withIndex("by_influencer", (q) => q.eq("influencerId", inf._id))
+      .collect();
+    vids.sort((a, b) => b.publishedAt - a.publishedAt);
+    return {
+      found: true,
+      name: inf.name,
+      videos: vids.map((v) => ({
+        videoId: v.videoId,
+        title: v.title,
+        status: v.status,
+        error: v.error ?? null,
+        publishedAt: v.publishedAt,
+      })),
+    };
   },
 });

@@ -341,9 +341,23 @@ export const aggregate = internalMutation({
       neutral: number;
       net: number;
       influencers: Set<string>;
+      bullNames: Set<string>;
+      bearNames: Set<string>;
+      neutralNames: Set<string>;
       theses: { influencerId: Id<"influencers">; stance: string; thesis: string }[];
     };
     const bySymbol = new Map<string, Agg>();
+
+    const nameCache = new Map<string, string>();
+    const nameOf = async (id: Id<"influencers">): Promise<string> => {
+      let n = nameCache.get(id as string);
+      if (n === undefined) {
+        const inf = await ctx.db.get(id);
+        n = inf?.name ?? "Unknown";
+        nameCache.set(id as string, n);
+      }
+      return n;
+    };
 
     for (const m of mentions) {
       const key = m.symbol.toUpperCase();
@@ -357,6 +371,9 @@ export const aggregate = internalMutation({
           neutral: 0,
           net: 0,
           influencers: new Set(),
+          bullNames: new Set(),
+          bearNames: new Set(),
+          neutralNames: new Set(),
           theses: [],
         };
         bySymbol.set(key, a);
@@ -364,14 +381,18 @@ export const aggregate = internalMutation({
       a.companyName ??= m.companyName;
       a.influencers.add(m.influencerId);
       const w = convictionWeight(m.conviction);
+      const cname = await nameOf(m.influencerId);
       if (m.stance === "bullish") {
         a.bull++;
         a.net += w;
+        a.bullNames.add(cname);
       } else if (m.stance === "bearish") {
         a.bear++;
         a.net -= w;
+        a.bearNames.add(cname);
       } else {
         a.neutral++;
+        a.neutralNames.add(cname);
       }
       // Keep up to 3 strongest theses (high conviction first).
       if (a.theses.length < 3 && m.thesis) {
@@ -404,6 +425,9 @@ export const aggregate = internalMutation({
         netScore: a.net,
         consensus: computeConsensus(a.bull, a.bear),
         influencerIds: [...a.influencers] as Id<"influencers">[],
+        bullishCreators: [...a.bullNames],
+        bearishCreators: [...a.bearNames],
+        neutralCreators: [...a.neutralNames],
         topTheses: a.theses,
         windowDays,
         createdAt: now,
