@@ -79,7 +79,7 @@ function MoveCard({
         {(rows?.length ?? 0) === 0 ? (
           <p className="py-6 text-center text-sm text-gray-500">{empty}</p>
         ) : (
-          rows.map((m, i) => (
+          (rows ?? []).map((m, i) => (
             <MoveRow
               key={`${m.slug}-${m.ticker ?? m.name}-${i}`}
               m={m}

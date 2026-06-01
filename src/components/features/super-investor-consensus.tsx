@@ -55,6 +55,12 @@ function InvestorCount({
 }
 
 function SymbolRow({ row, rank }: { row: Row; rank: number }) {
+  const consensus = row.consensus ?? "mixed";
+  const buyers = row.buyers ?? 0;
+  const buyerNames = row.buyerNames ?? [];
+  const sellers = row.sellers ?? 0;
+  const sellerNames = row.sellerNames ?? [];
+
   return (
     <div className="flex items-center gap-3 rounded-md bg-black/20 px-3 py-2">
       <span className="w-4 shrink-0 text-right text-xs text-gray-500">{rank}</span>
@@ -66,13 +72,13 @@ function SymbolRow({ row, rank }: { row: Row; rank: number }) {
           >
             {row.ticker}
           </Link>
-          <InvestorConsensusBadge consensus={row.consensus} />
+          <InvestorConsensusBadge consensus={consensus} />
         </div>
         {row.name && <p className="truncate text-xs text-gray-500">{row.name}</p>}
       </div>
       <div className="shrink-0 text-right text-sm">
-        <InvestorCount count={row.buyers} arrow="↑" color="text-emerald-400" names={row.buyerNames} />{" "}
-        <InvestorCount count={row.sellers} arrow="↓" color="text-rose-400" names={row.sellerNames} />
+        <InvestorCount count={buyers} arrow="↑" color="text-emerald-400" names={buyerNames} />{" "}
+        <InvestorCount count={sellers} arrow="↓" color="text-rose-400" names={sellerNames} />
       </div>
     </div>
   );
@@ -88,7 +94,7 @@ function Side({
   title: string;
   icon: ReactNode;
   accent: string;
-  rows: Row[];
+  rows?: Row[];
   empty: string;
 }) {
   return (
@@ -99,10 +105,10 @@ function Side({
         </div>
       </CardHeader>
       <CardContent className="space-y-1.5">
-        {rows.length === 0 ? (
+        {(rows?.length ?? 0) === 0 ? (
           <p className="py-6 text-center text-sm text-gray-500">{empty}</p>
         ) : (
-          rows.map((row, i) => <SymbolRow key={row.ticker} row={row} rank={i + 1} />)
+          rows?.map((row, i) => <SymbolRow key={row.ticker} row={row} rank={i + 1} />)
         )}
       </CardContent>
     </Card>

@@ -8,10 +8,11 @@ const CONSENSUS: Record<string, string> = {
   strong_sell: "bg-rose-500/20 text-rose-200 ring-rose-500/40",
 };
 
-export function InvestorConsensusBadge({ consensus }: { consensus: string }) {
+export function InvestorConsensusBadge({ consensus }: { consensus?: string }) {
+  const value = consensus ?? "mixed";
   return (
-    <Pill className={CONSENSUS[consensus] ?? CONSENSUS.mixed}>
-      {consensus.replace("_", " ")}
+    <Pill className={CONSENSUS[value] ?? CONSENSUS.mixed}>
+      {value.replace("_", " ")}
     </Pill>
   );
 }

@@ -19,6 +19,8 @@ function initials(name: string): string {
 }
 
 function InvestorCard({ inv }: { inv: Investor }) {
+  const moves = inv.moves ?? { new: 0, added: 0, reduced: 0, sold: 0 };
+
   return (
     <Link
       href={`/investors/${inv.slug}`}
@@ -43,10 +45,10 @@ function InvestorCard({ inv }: { inv: Investor }) {
         )}
       </div>
       <div className="mt-2 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px]">
-        {inv.moves.new > 0 && <span className="text-emerald-400">{inv.moves.new} new</span>}
-        {inv.moves.added > 0 && <span className="text-emerald-300">{inv.moves.added} added</span>}
-        {inv.moves.reduced > 0 && <span className="text-amber-300">{inv.moves.reduced} trimmed</span>}
-        {inv.moves.sold > 0 && <span className="text-rose-400">{inv.moves.sold} exited</span>}
+        {moves.new > 0 && <span className="text-emerald-400">{moves.new} new</span>}
+        {moves.added > 0 && <span className="text-emerald-300">{moves.added} added</span>}
+        {moves.reduced > 0 && <span className="text-amber-300">{moves.reduced} trimmed</span>}
+        {moves.sold > 0 && <span className="text-rose-400">{moves.sold} exited</span>}
         {inv.period === null && <span className="text-gray-600">no filing yet</span>}
       </div>
     </Link>
