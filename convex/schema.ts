@@ -73,4 +73,157 @@ export default defineSchema({
     token: v.string(),
     expires: v.number(), // timestamp as ms
   }).index("by_identifier_token", ["identifier", "token"]),
+
+  // ── Influencer sentiment tables ─────────────────────────────────────────
+
+  influencers: defineTable({
+    name: v.string(),
+    channelId: v.string(),
+    handle: v.optional(v.string()),
+    avatar: v.optional(v.string()),
+    active: v.boolean(),
+    // Legacy fields
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("by_channelId", ["channelId"])
+    .index("by_active", ["active"]),
+
+  influencerVideos: defineTable({
+    videoId: v.string(),
+    channelId: v.string(),
+    title: v.string(),
+    thumbnail: v.optional(v.string()),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("transcribing"),
+      v.literal("analyzing"),
+      v.literal("done"),
+      v.literal("failed")
+    ),
+    transcript: v.optional(v.string()),
+    summary: v.optional(v.string()),
+    publishedAt: v.number(), // timestamp as ms
+    processedAt: v.optional(v.number()), // timestamp as ms
+    // Legacy fields from previous runs
+    createdAt: v.optional(v.number()),
+    influencerId: v.optional(v.string()),
+    updatedAt: v.optional(v.number()),
+    url: v.optional(v.string()),
+  })
+    .index("by_videoId", ["videoId"])
+    .index("by_channelId", ["channelId"])
+    .index("by_status", ["status"])
+    .index("by_publishedAt", ["publishedAt"]),
+
+  videoStockMentions: defineTable({
+    videoId: v.string(),
+    channelId: v.optional(v.string()),
+    symbol: v.string(),
+    stance: v.union(
+      v.literal("bullish"),
+      v.literal("bearish"),
+      v.literal("neutral")
+    ),
+    conviction: v.union(
+      v.literal("high"),
+      v.literal("medium"),
+      v.literal("low")
+    ),
+    thesis: v.string(),
+    action: v.optional(v.string()),
+    priceTarget: v.optional(v.union(v.string(), v.number())),
+    // Legacy fields
+    companyName: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    influencerId: v.optional(v.string()),
+    publishedAt: v.optional(v.number()),
+    timeframe: v.optional(v.string()),
+  })
+    .index("by_videoId", ["videoId"])
+    .index("by_symbol", ["symbol"])
+    .index("by_channelId", ["channelId"]),
+
+  macroNotes: defineTable({
+    videoId: v.string(),
+    channelId: v.optional(v.string()),
+    macroSummary: v.string(),
+    sectorViews: v.optional(v.array(v.any())),
+    rotations: v.optional(v.array(v.any())),
+    // Legacy fields
+    createdAt: v.optional(v.number()),
+    influencerId: v.optional(v.string()),
+    publishedAt: v.optional(v.number()),
+    sentiment: v.optional(v.string()),
+  })
+    .index("by_videoId", ["videoId"])
+    .index("by_channelId", ["channelId"]),
+
+  dailySentiment: defineTable({
+    symbol: v.string(),
+    date: v.string(), // YYYY-MM-DD
+    bullishCount: v.optional(v.number()),
+    bearishCount: v.optional(v.number()),
+    neutralCount: v.optional(v.number()),
+    bullishCreators: v.optional(v.array(v.string())),
+    bearishCreators: v.optional(v.array(v.string())),
+    netScore: v.optional(v.number()), // conviction-weighted
+    consensus: v.optional(v.union(
+      v.literal("strong_bullish"),
+      v.literal("bullish"),
+      v.literal("mixed"),
+      v.literal("bearish"),
+      v.literal("strong_bearish")
+    )),
+    strongestTheses: v.optional(v.array(v.string())),
+    windowStart: v.optional(v.string()), // YYYY-MM-DD
+    windowEnd: v.optional(v.string()), // YYYY-MM-DD
+    // Legacy fields from previous runs
+    companyName: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    influencerIds: v.optional(v.array(v.string())),
+    mentionsCount: v.optional(v.number()),
+    neutralCreators: v.optional(v.array(v.string())),
+    topTheses: v.optional(v.array(v.any())),
+    windowDays: v.optional(v.number()),
+  })
+    .index("by_symbol", ["symbol"])
+    .index("by_date", ["date"])
+    .index("by_symbol_date", ["symbol", "date"]),
+
+  macroDigest: defineTable({
+    date: v.string(), // YYYY-MM-DD
+    marketSentiment: v.string(),
+    keyThemes: v.optional(v.array(v.string())),
+    sectorRotations: v.optional(v.array(v.string())),
+    bullishLeaders: v.optional(v.array(v.any())),
+    bearishLeaders: v.optional(v.array(v.any())),
+    recommendedActions: v.optional(v.array(v.any())),
+    createdAt: v.number(), // timestamp as ms
+    // Legacy fields
+    influencersCount: v.optional(v.number()),
+    videosAnalyzed: v.optional(v.number()),
+    windowDays: v.optional(v.number()),
+    runAt: v.optional(v.number()),
+    sentimentLabel: v.optional(v.string()),
+    sectorRotation: v.optional(v.array(v.any())),
+  })
+    .index("by_date", ["date"])
+    .index("by_createdAt", ["createdAt"]),
+
+  jobRuns: defineTable({
+    mode: v.string(),
+    status: v.union(v.literal("running"), v.literal("success"), v.literal("failed")),
+    videosDiscovered: v.optional(v.number()),
+    videosProcessed: v.optional(v.number()),
+    videosFailed: v.optional(v.number()),
+    startedAt: v.optional(v.number()),
+    endedAt: v.optional(v.number()),
+    errorMessage: v.optional(v.string()),
+    // Legacy fields
+    finishedAt: v.optional(v.number()),
+    runAt: v.optional(v.number()),
+    videosErrored: v.optional(v.number()),
+  })
+    .index("by_startedAt", ["startedAt"]),
 });
