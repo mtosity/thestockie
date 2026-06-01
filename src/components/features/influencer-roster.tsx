@@ -18,9 +18,20 @@ function initials(name: string): string {
     .toUpperCase();
 }
 
+function channelUrl(inf: Influencer): string {
+  if (inf.youtubeUrl) return inf.youtubeUrl;
+  if (inf.handle) return `https://www.youtube.com/${inf.handle}`;
+  return `https://www.youtube.com/channel/${inf.channelId}`;
+}
+
 function Row({ inf }: { inf: Influencer }) {
-  const inner = (
-    <div className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-white/5">
+  return (
+    <a
+      href={channelUrl(inf)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-white/5"
+    >
       <Avatar className="h-9 w-9 shrink-0">
         {inf.avatar && <AvatarImage src={inf.avatar} alt={inf.name} />}
         <AvatarFallback className="bg-purple-500/20 text-xs text-purple-200">
@@ -29,8 +40,10 @@ function Row({ inf }: { inf: Influencer }) {
       </Avatar>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="truncate font-medium text-white">{inf.name}</span>
-          {inf.youtubeUrl && <Youtube className="h-3.5 w-3.5 shrink-0 text-rose-400" />}
+          <span className="truncate font-medium text-white group-hover:underline">
+            {inf.name}
+          </span>
+          <Youtube className="h-3.5 w-3.5 shrink-0 text-rose-400" />
         </div>
         {inf.handle && <p className="truncate text-xs text-gray-500">{inf.handle}</p>}
       </div>
@@ -38,15 +51,7 @@ function Row({ inf }: { inf: Influencer }) {
         <div>{inf.videoCount} videos</div>
         <div className="text-gray-600">{formatRelative(inf.lastPublishedAt)}</div>
       </div>
-    </div>
-  );
-
-  return inf.youtubeUrl ? (
-    <a href={inf.youtubeUrl} target="_blank" rel="noopener noreferrer">
-      {inner}
     </a>
-  ) : (
-    inner
   );
 }
 
