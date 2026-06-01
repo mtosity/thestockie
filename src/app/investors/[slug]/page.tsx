@@ -1,157 +1,169 @@
-"use client";
+import type { Metadata } from "next";
+import { convex } from "~/server/api/trpc";
+import { api } from "../../../../convex/_generated/api";
+import { InvestorDetail } from "~/components/features/investor-detail";
 
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { api } from "~/trpc/react";
-import { Card, CardContent, CardHeader } from "~/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Skeleton } from "~/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
-import {
-  MoveBadge,
-  moveColor,
-  formatMoney,
-  formatPct,
-} from "~/components/features/super-investor-shared";
+export const revalidate = 3600; // refresh metadata/JSON-LD hourly
 
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+const BASE_URL = "https://thestockie.com";
+
+type Params = { params: Promise<{ slug: string }> };
+
+async function getInvestor(slug: string) {
+  try {
+    return await convex.query(api.superInvestorReads.investorBySlug, { slug });
+  } catch {
+    return null;
+  }
 }
 
 function periodLabel(p: string | null): string {
-  if (!p) return "—";
+  if (!p) return "";
   const [y, q] = p.split("-");
   return `${q} ${y}`;
 }
 
-export default function InvestorDetailPage() {
-  const params = useParams();
-  const slug = String(params?.slug ?? "");
-  const { data, isLoading } = api.superInvestor.bySlug.useQuery(
-    { slug },
-    { enabled: !!slug },
-  );
+function money(v: number): string {
+  if (v >= 1e12) return `$${(v / 1e12).toFixed(1)}T`;
+  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
+  if (v >= 1e6) return `$${(v / 1e6).toFixed(0)}M`;
+  return `$${Math.round(v)}`;
+}
+
+export async function generateStaticParams() {
+  try {
+    const investors = await convex.query(api.superInvestorReads.investors, {});
+    return investors.map((i) => ({ slug: i.slug }));
+  } catch {
+    return [];
+  }
+}
+
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { slug } = await params;
+  const data = await getInvestor(slug);
+  const url = `${BASE_URL}/investors/${slug}`;
+
+  if (!data) {
+    return {
+      title: "Investor not found | The Stockie",
+      alternates: { canonical: url },
+    };
+  }
+
+  const { investor, filing, period } = data;
+  const q = periodLabel(period);
+  const firm = investor.firm ?? "";
+  const title = `${investor.name}'s 13F Portfolio${q ? ` (${q})` : ""} — ${firm} holdings & moves`;
+  const desc = filing
+    ? `${investor.name}${firm ? ` of ${firm}` : ""} disclosed ${filing.holdingsCount} holdings worth ${money(filing.totalValue)} in the ${q} SEC 13F filing. See top positions, new buys, adds, trims and full exits.`
+    : `Track ${investor.name}${firm ? ` of ${firm}` : ""} — latest SEC 13F holdings, top buys and exits.`;
+
+  return {
+    title: `${title} | The Stockie`,
+    description: desc,
+    keywords: [
+      investor.name,
+      firm,
+      "13F",
+      "13F filing",
+      "portfolio",
+      "holdings",
+      "hedge fund",
+      "super investor",
+      "stock picks",
+    ]
+      .filter(Boolean)
+      .join(", "),
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description: desc,
+      type: "profile",
+      url,
+      siteName: "The Stockie",
+      images: investor.avatar
+        ? [{ url: investor.avatar, alt: investor.name }]
+        : ["/thumbnail.png"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: desc,
+      images: investor.avatar ? [investor.avatar] : ["/thumbnail.png"],
+      creator: "@mtosity",
+    },
+  };
+}
+
+export default async function InvestorDetailPage({ params }: Params) {
+  const { slug } = await params;
+  const data = await getInvestor(slug);
+  const url = `${BASE_URL}/investors/${slug}`;
+
+  // Server-rendered structured data so Google + AI crawlers read the holdings
+  // even without executing the client-side query.
+  const jsonLd = data
+    ? {
+        "@context": "https://schema.org",
+        "@type": "ProfilePage",
+        "@id": url,
+        url,
+        ...(data.filing
+          ? { dateModified: new Date(data.filing.filingDate).toISOString() }
+          : {}),
+        mainEntity: {
+          "@type": "Person",
+          name: data.investor.name,
+          jobTitle: "Investor",
+          ...(data.investor.firm
+            ? {
+                worksFor: {
+                  "@type": "Organization",
+                  name: data.investor.firm,
+                },
+              }
+            : {}),
+          ...(data.investor.why ? { description: data.investor.why } : {}),
+        },
+        about: {
+          "@type": "Dataset",
+          name: `${data.investor.name} SEC Form 13F holdings${
+            periodLabel(data.period) ? ` (${periodLabel(data.period)})` : ""
+          }`,
+          description: `Long US equity positions disclosed by ${data.investor.name} in their quarterly SEC Form 13F-HR filing.`,
+          ...(data.filing
+            ? {
+                dateModified: new Date(data.filing.filingDate).toISOString(),
+                variableMeasured: "Position value (USD)",
+              }
+            : {}),
+          creator: { "@type": "Organization", name: "U.S. SEC EDGAR" },
+        },
+        hasPart: {
+          "@type": "ItemList",
+          numberOfItems: data.positions.length,
+          itemListElement: data.positions.slice(0, 20).map((p, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: p.ticker ? `${p.ticker} — ${p.name}` : p.name,
+            ...(p.value
+              ? { description: `${money(p.value)} · ${p.changeType}` }
+              : {}),
+          })),
+        },
+      }
+    : null;
 
   return (
-    <div className="min-h-screen bg-[#15162c] pb-20 text-white">
-      <div className="mx-auto max-w-5xl px-4 pt-6">
-        <Link
-          href="/influencers"
-          className="mb-4 inline-flex items-center gap-1 text-sm text-gray-400 hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Influencer Radar
-        </Link>
-
-        {isLoading ? (
-          <Skeleton className="h-96 w-full rounded-xl bg-white/5" />
-        ) : !data ? (
-          <p className="py-16 text-center text-gray-400">Investor not found.</p>
-        ) : (
-          <>
-            <Card className="mb-4 border-white/10 bg-white/5 text-white">
-              <CardHeader className="flex flex-row items-start gap-4 space-y-0">
-                <Avatar className="h-14 w-14 shrink-0">
-                  {data.investor.avatar && (
-                    <AvatarImage src={data.investor.avatar} alt={data.investor.name} />
-                  )}
-                  <AvatarFallback className="bg-purple-500/20 text-purple-200">
-                    {initials(data.investor.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <h1 className="text-2xl font-bold">{data.investor.name}</h1>
-                  <p className="text-sm text-gray-400">
-                    {data.investor.firm}
-                    {data.investor.style ? ` · ${data.investor.style}` : ""}
-                  </p>
-                  {data.investor.why && (
-                    <p className="mt-2 max-w-2xl text-sm text-gray-300">{data.investor.why}</p>
-                  )}
-                </div>
-                {data.filing && (
-                  <div className="shrink-0 text-right text-sm">
-                    <div className="font-semibold">{formatMoney(data.filing.totalValue)}</div>
-                    <div className="text-xs text-gray-400">{data.filing.holdingsCount} holdings</div>
-                    <div className="mt-1 text-xs text-gray-500">
-                      {periodLabel(data.period)} · filed{" "}
-                      {new Date(data.filing.filingDate).toLocaleDateString()}
-                    </div>
-                  </div>
-                )}
-              </CardHeader>
-            </Card>
-
-            <Card className="border-white/10 bg-white/5 text-white">
-              <CardHeader className="pb-2">
-                <h2 className="text-sm font-semibold">Holdings &amp; moves</h2>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-white/10 hover:bg-transparent">
-                      <TableHead className="text-gray-400">Ticker</TableHead>
-                      <TableHead className="text-gray-400">Company</TableHead>
-                      <TableHead className="text-gray-400">Move</TableHead>
-                      <TableHead className="text-right text-gray-400">% Book</TableHead>
-                      <TableHead className="text-right text-gray-400">Value</TableHead>
-                      <TableHead className="text-right text-gray-400">Δ Shares</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.positions.map((p, i) => (
-                      <TableRow key={`${p.ticker ?? p.name}-${i}`} className="border-white/5">
-                        <TableCell className="font-semibold">
-                          {p.ticker ? (
-                            <Link href={`/?symbol=${p.ticker}`} className="text-white hover:underline">
-                              {p.ticker}
-                            </Link>
-                          ) : (
-                            <span className="text-gray-500">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="max-w-[220px] truncate text-gray-300">
-                          {p.name}
-                          {p.isOption && <span className="ml-1 text-[10px] text-amber-400">OPT</span>}
-                        </TableCell>
-                        <TableCell>
-                          <MoveBadge type={p.changeType} />
-                        </TableCell>
-                        <TableCell className="text-right text-gray-300">
-                          {p.changeType === "sold" ? "—" : `${p.pctPortfolio.toFixed(1)}%`}
-                        </TableCell>
-                        <TableCell className="text-right text-gray-300">
-                          {p.changeType === "sold" ? "exited" : formatMoney(p.value)}
-                        </TableCell>
-                        <TableCell className={`text-right ${moveColor(p.changeType)}`}>
-                          {p.changeType === "new"
-                            ? "new"
-                            : p.changeType === "sold"
-                              ? "−100%"
-                              : formatPct(p.changePct)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </div>
-    </div>
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <InvestorDetail slug={slug} />
+    </>
   );
 }
