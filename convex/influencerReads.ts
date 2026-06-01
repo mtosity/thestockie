@@ -2,186 +2,79 @@ import { query } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
- * Public read queries for the influencer feature, consumed by the Next.js app
- * via the `influencer` tRPC router. Writes live in `influencer.ts` (internal,
- * called by the Go job through `http.ts`).
+ * Public read queries for the thestockie.com/influencers page.
+ * These are called directly from the frontend (not via HTTP).
  */
 
-// Most recent daily macro digest (date is YYYY-MM-DD, so lexicographic = chronological).
-export const latestDigest = query({
-  args: {},
+export const influencers = query({
   handler: async (ctx) => {
     return await ctx.db
-      .query("macroDigest")
-      .withIndex("by_date")
-      .order("desc")
-      .first();
-  },
-});
-
-// Per-symbol sentiment ranking for the latest (or given) date.
-export const sentimentRanking = query({
-  args: { date: v.optional(v.string()), limit: v.optional(v.number()) },
-  handler: async (ctx, { date, limit }) => {
-    let theDate = date ?? null;
-    if (!theDate) {
-      const latest = await ctx.db
-        .query("dailySentiment")
-        .withIndex("by_date")
-        .order("desc")
-        .first();
-      theDate = latest?.date ?? null;
-    }
-    if (!theDate) {
-      return { date: null, total: 0, bullish: [], bearish: [] };
-    }
-    const rows = await ctx.db
-      .query("dailySentiment")
-      .withIndex("by_date_symbol", (q) => q.eq("date", theDate!))
-      .collect();
-    // Rank purely by how many distinct creators hold the stance (not a
-    // conviction-weighted score, so hyperbole can't inflate it). Show every
-    // stock with a real consensus (>2 creators); if that's fewer than the
-    // target, fill with lighter (1–2 creator) names. Tie-break by total reach.
-    const n = limit ?? 12;
-    // A stock only appears on the side more creators lean toward (so a mostly
-    // bullish stock never shows under "most bearish"). Within a side, sort by
-    // that side's creator count — top votes first. Strong consensus (>2) is
-    // always shown; otherwise fill to n.
-    type R = (typeof rows)[number];
-    const pick = (mine: (r: R) => number, theirs: (r: R) => number) => {
-      const ranked = rows
-        .filter((r) => mine(r) > theirs(r))
-        .sort(
-          (a, b) =>
-            mine(b) - mine(a) ||
-            mine(b) - theirs(b) - (mine(a) - theirs(a)) ||
-            b.mentionsCount - a.mentionsCount
-        );
-      const strong = ranked.filter((r) => mine(r) > 2);
-      return strong.length >= n ? strong : ranked.slice(0, n);
-    };
-    return {
-      date: theDate,
-      total: rows.length,
-      bullish: pick(
-        (r) => r.bullishCount,
-        (r) => r.bearishCount
-      ),
-      bearish: pick(
-        (r) => r.bearishCount,
-        (r) => r.bullishCount
-      ),
-    };
-  },
-});
-
-// Active influencers with a little activity context, most-recently-active first.
-export const influencers = query({
-  args: {},
-  handler: async (ctx) => {
-    const list = await ctx.db
       .query("influencers")
       .withIndex("by_active", (q) => q.eq("active", true))
       .collect();
-
-    const out = [];
-    for (const inf of list) {
-      const vids = await ctx.db
-        .query("influencerVideos")
-        .withIndex("by_influencer", (q) => q.eq("influencerId", inf._id))
-        .collect();
-      const lastPublishedAt = vids.reduce((m, v) => Math.max(m, v.publishedAt), 0);
-      out.push({
-        _id: inf._id,
-        name: inf.name,
-        handle: inf.handle ?? null,
-        avatar: inf.avatar ?? null,
-        youtubeUrl: inf.youtubeUrl ?? null,
-        channelId: inf.channelId,
-        videoCount: vids.filter((v) => v.status === "done").length,
-        lastPublishedAt: lastPublishedAt || null,
-      });
-    }
-    out.sort((a, b) => (b.lastPublishedAt ?? 0) - (a.lastPublishedAt ?? 0));
-    return out;
   },
 });
 
-// Recently analyzed videos with their influencer + extracted symbols.
+export const allInfluencers = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("influencers").collect();
+  },
+});
+
+export const latestDigest = query({
+  handler: async (ctx) => {
+    const digests = await ctx.db.query("macroDigest").collect();
+    if (digests.length === 0) return null;
+    return digests.sort((a, b) => b.createdAt - a.createdAt)[0];
+  },
+});
+
+export const sentimentRanking = query({
+  handler: async (ctx) => {
+    const sentiments = await ctx.db.query("dailySentiment").collect();
+    const bullish = sentiments
+      .filter((s) => s.consensus === "strong_bullish" || s.consensus === "bullish")
+      .sort((a, b) => b.bullishCount - a.bullishCount);
+    const bearish = sentiments
+      .filter((s) => s.consensus === "strong_bearish" || s.consensus === "bearish")
+      .sort((a, b) => b.bearishCount - a.bearishCount);
+    const mixed = sentiments.filter((s) => s.consensus === "mixed");
+
+    return { bullish, bearish, mixed };
+  },
+});
+
 export const recentVideos = query({
-  args: { limit: v.optional(v.number()) },
-  handler: async (ctx, { limit }) => {
-    const vids = await ctx.db
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const videos = await ctx.db
       .query("influencerVideos")
       .withIndex("by_publishedAt")
-      .order("desc")
-      .take(limit ?? 24);
-
-    const out = [];
-    for (const meta of vids) {
-      if (meta.status !== "done") continue;
-      const inf = await ctx.db.get(meta.influencerId);
-      const mentions = await ctx.db
-        .query("videoStockMentions")
-        .withIndex("by_video", (q) => q.eq("videoId", meta.videoId))
-        .collect();
-      out.push({
-        videoId: meta.videoId,
-        title: meta.title,
-        url: meta.url,
-        publishedAt: meta.publishedAt,
-        influencerName: inf?.name ?? "Unknown",
-        influencerAvatar: inf?.avatar ?? null,
-        summary: meta.summary ?? null,
-        mentions: mentions.map((m) => ({
-          symbol: m.symbol,
-          stance: m.stance,
-          action: m.action ?? null,
-        })),
-      });
-    }
-    return out;
+      .collect();
+    return videos.sort((a, b) => b.publishedAt - a.publishedAt).slice(0, args.limit ?? 20);
   },
 });
 
-// Last job execution, for a "last updated" indicator.
-export const latestRun = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db
-      .query("jobRuns")
-      .withIndex("by_runAt")
-      .order("desc")
-      .first();
-  },
-});
-
-// All discovered videos for a channel, with processing status — used to audit
-// which expected videos are missing/failed.
 export const videosByChannel = query({
   args: { channelId: v.string() },
   handler: async (ctx, { channelId }) => {
-    const inf = await ctx.db
-      .query("influencers")
-      .withIndex("by_channelId", (q) => q.eq("channelId", channelId))
-      .first();
-    if (!inf) return { found: false, name: null, videos: [] };
-    const vids = await ctx.db
+    const videos = await ctx.db
       .query("influencerVideos")
-      .withIndex("by_influencer", (q) => q.eq("influencerId", inf._id))
+      .withIndex("by_channelId", (q) => q.eq("channelId", channelId))
       .collect();
-    vids.sort((a, b) => b.publishedAt - a.publishedAt);
-    return {
-      found: true,
-      name: inf.name,
-      videos: vids.map((v) => ({
-        videoId: v.videoId,
-        title: v.title,
-        status: v.status,
-        error: v.error ?? null,
-        publishedAt: v.publishedAt,
-      })),
-    };
+    return videos.sort((a, b) => b.publishedAt - a.publishedAt);
+  },
+});
+
+export const latestRun = query({
+  handler: async (ctx) => {
+    const runs = await ctx.db
+      .query("jobRuns")
+      .withIndex("by_startedAt")
+      .collect();
+    if (runs.length === 0) return null;
+    return runs.sort((a, b) => b.startedAt - a.startedAt)[0];
   },
 });

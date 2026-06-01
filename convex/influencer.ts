@@ -1,192 +1,89 @@
-import { internalMutation, internalQuery } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import type { Doc, Id } from "./_generated/dataModel";
 
 /**
- * Internal queries & mutations for the influencer pipeline.
- *
- * These are called by the public httpAction endpoints in `http.ts`, which are
- * the surface the external `thestockie-influencer` Go job talks to. Keeping the
- * data logic here (and only auth + plumbing in http.ts) mirrors the existing
- * convention in `posts.ts`.
+ * Influencer sentiment tracking — mutations and queries.
  */
 
-// ── Shared validators ────────────────────────────────────────────────────────
+// ── Seed / manage influencers ───────────────────────────────────────────────
 
-const stanceV = v.union(
-  v.literal("bullish"),
-  v.literal("bearish"),
-  v.literal("neutral")
-);
-
-const convictionV = v.union(
-  v.literal("low"),
-  v.literal("medium"),
-  v.literal("high")
-);
-
-const actionV = v.union(
-  v.literal("buy"),
-  v.literal("add"),
-  v.literal("hold"),
-  v.literal("trim"),
-  v.literal("sell"),
-  v.literal("watch")
-);
-
-const macroSentimentV = v.union(
-  v.literal("risk_on"),
-  v.literal("neutral"),
-  v.literal("risk_off")
-);
-
-const mentionV = v.object({
-  symbol: v.string(),
-  companyName: v.optional(v.string()),
-  stance: stanceV,
-  conviction: v.optional(convictionV),
-  thesis: v.string(),
-  action: v.optional(actionV),
-  priceTarget: v.optional(v.number()),
-  timeframe: v.optional(v.string()),
-});
-
-const macroV = v.object({
-  macroSummary: v.string(),
-  sentiment: v.optional(macroSentimentV),
-  sectorViews: v.array(
-    v.object({
-      sector: v.string(),
-      stance: stanceV,
-      note: v.optional(v.string()),
-    })
-  ),
-  rotations: v.array(
-    v.object({
-      from: v.optional(v.string()),
-      to: v.optional(v.string()),
-      note: v.string(),
-    })
-  ),
-});
-
-// ── Influencers ──────────────────────────────────────────────────────────────
-
-// Upsert an influencer by channelId (used to sync the job's config list).
-export const upsertInfluencer = internalMutation({
+export const seedInfluencers = mutation({
   args: {
-    name: v.string(),
-    channelId: v.string(),
-    handle: v.optional(v.string()),
-    youtubeUrl: v.optional(v.string()),
-    avatar: v.optional(v.string()),
-    description: v.optional(v.string()),
-    active: v.optional(v.boolean()),
+    influencers: v.array(
+      v.object({
+        name: v.string(),
+        channelId: v.string(),
+        handle: v.optional(v.string()),
+        avatar: v.optional(v.string()),
+        active: v.optional(v.boolean()),
+      })
+    ),
   },
-  handler: async (ctx, args) => {
-    const now = Date.now();
-    const existing = await ctx.db
-      .query("influencers")
-      .withIndex("by_channelId", (q) => q.eq("channelId", args.channelId))
-      .first();
-
-    const active = args.active ?? true;
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        name: args.name,
-        handle: args.handle,
-        youtubeUrl: args.youtubeUrl,
-        avatar: args.avatar,
-        description: args.description,
-        active,
-        updatedAt: now,
-      });
-      return existing._id;
+  handler: async (ctx, { influencers }) => {
+    for (const inf of influencers) {
+      const existing = await ctx.db
+        .query("influencers")
+        .withIndex("by_channelId", (q) => q.eq("channelId", inf.channelId))
+        .first();
+      if (existing) {
+        await ctx.db.patch(existing._id, {
+          name: inf.name,
+          handle: inf.handle,
+          avatar: inf.avatar,
+          active: inf.active ?? true,
+        });
+      } else {
+        await ctx.db.insert("influencers", {
+          name: inf.name,
+          channelId: inf.channelId,
+          handle: inf.handle,
+          avatar: inf.avatar,
+          active: inf.active ?? true,
+        });
+      }
     }
-    return await ctx.db.insert("influencers", {
-      name: args.name,
-      channelId: args.channelId,
-      handle: args.handle,
-      youtubeUrl: args.youtubeUrl,
-      avatar: args.avatar,
-      description: args.description,
-      active,
-      createdAt: now,
-      updatedAt: now,
-    });
   },
 });
 
-// The job's scan list — all active influencers.
-export const listActive = internalQuery({
-  args: {},
+export const getActiveInfluencers = query({
   handler: async (ctx) => {
-    const rows = await ctx.db
+    return await ctx.db
       .query("influencers")
       .withIndex("by_active", (q) => q.eq("active", true))
       .collect();
-    return rows.map((i) => ({
-      id: i._id,
-      name: i.name,
-      channelId: i.channelId,
-      handle: i.handle,
-    }));
   },
 });
 
-// ── Videos ───────────────────────────────────────────────────────────────────
+// ── Video discovery ─────────────────────────────────────────────────────────
 
-// Upsert a discovered video. Idempotent on videoId — returns whether it's new
-// so the job only spends transcription on unseen videos.
-export const discoverVideo = internalMutation({
+export const discoverVideo = mutation({
   args: {
     channelId: v.string(),
     videoId: v.string(),
     title: v.string(),
-    url: v.string(),
+    url: v.optional(v.string()),
     publishedAt: v.number(),
-    durationSec: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const influencer = await ctx.db
-      .query("influencers")
-      .withIndex("by_channelId", (q) => q.eq("channelId", args.channelId))
-      .first();
-    if (!influencer) {
-      throw new Error(`No influencer for channelId ${args.channelId}`);
-    }
-
     const existing = await ctx.db
       .query("influencerVideos")
       .withIndex("by_videoId", (q) => q.eq("videoId", args.videoId))
       .first();
     if (existing) {
-      return {
-        id: existing._id,
-        influencerId: influencer._id,
-        isNew: false,
-        status: existing.status,
-      };
+      return { id: existing._id, influencerId: existing.channelId, isNew: false, status: existing.status };
     }
-
-    const now = Date.now();
     const id = await ctx.db.insert("influencerVideos", {
-      influencerId: influencer._id,
-      channelId: args.channelId,
       videoId: args.videoId,
+      channelId: args.channelId,
       title: args.title,
-      url: args.url,
-      publishedAt: args.publishedAt,
-      durationSec: args.durationSec,
       status: "pending",
-      createdAt: now,
-      updatedAt: now,
+      publishedAt: args.publishedAt,
     });
-    return { id, influencerId: influencer._id, isNew: true, status: "pending" };
+    return { id, influencerId: args.channelId, isNew: true, status: "pending" };
   },
 });
 
-export const setVideoStatus = internalMutation({
+export const setVideoStatus = mutation({
   args: {
     videoId: v.string(),
     status: v.union(
@@ -194,8 +91,8 @@ export const setVideoStatus = internalMutation({
       v.literal("transcribing"),
       v.literal("analyzing"),
       v.literal("done"),
-      v.literal("error"),
-      v.literal("skipped")
+      v.literal("failed"),
+      v.literal("error")
     ),
   },
   handler: async (ctx, args) => {
@@ -203,483 +100,463 @@ export const setVideoStatus = internalMutation({
       .query("influencerVideos")
       .withIndex("by_videoId", (q) => q.eq("videoId", args.videoId))
       .first();
-    if (!video) throw new Error(`Unknown videoId ${args.videoId}`);
-    await ctx.db.patch(video._id, { status: args.status, updatedAt: Date.now() });
+    if (!video) throw new Error(`Video not found: ${args.videoId}`);
+    await ctx.db.patch(video._id, { status: args.status as any });
   },
 });
 
-export const markVideoError = internalMutation({
-  args: { videoId: v.string(), error: v.string() },
+export const setVideoError = mutation({
+  args: {
+    videoId: v.string(),
+    error: v.string(),
+  },
   handler: async (ctx, args) => {
     const video = await ctx.db
       .query("influencerVideos")
       .withIndex("by_videoId", (q) => q.eq("videoId", args.videoId))
       .first();
-    if (!video) throw new Error(`Unknown videoId ${args.videoId}`);
-    await ctx.db.patch(video._id, {
-      status: "error",
-      error: args.error.slice(0, 2000),
-      updatedAt: Date.now(),
-    });
+    if (!video) throw new Error(`Video not found: ${args.videoId}`);
+    await ctx.db.patch(video._id, { status: "failed", summary: args.error });
   },
 });
 
-// Store the full analysis for a video: transcript + summary + per-symbol
-// mentions + macro note, and mark the video done. Idempotent: re-running a
-// video replaces its prior mentions/macro notes.
-export const saveVideoResult = internalMutation({
+// ── Save video result ───────────────────────────────────────────────────────
+
+export const saveVideoResult = mutation({
   args: {
     videoId: v.string(),
     transcript: v.optional(v.string()),
     summary: v.optional(v.string()),
-    mentions: v.array(mentionV),
-    macro: v.optional(macroV),
+    mentions: v.optional(
+      v.array(
+        v.object({
+          symbol: v.string(),
+          companyName: v.optional(v.string()),
+          stance: v.union(
+            v.literal("bullish"),
+            v.literal("bearish"),
+            v.literal("neutral")
+          ),
+          conviction: v.union(
+            v.literal("high"),
+            v.literal("medium"),
+            v.literal("low")
+          ),
+          thesis: v.string(),
+          action: v.optional(v.string()),
+          priceTarget: v.optional(v.number()),
+          timeframe: v.optional(v.string()),
+        })
+      )
+    ),
+    macro: v.optional(
+      v.object({
+        macroSummary: v.string(),
+        sentiment: v.optional(v.string()),
+        sectorViews: v.optional(v.array(v.object({
+          sector: v.string(),
+          stance: v.string(),
+          note: v.optional(v.string()),
+        }))),
+        rotations: v.optional(v.array(v.object({
+          from: v.optional(v.string()),
+          to: v.optional(v.string()),
+          note: v.string(),
+        }))),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     const video = await ctx.db
       .query("influencerVideos")
       .withIndex("by_videoId", (q) => q.eq("videoId", args.videoId))
       .first();
-    if (!video) throw new Error(`Unknown videoId ${args.videoId}`);
+    if (!video) throw new Error(`Video not found: ${args.videoId}`);
 
-    const now = Date.now();
-    const { influencerId, publishedAt } = video;
+    const patch: any = { status: "done", processedAt: Date.now() };
+    if (args.transcript) patch.transcript = args.transcript;
+    if (args.summary) patch.summary = args.summary;
+    await ctx.db.patch(video._id, patch);
 
-    // Clear prior derived rows for idempotent re-runs.
-    const oldMentions = await ctx.db
-      .query("videoStockMentions")
-      .withIndex("by_video", (q) => q.eq("videoId", args.videoId))
-      .collect();
-    for (const m of oldMentions) await ctx.db.delete(m._id);
-    const oldMacro = await ctx.db
-      .query("macroNotes")
-      .withIndex("by_video", (q) => q.eq("videoId", args.videoId))
-      .collect();
-    for (const m of oldMacro) await ctx.db.delete(m._id);
-
-    for (const m of args.mentions) {
-      await ctx.db.insert("videoStockMentions", {
-        videoId: args.videoId,
-        influencerId,
-        symbol: m.symbol.toUpperCase().trim(),
-        companyName: m.companyName,
-        stance: m.stance,
-        conviction: m.conviction,
-        thesis: m.thesis,
-        action: m.action,
-        priceTarget: m.priceTarget,
-        timeframe: m.timeframe,
-        publishedAt,
-        createdAt: now,
-      });
+    if (args.mentions) {
+      for (const m of args.mentions) {
+        await ctx.db.insert("videoStockMentions", {
+          videoId: args.videoId,
+          channelId: video.channelId,
+          symbol: m.symbol,
+          stance: m.stance,
+          conviction: m.conviction,
+          thesis: m.thesis,
+          action: m.action,
+          priceTarget: m.priceTarget?.toString?.(),
+        });
+      }
     }
 
     if (args.macro) {
       await ctx.db.insert("macroNotes", {
         videoId: args.videoId,
-        influencerId,
+        channelId: video.channelId,
         macroSummary: args.macro.macroSummary,
-        sentiment: args.macro.sentiment,
-        sectorViews: args.macro.sectorViews,
-        rotations: args.macro.rotations,
-        publishedAt,
-        createdAt: now,
+        sectorViews: args.macro.sectorViews?.map((s: any) => s.sector ?? s).filter(Boolean) ?? [],
+        rotations: args.macro.rotations?.map((r: any) => `${r.from ?? "?"} → ${r.to ?? "?"}: ${r.note}`).filter(Boolean) ?? [],
       });
     }
 
-    await ctx.db.patch(video._id, {
-      transcript: args.transcript,
-      summary: args.summary,
-      status: "done",
-      processedAt: now,
-      error: undefined,
-      updatedAt: now,
-    });
-
-    return { mentions: args.mentions.length, hasMacro: !!args.macro };
+    return { ok: true };
   },
 });
 
-// ── Aggregation ──────────────────────────────────────────────────────────────
+// ── Aggregation ───────────────────────────────────────────────────────────────
 
-type Consensus = Doc<"dailySentiment">["consensus"];
+export const aggregateSentiment = mutation({
+  args: {
+    date: v.optional(v.string()),
+    windowDays: v.number(),
+  },
+  handler: async (ctx, { windowDays }) => {
+    const now = Date.now();
+    const cutoff = now - windowDays * 24 * 60 * 60 * 1000;
 
-function convictionWeight(c?: "low" | "medium" | "high"): number {
-  return c === "high" ? 3 : c === "low" ? 1 : 2;
-}
+    const mentions = await ctx.db.query("videoStockMentions").collect();
+    const videos = await ctx.db.query("influencerVideos").collect();
+    const videoInWindow = new Set(
+      videos.filter((v) => v.publishedAt >= cutoff).map((v) => v.videoId)
+    );
+    const windowMentions = mentions.filter((m) => videoInWindow.has(m.videoId));
 
-function computeConsensus(bull: number, bear: number): Consensus {
-  const total = bull + bear;
-  if (total === 0) return "mixed";
-  const ratio = (bull - bear) / total;
-  if (ratio >= 0.6 && bull >= 2) return "strong_bullish";
-  if (ratio <= -0.6 && bear >= 2) return "strong_bearish";
-  if (ratio > 0.15) return "bullish";
-  if (ratio < -0.15) return "bearish";
-  return "mixed";
-}
+    const bySymbol: Record<
+      string,
+      { bullish: Set<string>; bearish: Set<string>; neutral: Set<string>; theses: any[]; netScore: number }
+    > = {};
 
-// Recompute per-symbol sentiment over a trailing window of mentions and store
-// it under `date`. Returns the ranking + recent macro notes so the job can feed
-// the LLM synthesis step in one round-trip.
-export const aggregate = internalMutation({
-  args: { date: v.string(), windowDays: v.optional(v.number()) },
-  handler: async (ctx, args) => {
-    const windowDays = args.windowDays ?? 7;
-    const cutoff = Date.now() - windowDays * 24 * 60 * 60 * 1000;
-
-    const mentions = await ctx.db
-      .query("videoStockMentions")
-      .withIndex("by_publishedAt", (q) => q.gte("publishedAt", cutoff))
-      .collect();
-
-    type Agg = {
-      symbol: string;
-      companyName?: string;
-      bull: number;
-      bear: number;
-      neutral: number;
-      net: number;
-      influencers: Set<string>;
-      bullNames: Set<string>;
-      bearNames: Set<string>;
-      neutralNames: Set<string>;
-      theses: { influencerId: Id<"influencers">; stance: string; thesis: string }[];
-    };
-    const bySymbol = new Map<string, Agg>();
-
-    const nameCache = new Map<string, string>();
-    const nameOf = async (id: Id<"influencers">): Promise<string> => {
-      let n = nameCache.get(id as string);
-      if (n === undefined) {
-        const inf = await ctx.db.get(id);
-        n = inf?.name ?? "Unknown";
-        nameCache.set(id as string, n);
-      }
-      return n;
-    };
-
-    for (const m of mentions) {
-      const key = m.symbol.toUpperCase();
-      let a = bySymbol.get(key);
-      if (!a) {
-        a = {
-          symbol: key,
-          companyName: m.companyName,
-          bull: 0,
-          bear: 0,
-          neutral: 0,
-          net: 0,
-          influencers: new Set(),
-          bullNames: new Set(),
-          bearNames: new Set(),
-          neutralNames: new Set(),
+    for (const m of windowMentions) {
+      if (!bySymbol[m.symbol]) {
+        bySymbol[m.symbol] = {
+          bullish: new Set(),
+          bearish: new Set(),
+          neutral: new Set(),
           theses: [],
+          netScore: 0,
         };
-        bySymbol.set(key, a);
       }
-      a.companyName ??= m.companyName;
-      a.influencers.add(m.influencerId);
-      const w = convictionWeight(m.conviction);
-      const cname = await nameOf(m.influencerId);
-      if (m.stance === "bullish") {
-        a.bull++;
-        a.net += w;
-        a.bullNames.add(cname);
-      } else if (m.stance === "bearish") {
-        a.bear++;
-        a.net -= w;
-        a.bearNames.add(cname);
-      } else {
-        a.neutral++;
-        a.neutralNames.add(cname);
-      }
-      // Keep up to 3 strongest theses (high conviction first).
-      if (a.theses.length < 3 && m.thesis) {
-        a.theses.push({
-          influencerId: m.influencerId,
-          stance: m.stance,
-          thesis: m.thesis,
-        });
-      }
+      bySymbol[m.symbol]![m.stance as "bullish" | "bearish" | "neutral"].add(m.channelId || "unknown");
+      bySymbol[m.symbol]!.theses.push({ influencerId: m.channelId, stance: m.stance, thesis: m.thesis });
+
+      const weight = m.stance === "bullish" ? 1 : m.stance === "bearish" ? -1 : 0;
+      const conv = m.conviction === "high" ? 3 : m.conviction === "medium" ? 2 : 1;
+      bySymbol[m.symbol].netScore += weight * conv;
     }
 
-    // Replace any existing rows for this date.
-    const old = await ctx.db
-      .query("dailySentiment")
-      .withIndex("by_date", (q) => q.eq("date", args.date))
-      .collect();
+    const endDate = new Date(now).toISOString().split("T")[0];
+
+    // Clear old sentiment
+    const old = await ctx.db.query("dailySentiment").collect();
     for (const row of old) await ctx.db.delete(row._id);
 
-    const now = Date.now();
-    const ranking = [...bySymbol.values()].sort((a, b) => b.net - a.net);
-    for (const a of ranking) {
+    const bullishLeaders: any[] = [];
+    const bearishLeaders: any[] = [];
+
+    for (const [symbol, data] of Object.entries(bySymbol)) {
+      const bullish = data.bullish.size;
+      const bearish = data.bearish.size;
+      const neutral = data.neutral.size;
+      const total = bullish + bearish;
+
+      let consensus: any = "mixed";
+      if (total > 0) {
+        const ratio = bullish / total;
+        if (ratio >= 0.7) consensus = "strong_bullish";
+        else if (ratio >= 0.55) consensus = "bullish";
+        else if (ratio <= 0.3) consensus = "strong_bearish";
+        else if (ratio <= 0.45) consensus = "bearish";
+      }
+
+      const theses = data.theses.slice(0, 5);
+
       await ctx.db.insert("dailySentiment", {
-        date: args.date,
-        symbol: a.symbol,
-        companyName: a.companyName,
-        // Counts are DISTINCT creators per stance (a creator who posts several
-        // videos on a ticker counts once), matching the hover tooltips.
-        bullishCount: a.bullNames.size,
-        bearishCount: a.bearNames.size,
-        neutralCount: a.neutralNames.size,
-        mentionsCount: a.influencers.size,
-        netScore: a.net,
-        consensus: computeConsensus(a.bullNames.size, a.bearNames.size),
-        influencerIds: [...a.influencers] as Id<"influencers">[],
-        bullishCreators: [...a.bullNames],
-        bearishCreators: [...a.bearNames],
-        neutralCreators: [...a.neutralNames],
-        topTheses: a.theses,
-        windowDays,
-        createdAt: now,
+        symbol,
+        date: endDate,
+        bullishCount: bullish,
+        bearishCount: bearish,
+        neutralCount: neutral,
+        bullishCreators: Array.from(data.bullish),
+        bearishCreators: Array.from(data.bearish),
+        netScore: data.netScore,
+        consensus,
+        strongestTheses: theses.map((t: any) => t.thesis),
+        windowStart: new Date(cutoff).toISOString().split("T")[0],
+        windowEnd: endDate,
       });
+
+      const leader = {
+        symbol,
+        companyName: null,
+        netScore: data.netScore,
+        bullish,
+        bearish,
+        neutral,
+        mentions: bullish + bearish + neutral,
+        consensus,
+        theses,
+      };
+
+      if (consensus === "bullish" || consensus === "strong_bullish") {
+        bullishLeaders.push(leader);
+      } else if (consensus === "bearish" || consensus === "strong_bearish") {
+        bearishLeaders.push(leader);
+      }
     }
 
-    // Recent macro notes for the synthesis step.
-    const macroNotes = await ctx.db
-      .query("macroNotes")
-      .withIndex("by_publishedAt", (q) => q.gte("publishedAt", cutoff))
-      .collect();
+    bullishLeaders.sort((a, b) => b.bullish - a.bullish);
+    bearishLeaders.sort((a, b) => b.bearish - a.bearish);
 
-    const top = (arr: Agg[]) =>
-      arr.slice(0, 12).map((a) => ({
-        symbol: a.symbol,
-        companyName: a.companyName ?? null,
-        netScore: a.net,
-        bullish: a.bull,
-        bearish: a.bear,
-        neutral: a.neutral,
-        mentions: a.bull + a.bear + a.neutral,
-        consensus: computeConsensus(a.bull, a.bear),
-        theses: a.theses,
+    // Get macro notes
+    const macroNotesRaw = await ctx.db.query("macroNotes").collect();
+    const macroNotes = macroNotesRaw
+      .filter((m) => videoInWindow.has(m.videoId))
+      .map((m) => ({
+        influencerId: m.channelId,
+        macroSummary: m.macroSummary,
+        sentiment: null,
+        sectorViews: [] as any[],
+        rotations: [] as any[],
       }));
 
-    // Split by sign so a symbol only appears in one column; bearish ordered
-    // most-negative-first.
-    const bullRanked = ranking.filter((a) => a.net > 0);
-    const bearRanked = ranking.filter((a) => a.net < 0).sort((a, b) => a.net - b.net);
-
     return {
-      date: args.date,
+      date: endDate,
       windowDays,
-      symbolCount: ranking.length,
-      bullishLeaders: top(bullRanked),
-      bearishLeaders: top(bearRanked),
-      macroNotes: macroNotes.map((m) => ({
-        influencerId: m.influencerId,
-        macroSummary: m.macroSummary,
-        sentiment: m.sentiment ?? null,
-        sectorViews: m.sectorViews,
-        rotations: m.rotations,
-      })),
+      symbolCount: Object.keys(bySymbol).length,
+      bullishLeaders,
+      bearishLeaders,
+      macroNotes,
     };
   },
 });
 
-// Store (replace) the LLM-written daily macro digest for a date.
-export const saveDigest = internalMutation({
+// ── Save digest ──────────────────────────────────────────────────────────────
+
+export const saveDigest = mutation({
   args: {
     date: v.string(),
     marketSentiment: v.string(),
-    sentimentLabel: v.optional(macroSentimentV),
+    sentimentLabel: v.optional(v.string()),
     keyThemes: v.array(v.string()),
-    sectorRotation: v.array(
-      v.object({
-        from: v.optional(v.string()),
-        to: v.optional(v.string()),
-        rationale: v.string(),
-      })
-    ),
-    bullishLeaders: v.array(
-      v.object({
-        symbol: v.string(),
-        netScore: v.number(),
-        mentions: v.number(),
-      })
-    ),
-    bearishLeaders: v.array(
-      v.object({
-        symbol: v.string(),
-        netScore: v.number(),
-        mentions: v.number(),
-      })
-    ),
-    recommendedActions: v.array(
-      v.object({
-        symbol: v.optional(v.string()),
-        action: v.string(),
-        rationale: v.string(),
-      })
-    ),
-    videosAnalyzed: v.number(),
-    influencersCount: v.number(),
-    windowDays: v.number(),
+    sectorRotation: v.optional(v.array(v.object({
+      from: v.optional(v.string()),
+      to: v.optional(v.string()),
+      rationale: v.string(),
+    }))),
+    bullishLeaders: v.optional(v.array(v.object({
+      symbol: v.string(),
+      netScore: v.number(),
+      mentions: v.number(),
+    }))),
+    bearishLeaders: v.optional(v.array(v.object({
+      symbol: v.string(),
+      netScore: v.number(),
+      mentions: v.number(),
+    }))),
+    recommendedActions: v.optional(v.array(v.object({
+      symbol: v.optional(v.string()),
+      action: v.string(),
+      rationale: v.string(),
+    }))),
+    videosAnalyzed: v.optional(v.number()),
+    influencersCount: v.optional(v.number()),
+    windowDays: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const now = Date.now();
     const existing = await ctx.db
       .query("macroDigest")
       .withIndex("by_date", (q) => q.eq("date", args.date))
-      .collect();
-    for (const row of existing) await ctx.db.delete(row._id);
+      .first();
 
-    return await ctx.db.insert("macroDigest", {
+    const digest = {
       date: args.date,
-      runAt: now,
       marketSentiment: args.marketSentiment,
-      sentimentLabel: args.sentimentLabel,
       keyThemes: args.keyThemes,
-      sectorRotation: args.sectorRotation,
-      bullishLeaders: args.bullishLeaders,
-      bearishLeaders: args.bearishLeaders,
-      recommendedActions: args.recommendedActions,
-      videosAnalyzed: args.videosAnalyzed,
-      influencersCount: args.influencersCount,
-      windowDays: args.windowDays,
-      createdAt: now,
-    });
+      sectorRotations: args.sectorRotation?.map((r: any) => `${r.from ?? "?"} → ${r.to ?? "?"}: ${r.rationale}`) ?? [],
+      bullishLeaders: args.bullishLeaders?.map((l: any) => l.symbol) ?? [],
+      bearishLeaders: args.bearishLeaders?.map((l: any) => l.symbol) ?? [],
+      recommendedActions: args.recommendedActions?.map((a: any) => `${a.action} — ${a.rationale}`) ?? [],
+      createdAt: Date.now(),
+    };
+
+    if (existing) {
+      await ctx.db.patch(existing._id, digest);
+      return { id: existing._id };
+    }
+
+    const id = await ctx.db.insert("macroDigest", digest);
+    return { id };
+  },
+});
+
+// ── Purge old data ──────────────────────────────────────────────────────────
+
+export const purgeOld = mutation({
+  args: {
+    olderThanDays: v.number(),
+  },
+  handler: async (ctx, { olderThanDays }) => {
+    const cutoff = Date.now() - olderThanDays * 24 * 60 * 60 * 1000;
+
+    const videos = await ctx.db.query("influencerVideos").collect();
+    let videosPurged = 0;
+    let mentionsPurged = 0;
+    let macrosPurged = 0;
+
+    for (const v of videos) {
+      if (v.publishedAt < cutoff) {
+        const mentions = await ctx.db
+          .query("videoStockMentions")
+          .withIndex("by_videoId", (q) => q.eq("videoId", v.videoId))
+          .collect();
+        for (const m of mentions) {
+          await ctx.db.delete(m._id);
+          mentionsPurged++;
+        }
+
+        const macros = await ctx.db
+          .query("macroNotes")
+          .withIndex("by_videoId", (q) => q.eq("videoId", v.videoId))
+          .collect();
+        for (const m of macros) {
+          await ctx.db.delete(m._id);
+          macrosPurged++;
+        }
+
+        await ctx.db.delete(v._id);
+        videosPurged++;
+      }
+    }
+
+    const digests = await ctx.db.query("macroDigest").collect();
+    let digestsPurged = 0;
+    for (const d of digests) {
+      const digestDate = new Date(d.date).getTime();
+      if (digestDate < cutoff) {
+        await ctx.db.delete(d._id);
+        digestsPurged++;
+      }
+    }
+
+    return {
+      videos: videosPurged,
+      mentions: mentionsPurged,
+      macros: macrosPurged,
+      digests: digestsPurged,
+      sentiment: 0, // sentiment is cleared by aggregate
+    };
   },
 });
 
 // ── Job run tracking ─────────────────────────────────────────────────────────
 
-export const startRun = internalMutation({
-  args: { mode: v.string() },
+export const startJobRun = mutation({
+  args: {
+    mode: v.string(),
+    startedAt: v.optional(v.number()),
+  },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("jobRuns", {
-      runAt: Date.now(),
+    const id = await ctx.db.insert("jobRuns", {
       mode: args.mode,
       status: "running",
-      videosDiscovered: 0,
-      videosProcessed: 0,
-      videosErrored: 0,
+      startedAt: args.startedAt ?? Date.now(),
     });
+    return { id };
   },
 });
 
-export const finishRun = internalMutation({
+export const endJobRun = mutation({
   args: {
-    runId: v.id("jobRuns"),
-    status: v.union(v.literal("success"), v.literal("error")),
-    videosDiscovered: v.number(),
-    videosProcessed: v.number(),
-    videosErrored: v.number(),
+    runId: v.string(),
+    status: v.union(v.literal("success"), v.literal("failed")),
+    videosDiscovered: v.optional(v.number()),
+    videosProcessed: v.optional(v.number()),
+    videosErrored: v.optional(v.number()),
     error: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.runId, {
+    // runId is actually the Convex document ID string
+    const run = await ctx.db.get(args.runId as any);
+    if (!run) throw new Error(`Job run not found: ${args.runId}`);
+
+    await ctx.db.patch(run._id, {
       status: args.status,
       videosDiscovered: args.videosDiscovered,
       videosProcessed: args.videosProcessed,
-      videosErrored: args.videosErrored,
-      error: args.error,
-      finishedAt: Date.now(),
+      videosFailed: args.videosErrored,
+      endedAt: Date.now(),
+      errorMessage: args.error,
     });
+    return { ok: true };
   },
 });
 
-// ── Retention ────────────────────────────────────────────────────────────────
+// ── Read queries ────────────────────────────────────────────────────────────
 
-// Delete videos (and their mentions/macro notes) plus aggregates older than the
-// retention window, so the dashboard only reflects recent creator views.
-export const purgeOld = internalMutation({
-  args: { olderThanDays: v.number() },
-  handler: async (ctx, { olderThanDays }) => {
-    const cutoff = Date.now() - olderThanDays * 24 * 60 * 60 * 1000;
-    const cutoffDate = new Date(cutoff).toISOString().slice(0, 10);
-    let videos = 0,
-      mentions = 0,
-      macros = 0,
-      sentiment = 0,
-      digests = 0;
+export const getInfluencers = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("influencers").collect();
+  },
+});
 
-    const oldVideos = await ctx.db
+export const latestDigest = query({
+  handler: async (ctx) => {
+    const digests = await ctx.db.query("macroDigest").collect();
+    if (digests.length === 0) return null;
+    return digests.sort((a, b) => b.createdAt - a.createdAt)[0];
+  },
+});
+
+export const sentimentRanking = query({
+  handler: async (ctx) => {
+    const sentiments = await ctx.db.query("dailySentiment").collect();
+    const bullish = sentiments
+      .filter((s) => s.consensus === "strong_bullish" || s.consensus === "bullish")
+      .sort((a, b) => (b.bullishCount ?? 0) - (a.bullishCount ?? 0));
+    const bearish = sentiments
+      .filter((s) => s.consensus === "strong_bearish" || s.consensus === "bearish")
+      .sort((a, b) => (b.bearishCount ?? 0) - (a.bearishCount ?? 0));
+    const mixed = sentiments.filter((s) => s.consensus === "mixed");
+
+    return { bullish, bearish, mixed };
+  },
+});
+
+export const recentVideos = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const videos = await ctx.db
       .query("influencerVideos")
-      .withIndex("by_publishedAt", (q) => q.lt("publishedAt", cutoff))
+      .withIndex("by_publishedAt")
       .collect();
-    for (const vd of oldVideos) {
-      const ms = await ctx.db
-        .query("videoStockMentions")
-        .withIndex("by_video", (q) => q.eq("videoId", vd.videoId))
-        .collect();
-      for (const m of ms) {
-        await ctx.db.delete(m._id);
-        mentions++;
-      }
-      const mn = await ctx.db
-        .query("macroNotes")
-        .withIndex("by_video", (q) => q.eq("videoId", vd.videoId))
-        .collect();
-      for (const m of mn) {
-        await ctx.db.delete(m._id);
-        macros++;
-      }
-      await ctx.db.delete(vd._id);
-      videos++;
-    }
-
-    // Aggregates keyed by date.
-    const oldDS = await ctx.db
-      .query("dailySentiment")
-      .withIndex("by_date", (q) => q.lt("date", cutoffDate))
-      .collect();
-    for (const r of oldDS) {
-      await ctx.db.delete(r._id);
-      sentiment++;
-    }
-    const oldMD = await ctx.db
-      .query("macroDigest")
-      .withIndex("by_date", (q) => q.lt("date", cutoffDate))
-      .collect();
-    for (const r of oldMD) {
-      await ctx.db.delete(r._id);
-      digests++;
-    }
-
-    return { videos, mentions, macros, sentiment, digests };
+    return videos.sort((a, b) => b.publishedAt - a.publishedAt).slice(0, args.limit ?? 20);
   },
 });
 
-// Delete an influencer (by channelId) and all its videos/mentions/macro notes —
-// e.g. to clean up a mis-resolved channel.
-export const deleteInfluencerByChannelId = internalMutation({
+export const videosByChannel = query({
   args: { channelId: v.string() },
   handler: async (ctx, { channelId }) => {
-    const inf = await ctx.db
-      .query("influencers")
-      .withIndex("by_channelId", (q) => q.eq("channelId", channelId))
-      .first();
-    if (!inf) return { found: false, videos: 0, mentions: 0, macros: 0 };
-
-    let videos = 0,
-      mentions = 0,
-      macros = 0;
-    const vids = await ctx.db
+    const videos = await ctx.db
       .query("influencerVideos")
-      .withIndex("by_influencer", (q) => q.eq("influencerId", inf._id))
+      .withIndex("by_channelId", (q) => q.eq("channelId", channelId))
       .collect();
-    for (const vd of vids) {
-      const ms = await ctx.db
-        .query("videoStockMentions")
-        .withIndex("by_video", (q) => q.eq("videoId", vd.videoId))
-        .collect();
-      for (const m of ms) {
-        await ctx.db.delete(m._id);
-        mentions++;
-      }
-      const mn = await ctx.db
-        .query("macroNotes")
-        .withIndex("by_video", (q) => q.eq("videoId", vd.videoId))
-        .collect();
-      for (const m of mn) {
-        await ctx.db.delete(m._id);
-        macros++;
-      }
-      await ctx.db.delete(vd._id);
-      videos++;
-    }
-    await ctx.db.delete(inf._id);
-    return { found: true, videos, mentions, macros };
+    return videos.sort((a, b) => b.publishedAt - a.publishedAt);
+  },
+});
+
+export const latestRun = query({
+  handler: async (ctx) => {
+    const runs = await ctx.db
+      .query("jobRuns")
+      .withIndex("by_startedAt")
+      .collect();
+    if (runs.length === 0) return null;
+    return runs.sort((a, b) => b.startedAt - a.startedAt)[0];
   },
 });

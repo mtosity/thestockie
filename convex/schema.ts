@@ -74,316 +74,250 @@ export default defineSchema({
     expires: v.number(), // timestamp as ms
   }).index("by_identifier_token", ["identifier", "token"]),
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Influencer pipeline (populated by the thestockie-influencer Go job)
-  // ───────────────────────────────────────────────────────────────────────────
+  // ── Influencer sentiment tables ─────────────────────────────────────────
 
-  // A YouTube stock-portfolio influencer we track.
   influencers: defineTable({
     name: v.string(),
-    channelId: v.string(), // YouTube channel id, e.g. "UCxxxxxxxx"
-    handle: v.optional(v.string()), // e.g. "@JosephCarlson"
-    youtubeUrl: v.optional(v.string()),
+    channelId: v.string(),
+    handle: v.optional(v.string()),
     avatar: v.optional(v.string()),
-    description: v.optional(v.string()),
     active: v.boolean(),
-    createdAt: v.number(),
-    updatedAt: v.number(),
+    // Legacy fields
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_channelId", ["channelId"])
     .index("by_active", ["active"]),
 
-  // One row per discovered video. Acts as the processing-state ledger.
   influencerVideos: defineTable({
-    influencerId: v.id("influencers"),
+    videoId: v.string(),
     channelId: v.string(),
-    videoId: v.string(), // YouTube video id (dedupe key)
     title: v.string(),
-    url: v.string(),
-    publishedAt: v.number(), // ms
-    durationSec: v.optional(v.number()),
+    thumbnail: v.optional(v.string()),
     status: v.union(
       v.literal("pending"),
       v.literal("transcribing"),
       v.literal("analyzing"),
       v.literal("done"),
-      v.literal("error"),
-      v.literal("skipped")
+      v.literal("failed"),
+      v.literal("error")
     ),
     transcript: v.optional(v.string()),
     summary: v.optional(v.string()),
+    publishedAt: v.number(), // timestamp as ms
+    processedAt: v.optional(v.number()), // timestamp as ms
+    // Legacy fields from previous runs
+    createdAt: v.optional(v.number()),
+    influencerId: v.optional(v.string()),
+    updatedAt: v.optional(v.number()),
+    url: v.optional(v.string()),
+    // Extra legacy field
     error: v.optional(v.string()),
-    processedAt: v.optional(v.number()),
-    createdAt: v.number(),
-    updatedAt: v.number(),
   })
     .index("by_videoId", ["videoId"])
-    .index("by_influencer", ["influencerId"])
+    .index("by_channelId", ["channelId"])
     .index("by_status", ["status"])
     .index("by_publishedAt", ["publishedAt"]),
 
-  // One row per (video, ticker) — the influencer's stance on a symbol.
   videoStockMentions: defineTable({
     videoId: v.string(),
-    influencerId: v.id("influencers"),
-    symbol: v.string(), // uppercase ticker
-    companyName: v.optional(v.string()),
+    channelId: v.optional(v.string()),
+    symbol: v.string(),
     stance: v.union(
       v.literal("bullish"),
       v.literal("bearish"),
       v.literal("neutral")
     ),
-    conviction: v.optional(
-      v.union(v.literal("low"), v.literal("medium"), v.literal("high"))
+    conviction: v.union(
+      v.literal("high"),
+      v.literal("medium"),
+      v.literal("low")
     ),
-    thesis: v.string(), // why bullish / bearish
-    action: v.optional(
-      v.union(
-        v.literal("buy"),
-        v.literal("add"),
-        v.literal("hold"),
-        v.literal("trim"),
-        v.literal("sell"),
-        v.literal("watch")
-      )
-    ),
-    priceTarget: v.optional(v.number()),
+    thesis: v.string(),
+    action: v.optional(v.string()),
+    priceTarget: v.optional(v.union(v.string(), v.number())),
+    // Legacy fields
+    companyName: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    influencerId: v.optional(v.string()),
+    publishedAt: v.optional(v.number()),
     timeframe: v.optional(v.string()),
-    publishedAt: v.number(), // denormalized from the video for time-range queries
-    createdAt: v.number(),
   })
+    .index("by_videoId", ["videoId"])
     .index("by_symbol", ["symbol"])
-    .index("by_video", ["videoId"])
-    .index("by_influencer", ["influencerId"])
-    .index("by_symbol_publishedAt", ["symbol", "publishedAt"])
-    .index("by_publishedAt", ["publishedAt"]),
+    .index("by_channelId", ["channelId"]),
 
-  // Per-video macro / sector commentary.
   macroNotes: defineTable({
     videoId: v.string(),
-    influencerId: v.id("influencers"),
+    channelId: v.optional(v.string()),
     macroSummary: v.string(),
-    sentiment: v.optional(
-      v.union(
-        v.literal("risk_on"),
-        v.literal("neutral"),
-        v.literal("risk_off")
-      )
-    ),
-    sectorViews: v.array(
-      v.object({
-        sector: v.string(),
-        stance: v.union(
-          v.literal("bullish"),
-          v.literal("bearish"),
-          v.literal("neutral")
-        ),
-        note: v.optional(v.string()),
-      })
-    ),
-    rotations: v.array(
-      v.object({
-        from: v.optional(v.string()),
-        to: v.optional(v.string()),
-        note: v.string(),
-      })
-    ),
-    publishedAt: v.number(),
-    createdAt: v.number(),
+    sectorViews: v.optional(v.array(v.any())),
+    rotations: v.optional(v.array(v.any())),
+    // Legacy fields
+    createdAt: v.optional(v.number()),
+    influencerId: v.optional(v.string()),
+    publishedAt: v.optional(v.number()),
+    sentiment: v.optional(v.string()),
   })
-    .index("by_video", ["videoId"])
-    .index("by_influencer", ["influencerId"])
-    .index("by_publishedAt", ["publishedAt"]),
+    .index("by_videoId", ["videoId"])
+    .index("by_channelId", ["channelId"]),
 
-  // Aggregated per-symbol sentiment for a given run/date (trailing window).
   dailySentiment: defineTable({
-    date: v.string(), // YYYY-MM-DD of the run
     symbol: v.string(),
-    companyName: v.optional(v.string()),
-    bullishCount: v.number(),
-    bearishCount: v.number(),
-    neutralCount: v.number(),
-    mentionsCount: v.number(),
-    netScore: v.number(), // conviction-weighted (bullish +, bearish −)
-    consensus: v.union(
+    date: v.string(), // YYYY-MM-DD
+    bullishCount: v.optional(v.number()),
+    bearishCount: v.optional(v.number()),
+    neutralCount: v.optional(v.number()),
+    bullishCreators: v.optional(v.array(v.string())),
+    bearishCreators: v.optional(v.array(v.string())),
+    netScore: v.optional(v.number()), // conviction-weighted
+    consensus: v.optional(v.union(
       v.literal("strong_bullish"),
       v.literal("bullish"),
       v.literal("mixed"),
       v.literal("bearish"),
       v.literal("strong_bearish")
-    ),
-    influencerIds: v.array(v.id("influencers")),
-    // Creator names per stance, for the leaderboard hover tooltips.
-    bullishCreators: v.optional(v.array(v.string())),
-    bearishCreators: v.optional(v.array(v.string())),
+    )),
+    strongestTheses: v.optional(v.array(v.string())),
+    windowStart: v.optional(v.string()), // YYYY-MM-DD
+    windowEnd: v.optional(v.string()), // YYYY-MM-DD
+    // Legacy fields from previous runs
+    companyName: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    influencerIds: v.optional(v.array(v.string())),
+    mentionsCount: v.optional(v.number()),
     neutralCreators: v.optional(v.array(v.string())),
-    topTheses: v.array(
-      v.object({
-        influencerId: v.id("influencers"),
-        stance: v.string(),
-        thesis: v.string(),
-      })
-    ),
-    windowDays: v.number(),
-    createdAt: v.number(),
+    topTheses: v.optional(v.array(v.any())),
+    windowDays: v.optional(v.number()),
+  })
+    .index("by_symbol", ["symbol"])
+    .index("by_date", ["date"])
+    .index("by_symbol_date", ["symbol", "date"]),
+
+  macroDigest: defineTable({
+    date: v.string(), // YYYY-MM-DD
+    marketSentiment: v.string(),
+    keyThemes: v.optional(v.array(v.string())),
+    sectorRotations: v.optional(v.array(v.string())),
+    bullishLeaders: v.optional(v.array(v.any())),
+    bearishLeaders: v.optional(v.array(v.any())),
+    recommendedActions: v.optional(v.array(v.any())),
+    createdAt: v.number(), // timestamp as ms
+    // Legacy fields
+    influencersCount: v.optional(v.number()),
+    videosAnalyzed: v.optional(v.number()),
+    windowDays: v.optional(v.number()),
+    runAt: v.optional(v.number()),
+    sentimentLabel: v.optional(v.string()),
+    sectorRotation: v.optional(v.array(v.any())),
   })
     .index("by_date", ["date"])
-    .index("by_symbol", ["symbol"])
-    .index("by_date_symbol", ["date", "symbol"])
-    .index("by_date_netScore", ["date", "netScore"]),
+    .index("by_createdAt", ["createdAt"]),
 
-  // Daily cross-influencer macro synthesis (LLM-written narrative + actions).
-  macroDigest: defineTable({
-    date: v.string(), // YYYY-MM-DD (unique per run)
-    runAt: v.number(),
-    marketSentiment: v.string(), // overall narrative
-    sentimentLabel: v.optional(
-      v.union(
-        v.literal("risk_on"),
-        v.literal("neutral"),
-        v.literal("risk_off")
-      )
-    ),
-    keyThemes: v.array(v.string()),
-    sectorRotation: v.array(
-      v.object({
-        from: v.optional(v.string()),
-        to: v.optional(v.string()),
-        rationale: v.string(),
-      })
-    ),
-    bullishLeaders: v.array(
-      v.object({
-        symbol: v.string(),
-        netScore: v.number(),
-        mentions: v.number(),
-      })
-    ),
-    bearishLeaders: v.array(
-      v.object({
-        symbol: v.string(),
-        netScore: v.number(),
-        mentions: v.number(),
-      })
-    ),
-    recommendedActions: v.array(
-      v.object({
-        symbol: v.optional(v.string()),
-        action: v.string(),
-        rationale: v.string(),
-      })
-    ),
-    videosAnalyzed: v.number(),
-    influencersCount: v.number(),
-    windowDays: v.number(),
-    createdAt: v.number(),
-  }).index("by_date", ["date"]),
-
-  // One row per job execution, for observability + manual-trigger visibility.
   jobRuns: defineTable({
-    runAt: v.number(),
-    mode: v.string(), // "daily" | "manual" | "aggregate"
-    status: v.union(
-      v.literal("running"),
-      v.literal("success"),
-      v.literal("error")
-    ),
-    videosDiscovered: v.number(),
-    videosProcessed: v.number(),
-    videosErrored: v.number(),
+    mode: v.string(),
+    status: v.union(v.literal("running"), v.literal("success"), v.literal("failed")),
+    videosDiscovered: v.optional(v.number()),
+    videosProcessed: v.optional(v.number()),
+    videosFailed: v.optional(v.number()),
+    startedAt: v.optional(v.number()),
+    endedAt: v.optional(v.number()),
+    errorMessage: v.optional(v.string()),
+    // Legacy fields
     finishedAt: v.optional(v.number()),
-    error: v.optional(v.string()),
-  }).index("by_runAt", ["runAt"]),
+    runAt: v.optional(v.number()),
+    videosErrored: v.optional(v.number()),
+  })
+    .index("by_startedAt", ["startedAt"]),
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Super investors (SEC 13F) — populated by the superinvestor-job
-  // ───────────────────────────────────────────────────────────────────────────
+  // ── Super investor (13F) tables ─────────────────────────────────────────────
 
   superInvestors: defineTable({
+    cik: v.string(),
     name: v.string(),
-    firm: v.string(),
+    slug: v.string(),
+    firm: v.optional(v.string()),
     style: v.optional(v.string()),
     why: v.optional(v.string()),
-    cik: v.string(),
-    slug: v.string(),
     avatar: v.optional(v.string()),
     active: v.boolean(),
-    createdAt: v.number(),
-    updatedAt: v.number(),
+    lastFilingDate: v.optional(v.number()),
+    lastPeriod: v.optional(v.string()),
+    // Legacy fields
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_cik", ["cik"])
     .index("by_slug", ["slug"])
     .index("by_active", ["active"]),
 
-  // One row per (investor, quarter) 13F filing.
-  investor13fFilings: defineTable({
-    investorId: v.id("superInvestors"),
+  secFilings: defineTable({
     cik: v.string(),
-    period: v.string(), // "2026-Q1"
-    reportDate: v.number(), // quarter-end, ms
-    filingDate: v.number(), // ms
-    totalValue: v.number(), // portfolio $ value
-    holdingsCount: v.number(),
-    createdAt: v.number(),
+    period: v.string(),
+    reportDate: v.number(),
+    filingDate: v.number(),
+    totalValue: v.number(),
+    positionCount: v.number(),
   })
-    .index("by_investor", ["investorId"])
+    .index("by_cik", ["cik"])
     .index("by_period", ["period"])
-    .index("by_investor_period", ["investorId", "period"]),
+    .index("by_cik_period", ["cik", "period"]),
 
-  // One row per (investor, quarter, holding) with the quarter-over-quarter move.
   investorPositions: defineTable({
-    investorId: v.id("superInvestors"),
+    cik: v.optional(v.string()),
+    investorId: v.optional(v.string()), // Legacy field
     period: v.string(),
     cusip: v.string(),
     ticker: v.optional(v.string()),
-    name: v.string(), // issuer name
+    name: v.string(),
     shares: v.number(),
-    value: v.number(), // $ value
-    pctPortfolio: v.number(), // 0..100
+    value: v.number(),
+    pctPortfolio: v.number(),
     changeType: v.union(
       v.literal("new"),
       v.literal("added"),
       v.literal("reduced"),
-      v.literal("sold"),
-      v.literal("hold")
+      v.literal("hold"),
+      v.literal("sold")
     ),
-    changePct: v.optional(v.number()), // share change %, signed
+    changePct: v.optional(v.number()),
     prevShares: v.optional(v.number()),
     isOption: v.optional(v.boolean()),
-    createdAt: v.number(),
+    // Legacy fields
+    createdAt: v.optional(v.number()),
   })
-    .index("by_investor_period", ["investorId", "period"])
-    .index("by_ticker", ["ticker"])
-    .index("by_period", ["period"]),
+    .index("by_cik_period", ["cik", "period"])
+    .index("by_cusip", ["cusip"])
+    .index("by_ticker", ["ticker"]),
 
-  // Cross-investor consensus per ticker for a period.
-  investorConsensus: defineTable({
-    period: v.string(),
-    ticker: v.string(),
-    name: v.optional(v.string()),
-    buyers: v.number(), // # investors new/added
-    sellers: v.number(), // # investors reduced/sold
-    holders: v.number(), // # investors holding (any)
-    net: v.number(), // buyers - sellers
-    consensus: v.union(
-      v.literal("strong_buy"),
-      v.literal("buy"),
-      v.literal("mixed"),
-      v.literal("sell"),
-      v.literal("strong_sell")
-    ),
-    buyerNames: v.array(v.string()),
-    sellerNames: v.array(v.string()),
-    createdAt: v.number(),
-  })
-    .index("by_period", ["period"])
-    .index("by_period_ticker", ["period", "ticker"]),
-
-  // CUSIP→ticker cache (filled from OpenFIGI).
-  cusipTickers: defineTable({
+  cusipCache: defineTable({
     cusip: v.string(),
     ticker: v.optional(v.string()),
     name: v.optional(v.string()),
-    createdAt: v.number(),
-  }).index("by_cusip", ["cusip"]),
+  })
+    .index("by_cusip", ["cusip"]),
+
+  investorConsensus: defineTable({
+    period: v.string(),
+    ticker: v.string(),
+    totalInvestors: v.optional(v.number()),
+    totalShares: v.optional(v.number()),
+    totalValue: v.optional(v.number()),
+    topHolders: v.optional(v.array(v.string())),
+    actions: v.optional(v.array(v.string())),
+    avgPortfolioPct: v.optional(v.number()),
+    // Legacy fields from existing data
+    name: v.optional(v.string()),
+    consensus: v.optional(v.string()),
+    buyers: v.optional(v.number()),
+    sellers: v.optional(v.number()),
+    net: v.optional(v.number()),
+    buyerNames: v.optional(v.array(v.string())),
+    sellerNames: v.optional(v.array(v.string())),
+    holders: v.optional(v.number()),
+    createdAt: v.optional(v.number()),
+  })
+    .index("by_period", ["period"])
+    .index("by_ticker", ["ticker"])
+    .index("by_period_ticker", ["period", "ticker"]),
 });

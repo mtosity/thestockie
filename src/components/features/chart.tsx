@@ -1,18 +1,31 @@
 "use client";
 
 import { LoaderCircle } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
+  Area,
+  Bar,
   CartesianGrid,
-  AreaChart,
+  Cell,
+  ComposedChart,
+  Line,
+  ReferenceLine,
   ResponsiveContainer,
   XAxis,
   YAxis,
-  Area,
 } from "recharts";
 
 import { ChartTooltip } from "~/components/ui/chart";
+import { useIndicatorPreferences } from "~/hooks/use-indicator-preferences";
 import { useSymbol } from "~/hooks/use-symbol";
+import {
+  calculateBollingerBands,
+  calculateMACD,
+  calculateRSI,
+  calculateSupportResistance,
+  calculateVWAP,
+  type OHLCVData,
+} from "~/lib/indicators";
 import { api } from "~/trpc/react";
 
 const PriceChange = ({ data }: { data?: { price: number }[] }) => {
@@ -86,30 +99,33 @@ const CustomTooltip = ({
 
 type TimeFrame = "5Y" | "1Y" | "6M" | "1M" | "1W" | "1D";
 
-const filterDataByTimeFrame = (
-  data: {
-    date: string;
-    price: number;
-  }[],
+const VWAP_TIMEFRAMES: TimeFrame[] = ["1M", "1W", "1D"];
+
+interface ChartDataPoint extends OHLCVData {
+  price: number;
+}
+
+const filterDataByTimeFrame = <T extends { date: string }>(
+  data: T[],
   timeFrame: TimeFrame,
-) => {
+): T[] => {
   const sortedData = [...data].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   );
 
   switch (timeFrame) {
     case "5Y":
-      return sortedData.slice(-252 * 5); // ~252 trading days per year
+      return sortedData.slice(-252 * 5);
     case "1Y":
       return sortedData.slice(-252);
     case "6M":
-      return sortedData.slice(-126); // ~21 trading days * 6
+      return sortedData.slice(-126);
     case "1M":
-      return sortedData.slice(-21); // ~21 trading days
+      return sortedData.slice(-21);
     case "1W":
-      return sortedData.slice(-5); // 5 trading days
+      return sortedData.slice(-5);
     case "1D":
-      return sortedData.slice(-1); // Latest day
+      return sortedData.slice(-1);
     default:
       return sortedData;
   }
@@ -118,6 +134,8 @@ const filterDataByTimeFrame = (
 export function Chart() {
   const [timeFrame, setTimeFrame] = useState<TimeFrame>("1Y");
   const [symbol] = useSymbol();
+  const [indicators, toggleIndicator] = useIndicatorPreferences();
+
   const { data, isLoading } = api.asset.equityPriceHistoricalFMP.useQuery(
     symbol ?? "",
     {
@@ -136,29 +154,118 @@ export function Chart() {
       enabled: timeFrame === "1D" && !!symbol,
     });
 
-  if (!symbol) {
-    return <NoSymbolMessage />;
-  }
+  const chartData: ChartDataPoint[] = useMemo(() => {
+    if (!data?.historical) return [];
+    return [...data.historical]
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .map((r) => ({
+        date: r.date,
+        price: r.close,
+        open: r.open,
+        high: r.high,
+        low: r.low,
+        close: r.close,
+        volume: r.volume,
+      }));
+  }, [data]);
 
-  if (isLoading || isLoading2) {
-    return <ChartSkeleton />;
-  }
-
-  const chartData = data?.historical
-    ?.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .map((result) => ({
-      date: result.date,
-      price: result.close,
+  const chartData2: ChartDataPoint[] = useMemo(() => {
+    if (!data2?.results) return [];
+    return data2.results.map((r) => ({
+      date: r.date,
+      price: r.close,
+      open: r.open,
+      high: r.high,
+      low: r.low,
+      close: r.close,
+      volume: r.volume,
     }));
+  }, [data2]);
 
-  const chartData2 = data2?.results?.map((result) => ({
-    date: result.date,
-    price: result.close,
-  }));
+  const activeChartData: ChartDataPoint[] = useMemo(() => {
+    if (timeFrame === "1D") return chartData2;
+    return filterDataByTimeFrame(chartData, timeFrame);
+  }, [timeFrame, chartData, chartData2]);
 
-  const filteredData = chartData
-    ? filterDataByTimeFrame(chartData ?? [], timeFrame)
-    : [];
+  const indicatorData = useMemo(() => {
+    if (!activeChartData.length) return null;
+    return {
+      vwap: calculateVWAP(activeChartData),
+      bollinger: calculateBollingerBands(activeChartData),
+      rsi: calculateRSI(activeChartData),
+      macd: calculateMACD(activeChartData),
+      sr: calculateSupportResistance(activeChartData),
+    };
+  }, [activeChartData]);
+
+  const showVWAP = indicators.vwap && VWAP_TIMEFRAMES.includes(timeFrame);
+
+  const mergedData = useMemo(() => {
+    if (!indicatorData) return activeChartData;
+    return activeChartData.map((d, i) => ({
+      ...d,
+      ...(showVWAP ? { vwap: indicatorData.vwap[i]?.vwap } : {}),
+      ...(indicators.bollinger
+        ? {
+            bbUpper: indicatorData.bollinger[i]?.bbUpper,
+            bbMiddle: indicatorData.bollinger[i]?.bbMiddle,
+            bbLower: indicatorData.bollinger[i]?.bbLower,
+          }
+        : {}),
+      ...(indicators.rsi ? { rsi: indicatorData.rsi[i]?.rsi } : {}),
+      ...(indicators.macd
+        ? {
+            macdLine: indicatorData.macd[i]?.macdLine,
+            macdSignal: indicatorData.macd[i]?.macdSignal,
+            macdHistogram: indicatorData.macd[i]?.macdHistogram,
+          }
+        : {}),
+    }));
+  }, [activeChartData, indicatorData, showVWAP, indicators]);
+
+  const srLevels = useMemo(() => {
+    if (!indicatorData || !indicators.sr || !activeChartData.length) return [];
+    const prices = activeChartData.map((d) => d.price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const range = maxPrice - minPrice;
+    return indicatorData.sr
+      .filter(
+        (lvl) =>
+          lvl.level >= minPrice - range * 0.05 &&
+          lvl.level <= maxPrice + range * 0.05,
+      )
+      .slice(0, 10);
+  }, [indicatorData, indicators.sr, activeChartData]);
+
+  const showRSI = indicators.rsi;
+  const showMACD = indicators.macd;
+  const hasSubCharts = showRSI || showMACD;
+
+  if (!symbol) return <NoSymbolMessage />;
+  if (isLoading || isLoading2) return <ChartSkeleton />;
+
+  const indicatorButtons: { key: keyof typeof indicators; label: string }[] = [
+    { key: "vwap", label: "VWAP" },
+    { key: "bollinger", label: "Bollinger" },
+    { key: "rsi", label: "RSI" },
+    { key: "macd", label: "MACD" },
+    { key: "sr", label: "S/R" },
+  ];
+
+  const tickFormatter = (value: string) => {
+    const date = new Date(value);
+    if (timeFrame === "1D")
+      return date.toLocaleString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: date.getMonth() === 0 ? "numeric" : undefined,
+    });
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -184,60 +291,230 @@ export function Chart() {
             </button>
           ))}
         </div>
-        <PriceChange data={timeFrame === "1D" ? chartData2 : filteredData} />
+        <PriceChange
+          data={timeFrame === "1D" ? chartData2 : activeChartData}
+        />
       </div>
 
-      <ResponsiveContainer>
-        <AreaChart
-          accessibilityLayer
-          data={timeFrame === "1D" ? chartData2 : filteredData}
-        >
-          <defs>
-            <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-
-          <CartesianGrid vertical={false} />
-          <XAxis
-            fontSize={12}
-            dataKey="date"
-            minTickGap={50}
-            interval="preserveStartEnd"
-            tickFormatter={(value: string) => {
-              const date = new Date(value);
-
-              if (timeFrame === "1D")
-                return date.toLocaleString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
-
-              return date.toLocaleString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: date.getMonth() === 0 ? "numeric" : undefined,
-              });
+      <div className="flex gap-2 px-2 pb-2">
+        {indicatorButtons.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleIndicator(key);
             }}
-          />
-          <YAxis
-            fontSize={12}
-            dataKey="price"
-            type="number"
-            domain={["dataMin", "dataMax"]}
-            tickFormatter={(value: number) => value?.toFixed(2)}
-          />
-          <ChartTooltip content={<CustomTooltip />} />
-          <Area
-            dataKey="price"
-            stroke="#82ca9d"
-            fillOpacity={1}
-            fill="url(#colorPv)"
-            dot={false}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+            className={`rounded px-3 py-1 text-xs ${
+              indicators[key]
+                ? "bg-[#424975] text-white"
+                : "bg-transparent text-gray-500 hover:bg-[#424975]/50"
+            }`}
+            style={{ zIndex: 100 }}
+            onTouchStart={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="min-h-0 flex-1">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart
+            accessibilityLayer
+            data={mergedData}
+            margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
+          >
+            <defs>
+              <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+
+            <CartesianGrid vertical={false} />
+            <XAxis
+              fontSize={12}
+              dataKey="date"
+              minTickGap={50}
+              interval="preserveStartEnd"
+              tickFormatter={tickFormatter}
+            />
+            <YAxis
+              fontSize={12}
+              type="number"
+              domain={["auto", "auto"]}
+              tickFormatter={(value: number) => value?.toFixed(2)}
+              width={65}
+            />
+            <ChartTooltip content={<CustomTooltip />} />
+
+            <Area
+              dataKey="price"
+              stroke="#82ca9d"
+              fillOpacity={1}
+              fill="url(#colorPv)"
+              dot={false}
+              isAnimationActive={false}
+            />
+
+            {showVWAP && (
+              <Line
+                dataKey="vwap"
+                stroke="#3b82f6"
+                strokeWidth={1.5}
+                strokeDasharray="5 5"
+                dot={false}
+                isAnimationActive={false}
+                connectNulls={false}
+              />
+            )}
+
+            {indicators.bollinger && (
+              <>
+                <Line
+                  dataKey="bbUpper"
+                  stroke="#ef4444"
+                  strokeWidth={1}
+                  strokeOpacity={0.6}
+                  dot={false}
+                  isAnimationActive={false}
+                  connectNulls={false}
+                />
+                <Line
+                  dataKey="bbMiddle"
+                  stroke="#eab308"
+                  strokeWidth={1}
+                  strokeOpacity={0.6}
+                  dot={false}
+                  isAnimationActive={false}
+                  connectNulls={false}
+                />
+                <Line
+                  dataKey="bbLower"
+                  stroke="#22c55e"
+                  strokeWidth={1}
+                  strokeOpacity={0.6}
+                  dot={false}
+                  isAnimationActive={false}
+                  connectNulls={false}
+                />
+              </>
+            )}
+
+            {indicators.sr &&
+              srLevels.map((lvl, idx) => (
+                <ReferenceLine
+                  key={`${lvl.type}-${idx}`}
+                  y={lvl.level}
+                  stroke={lvl.type === "support" ? "#22c55e" : "#ef4444"}
+                  strokeDasharray="4 4"
+                  strokeOpacity={0.7}
+                  label={{
+                    value: lvl.type === "support" ? "S" : "R",
+                    position: "insideTopRight",
+                    fontSize: 10,
+                    fill: lvl.type === "support" ? "#22c55e" : "#ef4444",
+                  }}
+                />
+              ))}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+      {showRSI && (
+        <div style={{ height: 90 }}>
+          <div className="px-2 pt-1 text-xs text-gray-400">RSI (14)</div>
+          <ResponsiveContainer width="100%" height={72}>
+            <ComposedChart
+              data={mergedData}
+              margin={{ top: 0, right: 8, bottom: 0, left: 0 }}
+            >
+              <XAxis dataKey="date" hide />
+              <YAxis
+                domain={[0, 100]}
+                ticks={[30, 70]}
+                fontSize={10}
+                width={65}
+              />
+              <ReferenceLine
+                y={70}
+                stroke="#ef4444"
+                strokeDasharray="3 3"
+                strokeOpacity={0.5}
+              />
+              <ReferenceLine
+                y={30}
+                stroke="#22c55e"
+                strokeDasharray="3 3"
+                strokeOpacity={0.5}
+              />
+              <Line
+                dataKey="rsi"
+                stroke="#a855f7"
+                strokeWidth={1.5}
+                dot={false}
+                isAnimationActive={false}
+                connectNulls={false}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {showMACD && (
+        <div style={{ height: 90 }}>
+          <div className="px-2 pt-1 text-xs text-gray-400">MACD (12,26,9)</div>
+          <ResponsiveContainer width="100%" height={72}>
+            <ComposedChart
+              data={mergedData}
+              margin={{ top: 0, right: 8, bottom: 0, left: 0 }}
+            >
+              <XAxis dataKey="date" hide />
+              <YAxis fontSize={10} width={65} />
+              <ReferenceLine y={0} stroke="#6b7280" strokeOpacity={0.4} />
+              <Bar
+                dataKey="macdHistogram"
+                isAnimationActive={false}
+                maxBarSize={4}
+              >
+                {mergedData.map((entry, idx) => {
+                  const val = (
+                    entry as unknown as Record<string, number | null | undefined>
+                  ).macdHistogram;
+                  return (
+                    <Cell
+                      key={`macd-cell-${idx}`}
+                      fill={
+                        val != null && val >= 0 ? "#22c55e" : "#ef4444"
+                      }
+                    />
+                  );
+                })}
+              </Bar>
+              <Line
+                dataKey="macdLine"
+                stroke="#3b82f6"
+                strokeWidth={1.5}
+                dot={false}
+                isAnimationActive={false}
+                connectNulls={false}
+              />
+              <Line
+                dataKey="macdSignal"
+                stroke="#f97316"
+                strokeWidth={1.5}
+                strokeDasharray="3 3"
+                dot={false}
+                isAnimationActive={false}
+                connectNulls={false}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {!hasSubCharts && <div />}
     </div>
   );
 }

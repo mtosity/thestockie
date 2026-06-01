@@ -1,264 +1,195 @@
-import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { internal } from "./_generated/api";
+import { httpRouter } from "convex/server";
+import { api } from "./_generated/api";
 
-/**
- * HTTP endpoints for the external `thestockie-influencer` Go job.
- *
- * All routes require `Authorization: Bearer <INGEST_SECRET>`, where
- * INGEST_SECRET is a Convex environment variable:
- *
- *   npx convex env set INGEST_SECRET "<a-long-random-string>"
- *
- * Base URL is the deployment's `.convex.site` origin, e.g.
- *   https://exciting-bee-603.convex.site/influencer/active
- */
+function checkAuth(req: Request): Response | null {
+  const auth = req.headers.get("authorization");
+  const expected = `Bearer ${process.env.INGEST_SECRET}`;
+  if (auth !== expected) {
+    return jsonResponse(401, { ok: false, error: "Unauthorized" });
+  }
+  return null;
+}
+
+function jsonResponse(status: number, body: any): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+async function parseBody(req: Request): Promise<any> {
+  try {
+    return await req.json();
+  } catch {
+    return {};
+  }
+}
+
+// ── Investor handler ─────────────────────────────────────────────────────────
+
+export const handleInvestor = httpAction(async (ctx, req) => {
+  const url = new URL(req.url);
+  const path = url.pathname.replace(/^\/investor/, "");
+
+  const authErr = checkAuth(req);
+  if (authErr) return authErr;
+
+  try {
+    switch (path) {
+      case "/active": {
+        const investors = await ctx.runQuery(api.investors.getActiveInvestors, {});
+        return jsonResponse(200, { ok: true, result: investors });
+      }
+
+      case "/seed": {
+        const body = await parseBody(req);
+        await ctx.runMutation(api.investors.seedInvestor, body);
+        return jsonResponse(200, { ok: true, result: null });
+      }
+
+      case "/cusip/lookup": {
+        const body = await parseBody(req);
+        const result = await ctx.runQuery(api.investors.cusipLookup, body);
+        return jsonResponse(200, { ok: true, result });
+      }
+
+      case "/cusip/save": {
+        const body = await parseBody(req);
+        await ctx.runMutation(api.investors.cusipSave, body);
+        return jsonResponse(200, { ok: true, result: null });
+      }
+
+      case "/filing": {
+        const body = await parseBody(req);
+        await ctx.runMutation(api.investors.saveFiling, body);
+        return jsonResponse(200, { ok: true, result: null });
+      }
+
+      case "/aggregate": {
+        const body = await parseBody(req);
+        const result = await ctx.runMutation(api.investors.aggregateConsensus, body);
+        return jsonResponse(200, { ok: true, result });
+      }
+
+      default:
+        return jsonResponse(404, { ok: false, error: `Unknown investor route: ${path}` });
+    }
+  } catch (e: any) {
+    console.error("Investor error:", e);
+    return jsonResponse(500, { ok: false, error: e.message ?? "Internal error" });
+  }
+});
+
+// ── Influencer handler ───────────────────────────────────────────────────────
+
+export const handleInfluencer = httpAction(async (ctx, req) => {
+  const url = new URL(req.url);
+  const path = url.pathname.replace(/^\/influencer/, "");
+
+  const authErr = checkAuth(req);
+  if (authErr) return authErr;
+
+  try {
+    switch (path) {
+      case "/active": {
+        const influencers = await ctx.runQuery(api.influencer.getActiveInfluencers, {});
+        return jsonResponse(200, { ok: true, result: influencers });
+      }
+
+      case "/seed": {
+        const body = await parseBody(req);
+        const influencers = body.influencers ?? [body];
+        await ctx.runMutation(api.influencer.seedInfluencers, { influencers });
+        return jsonResponse(200, { ok: true, result: null });
+      }
+
+      case "/video/discover": {
+        const body = await parseBody(req);
+        const result = await ctx.runMutation(api.influencer.discoverVideo, body);
+        return jsonResponse(200, { ok: true, result });
+      }
+
+      case "/video/status": {
+        const body = await parseBody(req);
+        await ctx.runMutation(api.influencer.setVideoStatus, body);
+        return jsonResponse(200, { ok: true, result: null });
+      }
+
+      case "/video/error": {
+        const body = await parseBody(req);
+        await ctx.runMutation(api.influencer.setVideoError, body);
+        return jsonResponse(200, { ok: true, result: null });
+      }
+
+      case "/video/result": {
+        const body = await parseBody(req);
+        await ctx.runMutation(api.influencer.saveVideoResult, body);
+        return jsonResponse(200, { ok: true, result: null });
+      }
+
+      case "/aggregate": {
+        const body = await parseBody(req);
+        const result = await ctx.runMutation(api.influencer.aggregateSentiment, body);
+        return jsonResponse(200, { ok: true, result });
+      }
+
+      case "/digest": {
+        const body = await parseBody(req);
+        await ctx.runMutation(api.influencer.saveDigest, body);
+        return jsonResponse(200, { ok: true, result: null });
+      }
+
+      case "/purge": {
+        const body = await parseBody(req);
+        const result = await ctx.runMutation(api.influencer.purgeOld, body);
+        return jsonResponse(200, { ok: true, result });
+      }
+
+      case "/run/start": {
+        const body = await parseBody(req);
+        const result = await ctx.runMutation(api.influencer.startJobRun, body);
+        return jsonResponse(200, { ok: true, result: result.id });
+      }
+
+      case "/run/finish": {
+        const body = await parseBody(req);
+        await ctx.runMutation(api.influencer.endJobRun, body);
+        return jsonResponse(200, { ok: true, result: null });
+      }
+
+      default:
+        return jsonResponse(404, { ok: false, error: `Unknown influencer route: ${path}` });
+    }
+  } catch (e: any) {
+    console.error("Ingest error:", e);
+    return jsonResponse(500, { ok: false, error: e.message ?? "Internal error" });
+  }
+});
+
+// ── Router with EXACT paths (not wildcards) ──────────────────────────────────
 
 const http = httpRouter();
 
-function authorized(request: Request): boolean {
-  const secret = process.env.INGEST_SECRET;
-  if (!secret) return false; // fail closed if unset
-  const header = request.headers.get("Authorization") ?? "";
-  return header === `Bearer ${secret}`;
-}
+// Investor routes — EXACT paths
+http.route({ path: "/investor/active", method: "GET", handler: handleInvestor });
+http.route({ path: "/investor/seed", method: "POST", handler: handleInvestor });
+http.route({ path: "/investor/cusip/lookup", method: "POST", handler: handleInvestor });
+http.route({ path: "/investor/cusip/save", method: "POST", handler: handleInvestor });
+http.route({ path: "/investor/filing", method: "POST", handler: handleInvestor });
+http.route({ path: "/investor/aggregate", method: "POST", handler: handleInvestor });
 
-function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
-
-// Wrap a handler with auth + JSON-body parsing + uniform error handling.
-function endpoint(
-  fn: (ctx: any, body: any) => Promise<unknown>,
-  { parseBody = true }: { parseBody?: boolean } = {}
-) {
-  return httpAction(async (ctx, request) => {
-    if (!authorized(request)) return json({ error: "unauthorized" }, 401);
-    let body: any = undefined;
-    if (parseBody) {
-      try {
-        body = await request.json();
-      } catch {
-        return json({ error: "invalid JSON body" }, 400);
-      }
-    }
-    try {
-      const result = await fn(ctx, body);
-      return json({ ok: true, result });
-    } catch (err: any) {
-      return json({ ok: false, error: String(err?.message ?? err) }, 500);
-    }
-  });
-}
-
-// GET active influencers (the job's scan list).
-http.route({
-  path: "/influencer/active",
-  method: "GET",
-  handler: httpAction(async (ctx, request) => {
-    if (!authorized(request)) return json({ error: "unauthorized" }, 401);
-    const result = await ctx.runQuery(internal.influencer.listActive, {});
-    return json({ ok: true, result });
-  }),
-});
-
-// Upsert an influencer (sync the job's config list into Convex).
-http.route({
-  path: "/influencer/seed",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.influencer.upsertInfluencer, {
-      name: b.name,
-      channelId: b.channelId,
-      handle: b.handle,
-      youtubeUrl: b.youtubeUrl,
-      avatar: b.avatar,
-      description: b.description,
-      active: b.active,
-    })
-  ),
-});
-
-// Register a discovered video; returns whether it's new (idempotent on videoId).
-http.route({
-  path: "/influencer/video/discover",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.influencer.discoverVideo, {
-      channelId: b.channelId,
-      videoId: b.videoId,
-      title: b.title,
-      url: b.url,
-      publishedAt: b.publishedAt,
-      durationSec: b.durationSec,
-    })
-  ),
-});
-
-// Update a video's processing status.
-http.route({
-  path: "/influencer/video/status",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.influencer.setVideoStatus, {
-      videoId: b.videoId,
-      status: b.status,
-    })
-  ),
-});
-
-// Store the full per-video analysis and mark it done.
-http.route({
-  path: "/influencer/video/result",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.influencer.saveVideoResult, {
-      videoId: b.videoId,
-      transcript: b.transcript,
-      summary: b.summary,
-      mentions: b.mentions ?? [],
-      macro: b.macro,
-    })
-  ),
-});
-
-// Record a per-video failure.
-http.route({
-  path: "/influencer/video/error",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.influencer.markVideoError, {
-      videoId: b.videoId,
-      error: b.error,
-    })
-  ),
-});
-
-// Recompute per-symbol sentiment for a date; returns ranking + macro notes.
-http.route({
-  path: "/influencer/aggregate",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.influencer.aggregate, {
-      date: b.date,
-      windowDays: b.windowDays,
-    })
-  ),
-});
-
-// Store the LLM-written daily macro digest.
-http.route({
-  path: "/influencer/digest",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.influencer.saveDigest, b)
-  ),
-});
-
-// Job-run bookkeeping.
-http.route({
-  path: "/influencer/run/start",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.influencer.startRun, { mode: b.mode })
-  ),
-});
-
-http.route({
-  path: "/influencer/run/finish",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.influencer.finishRun, {
-      runId: b.runId,
-      status: b.status,
-      videosDiscovered: b.videosDiscovered,
-      videosProcessed: b.videosProcessed,
-      videosErrored: b.videosErrored,
-      error: b.error,
-    })
-  ),
-});
-
-// Delete data older than the retention window.
-http.route({
-  path: "/influencer/purge",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.influencer.purgeOld, {
-      olderThanDays: b.olderThanDays,
-    })
-  ),
-});
-
-// ── Super investors (13F) ────────────────────────────────────────────────────
-
-http.route({
-  path: "/investor/active",
-  method: "GET",
-  handler: httpAction(async (ctx, request) => {
-    if (!authorized(request)) return json({ error: "unauthorized" }, 401);
-    const result = await ctx.runQuery(internal.superInvestor.listActiveInvestors, {});
-    return json({ ok: true, result });
-  }),
-});
-
-http.route({
-  path: "/investor/seed",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.superInvestor.upsertInvestor, {
-      name: b.name,
-      firm: b.firm,
-      style: b.style,
-      why: b.why,
-      cik: b.cik,
-      slug: b.slug,
-      avatar: b.avatar,
-      active: b.active,
-    })
-  ),
-});
-
-http.route({
-  path: "/investor/cusip/lookup",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runQuery(internal.superInvestor.cusipLookup, { cusips: b.cusips ?? [] })
-  ),
-});
-
-http.route({
-  path: "/investor/cusip/save",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.superInvestor.cusipSave, { entries: b.entries ?? [] })
-  ),
-});
-
-http.route({
-  path: "/investor/filing",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.superInvestor.saveFiling, {
-      cik: b.cik,
-      period: b.period,
-      reportDate: b.reportDate,
-      filingDate: b.filingDate,
-      totalValue: b.totalValue,
-      positions: b.positions ?? [],
-    })
-  ),
-});
-
-http.route({
-  path: "/investor/aggregate",
-  method: "POST",
-  handler: endpoint((ctx, b) =>
-    ctx.runMutation(internal.superInvestor.aggregateConsensus, { period: b.period })
-  ),
-});
+// Influencer routes — EXACT paths
+http.route({ path: "/influencer/active", method: "GET", handler: handleInfluencer });
+http.route({ path: "/influencer/seed", method: "POST", handler: handleInfluencer });
+http.route({ path: "/influencer/video/discover", method: "POST", handler: handleInfluencer });
+http.route({ path: "/influencer/video/status", method: "POST", handler: handleInfluencer });
+http.route({ path: "/influencer/video/error", method: "POST", handler: handleInfluencer });
+http.route({ path: "/influencer/video/result", method: "POST", handler: handleInfluencer });
+http.route({ path: "/influencer/aggregate", method: "POST", handler: handleInfluencer });
+http.route({ path: "/influencer/digest", method: "POST", handler: handleInfluencer });
+http.route({ path: "/influencer/purge", method: "POST", handler: handleInfluencer });
+http.route({ path: "/influencer/run/start", method: "POST", handler: handleInfluencer });
+http.route({ path: "/influencer/run/finish", method: "POST", handler: handleInfluencer });
 
 export default http;

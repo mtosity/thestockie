@@ -1,202 +1,123 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
-import type { Doc, Id } from "./_generated/dataModel";
-import type { QueryCtx } from "./_generated/server";
 
-/** Public read queries for the super-investor feature (consumed by tRPC). */
+/**
+ * Public read queries for the thestockie.com/influencers page.
+ * These are called directly from the frontend (not via HTTP).
+ */
 
-async function latestFilingPeriod(ctx: QueryCtx): Promise<string | null> {
-  const f = await ctx.db.query("investor13fFilings").withIndex("by_period").order("desc").first();
-  return f?.period ?? null;
-}
-
-async function investorNamer(ctx: QueryCtx) {
-  const cache = new Map<string, { name: string; slug: string }>();
-  return async (id: Id<"superInvestors">) => {
-    let v = cache.get(id as string);
-    if (!v) {
-      const inv = await ctx.db.get(id);
-      v = { name: inv?.name ?? "Unknown", slug: inv?.slug ?? "" };
-      cache.set(id as string, v);
-    }
-    return v;
-  };
-}
-
-// Roster of investors with their latest-quarter move summary.
 export const investors = query({
-  args: {},
   handler: async (ctx) => {
-    const list = await ctx.db
-      .query("superInvestors")
-      .withIndex("by_active", (q) => q.eq("active", true))
-      .collect();
-    const out = [];
-    for (const inv of list) {
-      const filings = await ctx.db
-        .query("investor13fFilings")
-        .withIndex("by_investor", (q) => q.eq("investorId", inv._id))
-        .collect();
-      filings.sort((a, b) => b.period.localeCompare(a.period));
-      const latest = filings[0] ?? null;
-      const moves = { new: 0, added: 0, reduced: 0, sold: 0 };
-      if (latest) {
-        const pos = await ctx.db
-          .query("investorPositions")
-          .withIndex("by_investor_period", (q) => q.eq("investorId", inv._id).eq("period", latest.period))
-          .collect();
-        for (const p of pos) if (p.changeType in moves) moves[p.changeType as keyof typeof moves]++;
-      }
-      out.push({
-        _id: inv._id,
-        name: inv.name,
-        firm: inv.firm,
-        style: inv.style ?? null,
-        why: inv.why ?? null,
-        slug: inv.slug,
-        avatar: inv.avatar ?? null,
-        period: latest?.period ?? null,
-        totalValue: latest?.totalValue ?? null,
-        holdingsCount: latest?.holdingsCount ?? 0,
-        moves,
-      });
-    }
-    out.sort((a, b) => (b.totalValue ?? 0) - (a.totalValue ?? 0));
-    return out;
+    return await ctx.db.query("superInvestors").collect();
   },
 });
 
-// "Most bought / Most sold" consensus leaderboard — same net-leaning + >2 + fill
-// rules as the influencer sentiment board.
 export const consensus = query({
-  args: { period: v.optional(v.string()), limit: v.optional(v.number()) },
-  handler: async (ctx, { period, limit }) => {
-    const theP = period ?? (await latestFilingPeriod(ctx));
-    if (!theP) return { period: null, bought: [], sold: [] };
-    const rows = await ctx.db
+  handler: async (ctx) => {
+    // Get latest period
+    const filings = await ctx.db.query("secFilings").collect();
+    if (filings.length === 0) return { period: null, rankings: { mostHeld: [], biggestBets: [] } };
+    
+    const latestPeriod = filings.sort((a, b) => b.filingDate - a.filingDate)[0].period;
+    
+    const consensus = await ctx.db
       .query("investorConsensus")
-      .withIndex("by_period", (q) => q.eq("period", theP))
+      .withIndex("by_period", (q) => q.eq("period", latestPeriod))
       .collect();
-    const n = limit ?? 12;
-    type R = (typeof rows)[number];
-    const pick = (mine: (r: R) => number, theirs: (r: R) => number) => {
-      const ranked = rows
-        .filter((r) => mine(r) > theirs(r))
-        .sort(
-          (a, b) =>
-            mine(b) - mine(a) || mine(b) - theirs(b) - (mine(a) - theirs(a)) || b.holders - a.holders
-        );
-      const strong = ranked.filter((r) => mine(r) > 2);
-      return strong.length >= n ? strong : ranked.slice(0, n);
-    };
+    
+    const mostHeld = consensus
+      .filter((c) => c.totalInvestors >= 2)
+      .sort((a, b) => b.totalInvestors - a.totalInvestors);
+    
+    const biggestBets = consensus
+      .sort((a, b) => b.totalValue - a.totalValue)
+      .slice(0, 20);
+    
     return {
-      period: theP,
-      bought: pick(
-        (r) => r.buyers,
-        (r) => r.sellers
-      ),
-      sold: pick(
-        (r) => r.sellers,
-        (r) => r.buyers
-      ),
+      period: latestPeriod,
+      rankings: { mostHeld, biggestBets },
     };
   },
 });
 
-// Biggest individual moves this quarter (new buys, full exits, adds, trims).
-export const notableMoves = query({
-  args: { period: v.optional(v.string()), limit: v.optional(v.number()) },
-  handler: async (ctx, { period, limit }) => {
-    const theP = period ?? (await latestFilingPeriod(ctx));
-    if (!theP) return { period: null, newBuys: [], exits: [], adds: [], trims: [] };
-    const pos = await ctx.db
-      .query("investorPositions")
-      .withIndex("by_period", (q) => q.eq("period", theP))
-      .collect();
-    const namer = await investorNamer(ctx);
-    const n = limit ?? 8;
-    const enrich = async (p: Doc<"investorPositions">) => {
-      const who = await namer(p.investorId);
-      return {
-        ticker: p.ticker ?? null,
-        name: p.name,
-        investor: who.name,
-        slug: who.slug,
-        value: p.value,
-        pctPortfolio: p.pctPortfolio,
-        changePct: p.changePct ?? null,
-      };
-    };
-    const top = async (type: string, sortVal: (p: Doc<"investorPositions">) => number) => {
-      const rows = pos.filter((p) => p.changeType === type).sort((a, b) => sortVal(b) - sortVal(a)).slice(0, n);
-      return Promise.all(rows.map(enrich));
-    };
-    return {
-      period: theP,
-      newBuys: await top("new", (p) => p.value),
-      exits: await top("sold", (p) => p.value), // value = prior stake size for exits
-      adds: await top("added", (p) => p.value),
-      trims: await top("reduced", (p) => Math.abs(p.changePct ?? 0)),
-    };
+export const latestFilings = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const filings = await ctx.db.query("secFilings").collect();
+    const sorted = filings.sort((a, b) => b.filingDate - a.filingDate);
+    return sorted.slice(0, args.limit ?? 20);
   },
 });
 
-// One investor's latest 13F: holdings + moves, with period switching.
-export const investorBySlug = query({
-  args: { slug: v.string(), period: v.optional(v.string()) },
-  handler: async (ctx, { slug, period }) => {
-    const inv = await ctx.db
+export const investorPortfolio = query({
+  args: {
+    cik: v.string(),
+    period: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const investor = await ctx.db
       .query("superInvestors")
-      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .withIndex("by_cik", (q) => q.eq("cik", args.cik))
       .first();
-    if (!inv) return null;
-    const filings = await ctx.db
-      .query("investor13fFilings")
-      .withIndex("by_investor", (q) => q.eq("investorId", inv._id))
-      .collect();
-    filings.sort((a, b) => b.period.localeCompare(a.period));
-    const theP = period ?? filings[0]?.period ?? null;
-    const filing = filings.find((f) => f.period === theP) ?? null;
-    let positions: Doc<"investorPositions">[] = [];
-    if (theP) {
-      positions = await ctx.db
-        .query("investorPositions")
-        .withIndex("by_investor_period", (q) => q.eq("investorId", inv._id).eq("period", theP))
+    if (!investor) return null;
+
+    let targetPeriod = args.period;
+    if (!targetPeriod) {
+      const filings = await ctx.db
+        .query("secFilings")
+        .withIndex("by_cik", (q) => q.eq("cik", args.cik))
         .collect();
+      if (filings.length === 0) return null;
+      targetPeriod = filings.sort((a, b) => b.filingDate - a.filingDate)[0].period;
     }
+
+    const positions = await ctx.db
+      .query("investorPositions")
+      .withIndex("by_cik_period", (q) =>
+        q.eq("cik", args.cik).eq("period", targetPeriod)
+      )
+      .collect();
+
     return {
-      investor: {
-        name: inv.name,
-        firm: inv.firm,
-        style: inv.style ?? null,
-        why: inv.why ?? null,
-        slug: inv.slug,
-        avatar: inv.avatar ?? null,
-        cik: inv.cik,
-      },
-      period: theP,
-      periods: filings.map((f) => f.period),
-      filing: filing
-        ? {
-            filingDate: filing.filingDate,
-            reportDate: filing.reportDate,
-            totalValue: filing.totalValue,
-            holdingsCount: filing.holdingsCount,
-          }
-        : null,
-      positions: positions
-        .map((p) => ({
-          ticker: p.ticker ?? null,
-          name: p.name,
-          shares: p.shares,
-          value: p.value,
-          pctPortfolio: p.pctPortfolio,
-          changeType: p.changeType,
-          changePct: p.changePct ?? null,
-          prevShares: p.prevShares ?? null,
-          isOption: p.isOption ?? false,
-        }))
-        .sort((a, b) => b.value - a.value),
+      investor,
+      period: targetPeriod,
+      positions: positions.sort((a, b) => b.value - a.value),
+    };
+  },
+});
+
+export const notableMoves = query({
+  handler: async (ctx) => {
+    // Get latest period
+    const filings = await ctx.db.query("secFilings").collect();
+    if (filings.length === 0) return { period: null, moves: [] };
+    
+    const latestPeriod = filings.sort((a, b) => b.filingDate - a.filingDate)[0].period;
+    
+    // Get all positions for latest period
+    const positions = await ctx.db
+      .query("investorPositions")
+      .withIndex("by_cik_period")
+      .collect();
+    
+    const latestPositions = positions.filter((p) => p.period === latestPeriod);
+    
+    // Filter for notable moves (new, added, reduced, sold)
+    const notable = latestPositions
+      .filter((p) => p.changeType === "new" || p.changeType === "added" || p.changeType === "reduced" || p.changeType === "sold")
+      .sort((a, b) => {
+        // Sort by absolute change pct or by value
+        const aScore = Math.abs(a.changePct || 0) * a.value;
+        const bScore = Math.abs(b.changePct || 0) * b.value;
+        return bScore - aScore;
+      })
+      .slice(0, 50);
+    
+    return {
+      period: latestPeriod,
+      moves: notable,
     };
   },
 });
