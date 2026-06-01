@@ -552,3 +552,65 @@ export const finishRun = internalMutation({
     });
   },
 });
+
+// ── Retention ────────────────────────────────────────────────────────────────
+
+// Delete videos (and their mentions/macro notes) plus aggregates older than the
+// retention window, so the dashboard only reflects recent creator views.
+export const purgeOld = internalMutation({
+  args: { olderThanDays: v.number() },
+  handler: async (ctx, { olderThanDays }) => {
+    const cutoff = Date.now() - olderThanDays * 24 * 60 * 60 * 1000;
+    const cutoffDate = new Date(cutoff).toISOString().slice(0, 10);
+    let videos = 0,
+      mentions = 0,
+      macros = 0,
+      sentiment = 0,
+      digests = 0;
+
+    const oldVideos = await ctx.db
+      .query("influencerVideos")
+      .withIndex("by_publishedAt", (q) => q.lt("publishedAt", cutoff))
+      .collect();
+    for (const vd of oldVideos) {
+      const ms = await ctx.db
+        .query("videoStockMentions")
+        .withIndex("by_video", (q) => q.eq("videoId", vd.videoId))
+        .collect();
+      for (const m of ms) {
+        await ctx.db.delete(m._id);
+        mentions++;
+      }
+      const mn = await ctx.db
+        .query("macroNotes")
+        .withIndex("by_video", (q) => q.eq("videoId", vd.videoId))
+        .collect();
+      for (const m of mn) {
+        await ctx.db.delete(m._id);
+        macros++;
+      }
+      await ctx.db.delete(vd._id);
+      videos++;
+    }
+
+    // Aggregates keyed by date.
+    const oldDS = await ctx.db
+      .query("dailySentiment")
+      .withIndex("by_date", (q) => q.lt("date", cutoffDate))
+      .collect();
+    for (const r of oldDS) {
+      await ctx.db.delete(r._id);
+      sentiment++;
+    }
+    const oldMD = await ctx.db
+      .query("macroDigest")
+      .withIndex("by_date", (q) => q.lt("date", cutoffDate))
+      .collect();
+    for (const r of oldMD) {
+      await ctx.db.delete(r._id);
+      digests++;
+    }
+
+    return { videos, mentions, macros, sentiment, digests };
+  },
+});

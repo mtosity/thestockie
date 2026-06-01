@@ -182,4 +182,15 @@ http.route({
   ),
 });
 
+// Delete data older than the retention window.
+http.route({
+  path: "/influencer/purge",
+  method: "POST",
+  handler: endpoint((ctx, b) =>
+    ctx.runMutation(internal.influencer.purgeOld, {
+      olderThanDays: b.olderThanDays,
+    })
+  ),
+});
+
 export default http;
