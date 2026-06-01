@@ -63,10 +63,10 @@ export function InfluencerRoster({
   return (
     <Card className="border-white/10 bg-white/5 text-white">
       <CardHeader className="pb-3">
-        <h2 className="text-sm font-semibold">Tracked creators ({influencers.length})</h2>
+        <h2 className="text-sm font-semibold">Tracked creators ({(influencers?.length ?? 0)})</h2>
       </CardHeader>
       <CardContent className="space-y-0.5">
-        {influencers.length === 0 ? (
+        {(influencers?.length ?? 0) === 0 ? (
           <p className="py-6 text-center text-sm text-gray-500">
             No creators yet.
           </p>

@@ -28,7 +28,7 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
           {digest.marketSentiment}
         </p>
 
-        {digest.keyThemes.length > 0 && (
+        {(digest.keyThemes?.length ?? 0) > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {digest.keyThemes.map((theme, i) => (
               <Pill
@@ -41,7 +41,7 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
           </div>
         )}
 
-        {digest.sectorRotation.length > 0 && (
+        {(digest.sectorRotation?.length ?? 0) > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-xs font-medium text-gray-300">
               <Repeat className="h-3.5 w-3.5" /> Sector rotation
@@ -61,7 +61,7 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
           </div>
         )}
 
-        {digest.recommendedActions.length > 0 && (
+        {(digest.recommendedActions?.length ?? 0) > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-xs font-medium text-gray-300">
               <Lightbulb className="h-3.5 w-3.5" /> Recommended actions

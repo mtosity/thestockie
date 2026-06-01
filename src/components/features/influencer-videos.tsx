@@ -42,7 +42,7 @@ function VideoRow({ video }: { video: Video }) {
         <span className="line-clamp-2">{video.title}</span>
         <ExternalLink className="mt-0.5 h-3 w-3 shrink-0 text-gray-600 group-hover:text-gray-400" />
       </a>
-      {video.mentions.length > 0 && (
+      {(video.mentions?.length ?? 0) > 0 && (
         <div className="flex flex-wrap gap-1">
           {video.mentions.slice(0, 8).map((m) => (
             <SymbolChip key={m.symbol} mention={m} />

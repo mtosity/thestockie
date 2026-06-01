@@ -27,7 +27,7 @@ function CreatorCount({
   color: string;
   names: string[];
 }) {
-  if (names.length === 0) {
+  if ((names?.length ?? 0) === 0) {
     return (
       <span className={color}>
         {count}
