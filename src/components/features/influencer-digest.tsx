@@ -1,44 +1,11 @@
 "use client";
 
-import {
-  TrendingUp,
-  TrendingDown,
-  Repeat,
-  Lightbulb,
-  ArrowRight,
-} from "lucide-react";
+import { Repeat, Lightbulb, ArrowRight } from "lucide-react";
 import { type RouterOutputs } from "~/trpc/react";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
-import {
-  SentimentBadge,
-  Pill,
-  netColor,
-  formatNet,
-} from "./influencer-shared";
+import { SentimentBadge, Pill } from "./influencer-shared";
 
 type Digest = NonNullable<RouterOutputs["influencer"]["latestDigest"]>;
-
-function LeaderRow({
-  symbol,
-  netScore,
-  mentions,
-}: {
-  symbol: string;
-  netScore: number;
-  mentions: number;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-md bg-black/20 px-2 py-1.5 text-sm">
-      <span className="font-semibold text-white">{symbol}</span>
-      <span className="flex items-center gap-2">
-        <span className="text-xs text-gray-400">{mentions} mentions</span>
-        <span className={`font-mono text-xs ${netColor(netScore)}`}>
-          {formatNet(netScore)}
-        </span>
-      </span>
-    </div>
-  );
-}
 
 export function InfluencerDigest({ digest }: { digest: Digest }) {
   return (
@@ -71,27 +38,6 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
                 {theme}
               </Pill>
             ))}
-          </div>
-        )}
-
-        {(digest.bullishLeaders.length > 0 || digest.bearishLeaders.length > 0) && (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400">
-                <TrendingUp className="h-3.5 w-3.5" /> Most bullish
-              </div>
-              {digest.bullishLeaders.slice(0, 5).map((l) => (
-                <LeaderRow key={l.symbol} {...l} />
-              ))}
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-medium text-rose-400">
-                <TrendingDown className="h-3.5 w-3.5" /> Most bearish
-              </div>
-              {digest.bearishLeaders.slice(0, 5).map((l) => (
-                <LeaderRow key={l.symbol} {...l} />
-              ))}
-            </div>
           </div>
         )}
 
