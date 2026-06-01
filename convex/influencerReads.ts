@@ -44,18 +44,34 @@ export const sentimentRanking = query({
     // stock with a real consensus (>2 creators); if that's fewer than the
     // target, fill with lighter (1–2 creator) names. Tie-break by total reach.
     const n = limit ?? 12;
-    const pick = (countOf: (r: (typeof rows)[number]) => number) => {
+    // A stock only appears on the side more creators lean toward (so a mostly
+    // bullish stock never shows under "most bearish"). Within a side, sort by
+    // that side's creator count — top votes first. Strong consensus (>2) is
+    // always shown; otherwise fill to n.
+    type R = (typeof rows)[number];
+    const pick = (mine: (r: R) => number, theirs: (r: R) => number) => {
       const ranked = rows
-        .filter((r) => countOf(r) > 0)
-        .sort((a, b) => countOf(b) - countOf(a) || b.mentionsCount - a.mentionsCount);
-      const strong = ranked.filter((r) => countOf(r) > 2);
+        .filter((r) => mine(r) > theirs(r))
+        .sort(
+          (a, b) =>
+            mine(b) - mine(a) ||
+            mine(b) - theirs(b) - (mine(a) - theirs(a)) ||
+            b.mentionsCount - a.mentionsCount
+        );
+      const strong = ranked.filter((r) => mine(r) > 2);
       return strong.length >= n ? strong : ranked.slice(0, n);
     };
     return {
       date: theDate,
       total: rows.length,
-      bullish: pick((r) => r.bullishCount),
-      bearish: pick((r) => r.bearishCount),
+      bullish: pick(
+        (r) => r.bullishCount,
+        (r) => r.bearishCount
+      ),
+      bearish: pick(
+        (r) => r.bearishCount,
+        (r) => r.bullishCount
+      ),
     };
   },
 });
