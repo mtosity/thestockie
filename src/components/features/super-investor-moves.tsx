@@ -14,12 +14,18 @@ function MoveRow({ m, kind }: { m: Move; kind: "buy" | "sell" }) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-md bg-black/20 px-3 py-2 text-sm">
       <div className="min-w-0">
-        <Link href={`/investors/${m.slug}`} className="text-xs text-purple-200 hover:underline">
+        <Link
+          href={`/investors/${m.slug}`}
+          className="text-xs text-purple-200 hover:underline"
+        >
           {m.investor}
         </Link>
         <div className="flex items-center gap-2">
           {m.ticker ? (
-            <Link href={`/?symbol=${m.ticker}`} className="font-semibold text-white hover:underline">
+            <Link
+              href={`/?symbol=${m.ticker}`}
+              className="font-semibold text-white hover:underline"
+            >
               {m.ticker}
             </Link>
           ) : (
@@ -33,9 +39,13 @@ function MoveRow({ m, kind }: { m: Move; kind: "buy" | "sell" }) {
           {formatMoney(m.value)}
         </div>
         {kind === "buy" && m.pctPortfolio > 0 && (
-          <div className="text-[11px] text-gray-500">{Math.round(m.pctPortfolio)}% of book</div>
+          <div className="text-[11px] text-gray-500">
+            {Math.round(m.pctPortfolio)}% of book
+          </div>
         )}
-        {kind === "sell" && <div className="text-[11px] text-gray-500">exited</div>}
+        {kind === "sell" && (
+          <div className="text-[11px] text-gray-500">exited</div>
+        )}
       </div>
     </div>
   );
@@ -59,7 +69,9 @@ function MoveCard({
   return (
     <Card className="border-white/10 bg-white/5 text-white">
       <CardHeader className="space-y-0 pb-3">
-        <div className={`flex items-center gap-2 text-sm font-semibold ${accent}`}>
+        <div
+          className={`flex items-center gap-2 text-sm font-semibold ${accent}`}
+        >
           {icon} {title}
         </div>
       </CardHeader>
@@ -67,7 +79,13 @@ function MoveCard({
         {(rows?.length ?? 0) === 0 ? (
           <p className="py-6 text-center text-sm text-gray-500">{empty}</p>
         ) : (
-          rows.map((m, i) => <MoveRow key={`${m.slug}-${m.ticker ?? m.name}-${i}`} m={m} kind={kind} />)
+          rows.map((m, i) => (
+            <MoveRow
+              key={`${m.slug}-${m.ticker ?? m.name}-${i}`}
+              m={m}
+              kind={kind}
+            />
+          ))
         )}
       </CardContent>
     </Card>
