@@ -86,7 +86,14 @@ export const discoverVideo = mutation({
 export const setVideoStatus = mutation({
   args: {
     videoId: v.string(),
-    status: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("transcribing"),
+      v.literal("analyzing"),
+      v.literal("done"),
+      v.literal("failed"),
+      v.literal("error")
+    ),
   },
   handler: async (ctx, args) => {
     const video = await ctx.db
@@ -233,8 +240,8 @@ export const aggregateSentiment = mutation({
           netScore: 0,
         };
       }
-      bySymbol[m.symbol][m.stance].add(m.channelId);
-      bySymbol[m.symbol].theses.push({ influencerId: m.channelId, stance: m.stance, thesis: m.thesis });
+      bySymbol[m.symbol]![m.stance as "bullish" | "bearish" | "neutral"].add(m.channelId || "unknown");
+      bySymbol[m.symbol]!.theses.push({ influencerId: m.channelId, stance: m.stance, thesis: m.thesis });
 
       const weight = m.stance === "bullish" ? 1 : m.stance === "bearish" ? -1 : 0;
       const conv = m.conviction === "high" ? 3 : m.conviction === "medium" ? 2 : 1;
@@ -509,10 +516,10 @@ export const sentimentRanking = query({
     const sentiments = await ctx.db.query("dailySentiment").collect();
     const bullish = sentiments
       .filter((s) => s.consensus === "strong_bullish" || s.consensus === "bullish")
-      .sort((a, b) => b.bullishCount - a.bullishCount);
+      .sort((a, b) => (b.bullishCount ?? 0) - (a.bullishCount ?? 0));
     const bearish = sentiments
       .filter((s) => s.consensus === "strong_bearish" || s.consensus === "bearish")
-      .sort((a, b) => b.bearishCount - a.bearishCount);
+      .sort((a, b) => (b.bearishCount ?? 0) - (a.bearishCount ?? 0));
     const mixed = sentiments.filter((s) => s.consensus === "mixed");
 
     return { bullish, bearish, mixed };
