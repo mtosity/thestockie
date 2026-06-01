@@ -101,7 +101,7 @@ export const setVideoStatus = mutation({
       .withIndex("by_videoId", (q) => q.eq("videoId", args.videoId))
       .first();
     if (!video) throw new Error(`Video not found: ${args.videoId}`);
-    await ctx.db.patch(video._id, { status: args.status });
+    await ctx.db.patch(video._id, { status: args.status as any });
   },
 });
 

@@ -17,13 +17,13 @@ import { useSymbol } from "~/hooks/use-symbol";
 import { ArrowRight } from "lucide-react";
 
 interface Stock {
-  supabaseId: string;
+  supabaseId?: string;
   prompt?: string;
   response?: string;
   sector?: string;
   marketCap?: number;
   recommendation?: string;
-  createdAt: number;
+  createdAt?: number;
 }
 
 interface ScreenerTableProps {
