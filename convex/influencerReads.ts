@@ -83,11 +83,54 @@ export const recentVideos = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const videos = await ctx.db
+    const all = await ctx.db
       .query("influencerVideos")
       .withIndex("by_publishedAt")
       .collect();
-    return videos.sort((a, b) => b.publishedAt - a.publishedAt).slice(0, args.limit ?? 20);
+    const videos = all
+      .filter((v) => v.status === "done")
+      .sort((a, b) => b.publishedAt - a.publishedAt)
+      .slice(0, args.limit ?? 20);
+
+    // channelId -> creator name
+    const creators = await ctx.db.query("influencers").collect();
+    const nameByChannel = new Map(creators.map((c) => [c.channelId, c.name]));
+
+    // stance ordering so the chips group green → red → grey
+    const stanceRank: Record<string, number> = { bullish: 0, bearish: 1, neutral: 2 };
+
+    return Promise.all(
+      videos.map(async (v) => {
+        const rows = await ctx.db
+          .query("videoStockMentions")
+          .withIndex("by_videoId", (q) => q.eq("videoId", v.videoId))
+          .collect();
+        // one chip per symbol (keep the highest-conviction row)
+        const bySymbol = new Map<string, (typeof rows)[number]>();
+        for (const r of rows) {
+          const cur = bySymbol.get(r.symbol);
+          if (!cur) bySymbol.set(r.symbol, r);
+        }
+        const mentions = [...bySymbol.values()]
+          .map((r) => ({
+            symbol: r.symbol,
+            stance: r.stance,
+            conviction: r.conviction,
+            thesis: r.thesis,
+          }))
+          .sort(
+            (a, b) =>
+              (stanceRank[a.stance] ?? 3) - (stanceRank[b.stance] ?? 3) ||
+              a.symbol.localeCompare(b.symbol),
+          );
+        return {
+          ...v,
+          influencerName: nameByChannel.get(v.channelId) ?? "Unknown",
+          url: `https://www.youtube.com/watch?v=${v.videoId}`,
+          mentions,
+        };
+      }),
+    );
   },
 });
 
