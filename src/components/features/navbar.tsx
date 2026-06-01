@@ -7,6 +7,7 @@ import {
   CalendarDays,
   ArrowLeftRight,
   Globe,
+  Radar,
   LogIn,
   LogOut,
   MoreHorizontal,
@@ -31,6 +32,7 @@ const primaryLinks = [
 ] as const;
 
 const secondaryLinks = [
+  { href: "/influencers", icon: Radar, label: "Influencers" },
   { href: "/earnings", icon: CalendarDays, label: "Earnings" },
   { href: "/compare", icon: ArrowLeftRight, label: "Compare" },
   { href: "/blogs", icon: BookOpen, label: "Blog" },
@@ -41,6 +43,8 @@ const allLinks = [...primaryLinks, ...secondaryLinks];
 const PAGE_TITLES: Record<string, string> = {
   "/blogs": "Blog",
   "/screener": "Screener",
+  "/influencers": "Influencer Radar",
+  "/investors": "Super Investors",
   "/earnings": "Earnings Calendar",
   "/compare": "Stock Comparison",
   "/macro": "Macro Overview",
