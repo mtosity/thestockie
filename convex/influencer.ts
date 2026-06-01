@@ -614,3 +614,46 @@ export const purgeOld = internalMutation({
     return { videos, mentions, macros, sentiment, digests };
   },
 });
+
+// Delete an influencer (by channelId) and all its videos/mentions/macro notes —
+// e.g. to clean up a mis-resolved channel.
+export const deleteInfluencerByChannelId = internalMutation({
+  args: { channelId: v.string() },
+  handler: async (ctx, { channelId }) => {
+    const inf = await ctx.db
+      .query("influencers")
+      .withIndex("by_channelId", (q) => q.eq("channelId", channelId))
+      .first();
+    if (!inf) return { found: false, videos: 0, mentions: 0, macros: 0 };
+
+    let videos = 0,
+      mentions = 0,
+      macros = 0;
+    const vids = await ctx.db
+      .query("influencerVideos")
+      .withIndex("by_influencer", (q) => q.eq("influencerId", inf._id))
+      .collect();
+    for (const vd of vids) {
+      const ms = await ctx.db
+        .query("videoStockMentions")
+        .withIndex("by_video", (q) => q.eq("videoId", vd.videoId))
+        .collect();
+      for (const m of ms) {
+        await ctx.db.delete(m._id);
+        mentions++;
+      }
+      const mn = await ctx.db
+        .query("macroNotes")
+        .withIndex("by_video", (q) => q.eq("videoId", vd.videoId))
+        .collect();
+      for (const m of mn) {
+        await ctx.db.delete(m._id);
+        macros++;
+      }
+      await ctx.db.delete(vd._id);
+      videos++;
+    }
+    await ctx.db.delete(inf._id);
+    return { found: true, videos, mentions, macros };
+  },
+});
