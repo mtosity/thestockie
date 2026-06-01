@@ -99,7 +99,8 @@ export default defineSchema({
       v.literal("transcribing"),
       v.literal("analyzing"),
       v.literal("done"),
-      v.literal("failed")
+      v.literal("failed"),
+      v.literal("error")
     ),
     transcript: v.optional(v.string()),
     summary: v.optional(v.string()),
@@ -110,6 +111,8 @@ export default defineSchema({
     influencerId: v.optional(v.string()),
     updatedAt: v.optional(v.number()),
     url: v.optional(v.string()),
+    // Extra legacy field
+    error: v.optional(v.string()),
   })
     .index("by_videoId", ["videoId"])
     .index("by_channelId", ["channelId"])
@@ -226,4 +229,95 @@ export default defineSchema({
     videosErrored: v.optional(v.number()),
   })
     .index("by_startedAt", ["startedAt"]),
+
+  // ── Super investor (13F) tables ─────────────────────────────────────────────
+
+  superInvestors: defineTable({
+    cik: v.string(),
+    name: v.string(),
+    slug: v.string(),
+    firm: v.optional(v.string()),
+    style: v.optional(v.string()),
+    why: v.optional(v.string()),
+    avatar: v.optional(v.string()),
+    active: v.boolean(),
+    lastFilingDate: v.optional(v.number()),
+    lastPeriod: v.optional(v.string()),
+    // Legacy fields
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("by_cik", ["cik"])
+    .index("by_slug", ["slug"])
+    .index("by_active", ["active"]),
+
+  secFilings: defineTable({
+    cik: v.string(),
+    period: v.string(),
+    reportDate: v.number(),
+    filingDate: v.number(),
+    totalValue: v.number(),
+    positionCount: v.number(),
+  })
+    .index("by_cik", ["cik"])
+    .index("by_period", ["period"])
+    .index("by_cik_period", ["cik", "period"]),
+
+  investorPositions: defineTable({
+    cik: v.optional(v.string()),
+    investorId: v.optional(v.string()), // Legacy field
+    period: v.string(),
+    cusip: v.string(),
+    ticker: v.optional(v.string()),
+    name: v.string(),
+    shares: v.number(),
+    value: v.number(),
+    pctPortfolio: v.number(),
+    changeType: v.union(
+      v.literal("new"),
+      v.literal("added"),
+      v.literal("reduced"),
+      v.literal("hold"),
+      v.literal("sold")
+    ),
+    changePct: v.optional(v.number()),
+    prevShares: v.optional(v.number()),
+    isOption: v.optional(v.boolean()),
+    // Legacy fields
+    createdAt: v.optional(v.number()),
+  })
+    .index("by_cik_period", ["cik", "period"])
+    .index("by_cusip", ["cusip"])
+    .index("by_ticker", ["ticker"]),
+
+  cusipCache: defineTable({
+    cusip: v.string(),
+    ticker: v.optional(v.string()),
+    name: v.optional(v.string()),
+  })
+    .index("by_cusip", ["cusip"]),
+
+  investorConsensus: defineTable({
+    period: v.string(),
+    ticker: v.string(),
+    totalInvestors: v.optional(v.number()),
+    totalShares: v.optional(v.number()),
+    totalValue: v.optional(v.number()),
+    topHolders: v.optional(v.array(v.string())),
+    actions: v.optional(v.array(v.string())),
+    avgPortfolioPct: v.optional(v.number()),
+    // Legacy fields from existing data
+    name: v.optional(v.string()),
+    consensus: v.optional(v.string()),
+    buyers: v.optional(v.number()),
+    sellers: v.optional(v.number()),
+    net: v.optional(v.number()),
+    buyerNames: v.optional(v.array(v.string())),
+    sellerNames: v.optional(v.array(v.string())),
+    holders: v.optional(v.number()),
+    createdAt: v.optional(v.number()),
+  })
+    .index("by_period", ["period"])
+    .index("by_ticker", ["ticker"])
+    .index("by_period_ticker", ["period", "ticker"]),
 });
