@@ -57,7 +57,7 @@ export function InvestorRoster({ investors }: { investors: Investor[] }) {
   return (
     <Card className="border-white/10 bg-white/5 text-white">
       <CardHeader className="pb-3">
-        <h3 className="text-sm font-semibold">Tracked investors ({investors.length})</h3>
+        <h3 className="text-sm font-semibold">Tracked investors ({(investors?.length ?? 0)})</h3>
       </CardHeader>
       <CardContent className="grid gap-2 sm:grid-cols-2">
         {investors.map((inv) => (
