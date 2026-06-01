@@ -30,17 +30,33 @@ export const latestDigest = query({
 });
 
 export const sentimentRanking = query({
-  handler: async (ctx) => {
+  args: {
+    date: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
     const sentiments = await ctx.db.query("dailySentiment").collect();
-    const bullish = sentiments
+    
+    // Filter by date if provided
+    let filtered = sentiments;
+    if (args.date) {
+      filtered = sentiments.filter((s) => s.date === args.date);
+    }
+    
+    const bullish = filtered
       .filter((s) => s.consensus === "strong_bullish" || s.consensus === "bullish")
-      .sort((a, b) => b.bullishCount - a.bullishCount);
-    const bearish = sentiments
+      .sort((a, b) => (b.bullishCount ?? 0) - (a.bullishCount ?? 0));
+    const bearish = filtered
       .filter((s) => s.consensus === "strong_bearish" || s.consensus === "bearish")
-      .sort((a, b) => b.bearishCount - a.bearishCount);
-    const mixed = sentiments.filter((s) => s.consensus === "mixed");
+      .sort((a, b) => (b.bearishCount ?? 0) - (a.bearishCount ?? 0));
+    const mixed = filtered.filter((s) => s.consensus === "mixed");
 
-    return { bullish, bearish, mixed };
+    const result = {
+      bullish: args.limit ? bullish.slice(0, args.limit) : bullish,
+      bearish: args.limit ? bearish.slice(0, args.limit) : bearish,
+      mixed: args.limit ? mixed.slice(0, args.limit) : mixed,
+    };
+    return result;
   },
 });
 
