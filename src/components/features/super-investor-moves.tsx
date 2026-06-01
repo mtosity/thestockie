@@ -52,7 +52,7 @@ function MoveCard({
   title: string;
   icon: ReactNode;
   accent: string;
-  rows: Move[];
+  rows?: Move[];
   empty: string;
   kind: "buy" | "sell";
 }) {
@@ -64,7 +64,7 @@ function MoveCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-1.5">
-        {rows.length === 0 ? (
+        {(rows?.length ?? 0) === 0 ? (
           <p className="py-6 text-center text-sm text-gray-500">{empty}</p>
         ) : (
           rows.map((m, i) => <MoveRow key={`${m.slug}-${m.ticker ?? m.name}-${i}`} m={m} kind={kind} />)
