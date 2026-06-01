@@ -13,6 +13,8 @@ import type * as http from "../http.js";
 import type * as influencer from "../influencer.js";
 import type * as influencerReads from "../influencerReads.js";
 import type * as posts from "../posts.js";
+import type * as superInvestor from "../superInvestor.js";
+import type * as superInvestorReads from "../superInvestorReads.js";
 
 import type {
   ApiFromModules,
@@ -26,6 +28,8 @@ declare const fullApi: ApiFromModules<{
   influencer: typeof influencer;
   influencerReads: typeof influencerReads;
   posts: typeof posts;
+  superInvestor: typeof superInvestor;
+  superInvestorReads: typeof superInvestorReads;
 }>;
 
 /**

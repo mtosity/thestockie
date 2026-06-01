@@ -44,6 +44,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/blogs": "Blog",
   "/screener": "Screener",
   "/influencers": "Influencer Radar",
+  "/investors": "Super Investors",
   "/earnings": "Earnings Calendar",
   "/compare": "Stock Comparison",
   "/macro": "Macro Overview",

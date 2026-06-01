@@ -8,6 +8,7 @@ import { InfluencerDigest } from "~/components/features/influencer-digest";
 import { SentimentLeaderboard } from "~/components/features/influencer-sentiment";
 import { InfluencerRoster } from "~/components/features/influencer-roster";
 import { RecentInfluencerVideos } from "~/components/features/influencer-videos";
+import { SuperInvestorsSection } from "~/components/features/super-investor-section";
 import { formatRelative } from "~/components/features/influencer-shared";
 
 function LoadingState() {
@@ -105,6 +106,8 @@ export default function InfluencersPage() {
             </div>
           </div>
         )}
+
+        <SuperInvestorsSection />
       </div>
     </div>
   );
