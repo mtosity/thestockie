@@ -33,3 +33,30 @@ export const purgeTestInvestors = internalMutation({
     return removed;
   },
 });
+
+/**
+ * Drop test influencer seeds (e.g. "Test" / channelId "test123"). Real YouTube
+ * channel ids start with "UC"; anything else is test data. Removes the creator
+ * and any of its videos. Run with:
+ *   npx convex run maintenance:purgeTestInfluencers
+ */
+export const purgeTestInfluencers = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const removed = { influencers: 0, videos: 0 };
+    for (const inf of await ctx.db.query("influencers").collect()) {
+      if (inf.channelId.startsWith("UC")) continue;
+      const videos = await ctx.db
+        .query("influencerVideos")
+        .withIndex("by_channelId", (q) => q.eq("channelId", inf.channelId))
+        .collect();
+      for (const v of videos) {
+        await ctx.db.delete(v._id);
+        removed.videos++;
+      }
+      await ctx.db.delete(inf._id);
+      removed.influencers++;
+    }
+    return removed;
+  },
+});

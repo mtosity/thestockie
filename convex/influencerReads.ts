@@ -8,10 +8,28 @@ import { v } from "convex/values";
 
 export const influencers = query({
   handler: async (ctx) => {
-    return await ctx.db
+    const list = await ctx.db
       .query("influencers")
       .withIndex("by_active", (q) => q.eq("active", true))
       .collect();
+    const out = [];
+    for (const inf of list) {
+      const videos = await ctx.db
+        .query("influencerVideos")
+        .withIndex("by_channelId", (q) => q.eq("channelId", inf.channelId))
+        .collect();
+      // "videos analyzed" = transcribed + sentiment-extracted (status done)
+      const videoCount = videos.filter((v) => v.status === "done").length;
+      const lastPublishedAt =
+        videos.reduce((m, v) => Math.max(m, v.publishedAt), 0) || null;
+      out.push({ ...inf, videoCount, lastPublishedAt });
+    }
+    out.sort(
+      (a, b) =>
+        b.videoCount - a.videoCount ||
+        (b.lastPublishedAt ?? 0) - (a.lastPublishedAt ?? 0),
+    );
+    return out;
   },
 });
 
