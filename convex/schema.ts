@@ -121,7 +121,10 @@ export default defineSchema({
 
   videoStockMentions: defineTable({
     videoId: v.string(),
-    channelId: v.optional(v.string()),
+    // Canonical creator key — must always be set (backfilled from influencerId /
+    // parent video for legacy rows). A missing channelId is the contract break
+    // that silently produced "unknown" creators in the sentiment leaderboard.
+    channelId: v.string(),
     symbol: v.string(),
     stance: v.union(
       v.literal("bullish"),
@@ -198,18 +201,37 @@ export default defineSchema({
     date: v.string(), // YYYY-MM-DD
     marketSentiment: v.string(),
     keyThemes: v.optional(v.array(v.string())),
-    sectorRotations: v.optional(v.array(v.string())),
     bullishLeaders: v.optional(v.array(v.any())),
     bearishLeaders: v.optional(v.array(v.any())),
-    recommendedActions: v.optional(v.array(v.any())),
+    // Structured shapes the UI renders. Kept strict (not v.any()) so a future
+    // writer that flattens or drops fields fails loudly at ingest instead of
+    // silently rendering blank "Recommended actions" / "Sector rotation" rows.
+    recommendedActions: v.optional(
+      v.array(
+        v.object({
+          symbol: v.optional(v.string()),
+          action: v.string(),
+          rationale: v.string(),
+        })
+      )
+    ),
+    sectorRotation: v.optional(
+      v.array(
+        v.object({
+          from: v.optional(v.string()),
+          to: v.optional(v.string()),
+          rationale: v.string(),
+        })
+      )
+    ),
     createdAt: v.number(), // timestamp as ms
-    // Legacy fields
+    // Legacy fields (sectorRotations = pre-migration flattened strings)
+    sectorRotations: v.optional(v.array(v.string())),
     influencersCount: v.optional(v.number()),
     videosAnalyzed: v.optional(v.number()),
     windowDays: v.optional(v.number()),
     runAt: v.optional(v.number()),
     sentimentLabel: v.optional(v.string()),
-    sectorRotation: v.optional(v.array(v.any())),
   })
     .index("by_date", ["date"])
     .index("by_createdAt", ["createdAt"]),
