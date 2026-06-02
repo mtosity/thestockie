@@ -225,9 +225,34 @@ export const aggregateSentiment = mutation({
     );
     const windowMentions = mentions.filter((m) => videoInWindow.has(m.videoId));
 
+    // Resolve a mention to its creator. Mentions carry the creator either as a
+    // channelId (UC…) or as the influencer document _id (legacy rows), so map
+    // both. Fall back to the parent video's channelId when neither is set.
+    const influencers = await ctx.db.query("influencers").collect();
+    const nameByKey = new Map<string, string>();
+    for (const inf of influencers) {
+      nameByKey.set(inf._id, inf.name);
+      if (inf.channelId) nameByKey.set(inf.channelId, inf.name);
+    }
+    const channelByVideo = new Map<string, string>();
+    for (const v of videos) channelByVideo.set(v.videoId, v.channelId);
+
+    // Stable per-creator key (used to count DISTINCT creators), independent of
+    // how the row happened to store the reference.
+    const actorKey = (m: any): string =>
+      m.influencerId || m.channelId || channelByVideo.get(m.videoId) || "unknown";
+    const nameOf = (key: string): string => nameByKey.get(key) ?? "Unknown creator";
+
     const bySymbol: Record<
       string,
-      { bullish: Set<string>; bearish: Set<string>; neutral: Set<string>; theses: any[]; netScore: number }
+      {
+        bullish: Set<string>;
+        bearish: Set<string>;
+        neutral: Set<string>;
+        theses: any[];
+        netScore: number;
+        companyName: string | null;
+      }
     > = {};
 
     for (const m of windowMentions) {
@@ -238,10 +263,15 @@ export const aggregateSentiment = mutation({
           neutral: new Set(),
           theses: [],
           netScore: 0,
+          companyName: null,
         };
       }
-      bySymbol[m.symbol]![m.stance as "bullish" | "bearish" | "neutral"].add(m.channelId || "unknown");
-      bySymbol[m.symbol]!.theses.push({ influencerId: m.channelId, stance: m.stance, thesis: m.thesis });
+      const key = actorKey(m);
+      bySymbol[m.symbol]![m.stance as "bullish" | "bearish" | "neutral"].add(key);
+      bySymbol[m.symbol]!.theses.push({ influencerId: key, stance: m.stance, thesis: m.thesis });
+      if (!bySymbol[m.symbol]!.companyName && m.companyName) {
+        bySymbol[m.symbol]!.companyName = m.companyName;
+      }
 
       const weight = m.stance === "bullish" ? 1 : m.stance === "bearish" ? -1 : 0;
       const conv = m.conviction === "high" ? 3 : m.conviction === "medium" ? 2 : 1;
@@ -280,8 +310,10 @@ export const aggregateSentiment = mutation({
         bullishCount: bullish,
         bearishCount: bearish,
         neutralCount: neutral,
-        bullishCreators: Array.from(data.bullish),
-        bearishCreators: Array.from(data.bearish),
+        bullishCreators: Array.from(data.bullish).map(nameOf),
+        bearishCreators: Array.from(data.bearish).map(nameOf),
+        neutralCreators: Array.from(data.neutral).map(nameOf),
+        companyName: data.companyName ?? undefined,
         netScore: data.netScore,
         consensus,
         strongestTheses: theses.map((t: any) => t.thesis),
@@ -291,7 +323,7 @@ export const aggregateSentiment = mutation({
 
       const leader = {
         symbol,
-        companyName: null,
+        companyName: data.companyName,
         netScore: data.netScore,
         bullish,
         bearish,
@@ -375,11 +407,18 @@ export const saveDigest = mutation({
     const digest = {
       date: args.date,
       marketSentiment: args.marketSentiment,
+      sentimentLabel: args.sentimentLabel,
       keyThemes: args.keyThemes,
-      sectorRotations: args.sectorRotation?.map((r: any) => `${r.from ?? "?"} → ${r.to ?? "?"}: ${r.rationale}`) ?? [],
+      // Keep the structured shapes the UI renders (actions as {symbol, action,
+      // rationale}; rotations as {from, to, rationale}) instead of flattening
+      // them to strings — flattening was leaving the UI with empty fields.
+      sectorRotation: args.sectorRotation ?? [],
       bullishLeaders: args.bullishLeaders?.map((l: any) => l.symbol) ?? [],
       bearishLeaders: args.bearishLeaders?.map((l: any) => l.symbol) ?? [],
-      recommendedActions: args.recommendedActions?.map((a: any) => `${a.action} — ${a.rationale}`) ?? [],
+      recommendedActions: args.recommendedActions ?? [],
+      videosAnalyzed: args.videosAnalyzed,
+      influencersCount: args.influencersCount,
+      windowDays: args.windowDays,
       createdAt: Date.now(),
     };
 
