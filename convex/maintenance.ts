@@ -1,4 +1,6 @@
 import { internalMutation, query } from "./_generated/server";
+import { v } from "convex/values";
+import { internal } from "./_generated/api";
 
 /**
  * One-off cleanup of test/junk seed records (ciks like 999/1234/5678 created
@@ -210,5 +212,62 @@ export const verifyHealth = query({
     }
 
     return { ok: problems.length === 0, problems, checkedAt: Date.now() };
+  },
+});
+
+/**
+ * Repair duplicate `videoStockMentions` rows that accumulated because an
+ * earlier version of `influencer:saveVideoResult` was not idempotent: re-runs
+ * of the same video inserted a fresh mention row on top of the old one,
+ * inflating per-symbol creator counts and the bullishCreators list.
+ *
+ * Keeps the highest-conviction row per (videoId, symbol, stance) and drops
+ * the rest. Run with:
+ *   npx convex run maintenance:dedupeVideoStockMentions
+ */
+export const dedupeVideoStockMentions = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const conv = (c?: string) => (c === "high" ? 3 : c === "medium" ? 2 : c === "low" ? 1 : 0);
+    const all = await ctx.db.query("videoStockMentions").collect();
+    const groups = new Map<string, typeof all>();
+    for (const m of all) {
+      const k = `${m.videoId}|${m.symbol}|${m.stance}`;
+      const arr = groups.get(k) ?? [];
+      arr.push(m);
+      groups.set(k, arr);
+    }
+    let removed = 0;
+    for (const rows of groups.values()) {
+      if (rows.length <= 1) continue;
+      // Keep the row with the strongest conviction; tiebreak on most recent _id.
+      rows.sort((a, b) => {
+        const c = conv(b.conviction) - conv(a.conviction);
+        return c !== 0 ? c : b._id.localeCompare(a._id);
+      });
+      const [keep, ...rest] = rows;
+      for (const r of rest) {
+        await ctx.db.delete(r._id);
+        removed++;
+      }
+    }
+    return { scanned: all.length, duplicatesRemoved: removed, groupsWithDups: [...groups.values()].filter((g) => g.length > 1).length };
+  },
+});
+
+/**
+ * Re-run the influencer sentiment aggregation after fixing the underlying
+ * data. Use after `dedupeVideoStockMentions` to refresh the dailySentiment
+ * table without waiting for the next job. Run with:
+ *   npx convex run maintenance:reaggregateSentiment '{"windowDays":30}'
+ */
+export const reaggregateSentiment = internalMutation({
+  args: { windowDays: v.optional(v.number()) },
+  handler: async (ctx, { windowDays }) => {
+    await ctx.runMutation(internal.influencer.aggregateSentiment, {
+      windowDays: windowDays ?? 30,
+    });
+    const count = (await ctx.db.query("dailySentiment").collect()).length;
+    return { dailySentimentRows: count, windowDays: windowDays ?? 30 };
   },
 });
