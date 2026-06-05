@@ -179,6 +179,15 @@ export const saveVideoResult = mutation({
     await ctx.db.patch(video._id, patch);
 
     if (args.mentions) {
+      // Idempotency: drop any prior mentions for this video so re-runs
+      // (e.g. re-transcribe + re-extract) don't pile up duplicate rows and
+      // inflate daily sentiment counts.
+      const prior = await ctx.db
+        .query("videoStockMentions")
+        .withIndex("by_videoId", (q) => q.eq("videoId", args.videoId))
+        .collect();
+      for (const old of prior) await ctx.db.delete(old._id);
+
       for (const m of args.mentions) {
         await ctx.db.insert("videoStockMentions", {
           videoId: args.videoId,
@@ -194,6 +203,13 @@ export const saveVideoResult = mutation({
     }
 
     if (args.macro) {
+      // Same idempotency: one macro note per video.
+      const priorMacro = await ctx.db
+        .query("macroNotes")
+        .withIndex("by_videoId", (q) => q.eq("videoId", args.videoId))
+        .collect();
+      for (const old of priorMacro) await ctx.db.delete(old._id);
+
       await ctx.db.insert("macroNotes", {
         videoId: args.videoId,
         channelId: video.channelId,
@@ -237,10 +253,12 @@ export const aggregateSentiment = mutation({
     const channelByVideo = new Map<string, string>();
     for (const v of videos) channelByVideo.set(v.videoId, v.channelId);
 
-    // Stable per-creator key (used to count DISTINCT creators), independent of
-    // how the row happened to store the reference.
+    // Stable per-creator key (used to count DISTINCT creators). Prefer the
+    // channelId since it's the canonical creator key and is always set after
+    // the schema tightening; fall back to the legacy influencerId / parent
+    // video channel for any rows that predate the backfill.
     const actorKey = (m: any): string =>
-      m.influencerId || m.channelId || channelByVideo.get(m.videoId) || "unknown";
+      m.channelId || m.influencerId || channelByVideo.get(m.videoId) || "unknown";
     const nameOf = (key: string): string => nameByKey.get(key) ?? "Unknown creator";
 
     const bySymbol: Record<
