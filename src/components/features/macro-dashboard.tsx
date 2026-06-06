@@ -135,25 +135,56 @@ function useHistoricalChange(
   historical: { date: string; close: number }[] | undefined,
   currentPrice: number | undefined,
   timeFrame: MacroTimeFrame,
+  previousClose?: number | null,
 ): { changePercent: number | null; loading: boolean } {
   return useMemo(() => {
     if (!currentPrice) return { changePercent: null, loading: false };
+
+    // For 1D, use the live quote's previousClose (FMP provides the actual
+    // prior session's close, not today's intraday close). The historical
+    // endpoint returns today's partial close, which would make the change
+    // look like ~0%.
+    if (timeFrame === "1D" && previousClose != null && previousClose > 0) {
+      const changePercent =
+        ((currentPrice - previousClose) / previousClose) * 100;
+      return { changePercent, loading: false };
+    }
+
     if (!historical?.length) return { changePercent: null, loading: false };
 
-    // Sort chronologically (oldest first)
+    // Sort chronologically (oldest first).
     const sorted = [...historical].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
 
+    // For longer timeframes, skip the most recent entry if it matches today
+    // (FMP returns the current session's intraday close as the last bar,
+    // which is essentially the live price and would yield ~0%). Walk back
+    // until we find a prior session.
+    const isToday = (d: string) => {
+      const t = new Date(d);
+      const now = new Date();
+      return (
+        t.getUTCFullYear() === now.getUTCFullYear() &&
+        t.getUTCMonth() === now.getUTCMonth() &&
+        t.getUTCDate() === now.getUTCDate()
+      );
+    };
+    let baseIdx = sorted.length - 1;
+    if (isToday(sorted[baseIdx]?.date ?? "")) {
+      baseIdx -= 1;
+    }
+    if (baseIdx < 0) return { changePercent: null, loading: false };
+
     const days = TIMEFRAME_TRADING_DAYS[timeFrame];
-    const idx = Math.max(0, sorted.length - days);
+    const idx = Math.max(0, baseIdx + 1 - days);
     const pastPrice = sorted[idx]?.close;
 
     if (!pastPrice) return { changePercent: null, loading: false };
 
     const changePercent = ((currentPrice - pastPrice) / pastPrice) * 100;
     return { changePercent, loading: false };
-  }, [historical, currentPrice, timeFrame]);
+  }, [historical, currentPrice, timeFrame, previousClose]);
 }
 
 function ChangeDisplay({
@@ -205,6 +236,7 @@ function VixCard() {
     histData?.historical,
     quote?.price ?? undefined,
     timeFrame,
+    quote?.previousClose,
   );
 
   const chartData = useMemo(() => {
@@ -568,6 +600,7 @@ function IndexRow({
     histData?.historical,
     quote?.price ?? undefined,
     timeFrame,
+    quote?.previousClose,
   );
 
   if (isLoading) {
@@ -1190,6 +1223,7 @@ function CommodityRow({ symbol, label }: { symbol: string; label: string }) {
     histData?.historical,
     quote?.price ?? undefined,
     timeFrame,
+    quote?.previousClose,
   );
 
   if (isLoading) {
