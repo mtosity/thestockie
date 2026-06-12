@@ -271,3 +271,78 @@ export const reaggregateSentiment = internalMutation({
     return { dailySentimentRows: count, windowDays: windowDays ?? 30 };
   },
 });
+
+/**
+ * Deactivate an influencer by channelId and clean up their content.
+ * Run with:
+ *   npx convex run maintenance:deactivateInfluencer '{"channelId": "UCRvjq3X3HgBvz0ncgPvNYvA"}'
+ */
+export const deactivateInfluencer = internalMutation({
+  args: {
+    channelId: v.string(),
+  },
+  handler: async (ctx, { channelId }) => {
+    // Find influencer
+    const inf = await ctx.db
+      .query("influencers")
+      .withIndex("by_channelId", (q) => q.eq("channelId", channelId))
+      .first();
+
+    if (!inf) {
+      return { error: `Influencer not found for channelId: ${channelId}` };
+    }
+
+    // Deactivate
+    await ctx.db.patch(inf._id, { active: false });
+
+    // Delete their videos and related data
+    const videos = await ctx.db
+      .query("influencerVideos")
+      .withIndex("by_channelId", (q) => q.eq("channelId", channelId))
+      .collect();
+
+    let videosRemoved = 0;
+    let mentionsRemoved = 0;
+    let macrosRemoved = 0;
+
+    for (const v of videos) {
+      // Delete mentions
+      const mentions = await ctx.db
+        .query("videoStockMentions")
+        .withIndex("by_videoId", (q) => q.eq("videoId", v.videoId))
+        .collect();
+      for (const m of mentions) {
+        await ctx.db.delete(m._id);
+        mentionsRemoved++;
+      }
+
+      // Delete macros
+      const macros = await ctx.db
+        .query("macroNotes")
+        .withIndex("by_videoId", (q) => q.eq("videoId", v.videoId))
+        .collect();
+      for (const m of macros) {
+        await ctx.db.delete(m._id);
+        macrosRemoved++;
+      }
+
+      // Delete video
+      await ctx.db.delete(v._id);
+      videosRemoved++;
+    }
+
+    // Re-run aggregation to update sentiment
+    await ctx.runMutation(internal.influencer.aggregateSentiment, {
+      windowDays: 30,
+    });
+
+    return {
+      influencer: inf.name,
+      channelId,
+      deactivated: true,
+      videosRemoved,
+      mentionsRemoved,
+      macrosRemoved,
+    };
+  },
+});
