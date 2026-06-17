@@ -442,24 +442,24 @@ function FearGreedCard() {
   );
 }
 
-// ── USD/JPY ─────────────────────────────────────────────────────────
+// ── US Dollar Index (DXY) ───────────────────────────────────────────
 
-function UsdJpyCard() {
+function DollarIndexCard() {
   const timeFrame = useContext(TimeFrameContext);
-  const { data, isLoading } = api.asset.forexQuote.useQuery(
-    "USDJPY",
+  const { data, isLoading } = api.asset.equityQuote.useQuery(
+    "DXUSD",
     REFETCH_OPTS,
   );
-  const { data: histData } = api.asset.forexHistorical.useQuery(
-    "USDJPY",
+  const { data: histData } = api.asset.equityPriceHistoricalFMP.useQuery(
+    "DXUSD",
     REFETCH_OPTS,
   );
 
-  const rate = data?.bid ?? data?.ask ?? 0;
+  const quote = data?.[0];
 
   const { changePercent } = useHistoricalChange(
     histData?.historical,
-    rate || undefined,
+    quote?.price ?? undefined,
     timeFrame,
   );
 
@@ -471,66 +471,48 @@ function UsdJpyCard() {
       .map((d) => ({ date: d.date, value: d.close }));
   }, [histData, timeFrame]);
 
-  const distanceTo160 = 160 - rate;
-  const nearWarning = rate >= 155;
-
   return (
-    <CardShell title="USD/JPY — Yen Carry Trade Watch">
+    <CardShell title="US Dollar Index (DXY)">
       {isLoading ? (
         <SkeletonRows count={3} />
-      ) : data ? (
+      ) : quote ? (
         <div>
-          <div className="mb-1 flex items-baseline gap-3">
+          <div className="mb-2 flex items-baseline gap-3">
             <span className="text-3xl font-bold text-white">
-              ¥{rate.toFixed(2)}
+              {quote.price?.toFixed(2)}
             </span>
             <ChangeDisplay changePercent={changePercent} className="text-sm" />
           </div>
-          <div className="flex gap-4 text-xs text-gray-400">
-            <span>Open: {data.open?.toFixed(2)}</span>
-            <span>
-              Range: {data.low?.toFixed(2)} – {data.high?.toFixed(2)}
-            </span>
+          <div className="text-xs text-gray-500">
+            Day range: {quote.dayLow?.toFixed(2)} – {quote.dayHigh?.toFixed(2)}{" "}
+            | Year: {quote.yearLow?.toFixed(2)} – {quote.yearHigh?.toFixed(2)}
           </div>
-          <div
-            className={`mt-2 rounded px-2 py-1 text-xs font-medium ${
-              nearWarning
-                ? "bg-red-500/20 text-red-300"
-                : "bg-green-500/20 text-green-300"
-            }`}
-          >
-            {nearWarning
-              ? `⚠ Approaching 160 level (${distanceTo160.toFixed(2)} away) — potential BOJ intervention zone`
-              : `${distanceTo160.toFixed(2)} away from the 160 intervention level`}
+          <div className="mt-1 text-xs text-gray-500">
+            Broad USD strength vs. a basket of major currencies — a rising
+            dollar pressures commodities, EM, and US export earnings.
           </div>
           {chartData.length > 0 && (
             <div className="mt-3 h-32">
               <ResponsiveContainer>
                 <AreaChart data={chartData}>
                   <defs>
-                    <linearGradient
-                      id="usdjpyGrad"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient id="dxyGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop
                         offset="5%"
-                        stopColor="#3b82f6"
+                        stopColor="#f59e0b"
                         stopOpacity={0.3}
                       />
                       <stop
                         offset="95%"
-                        stopColor="#3b82f6"
+                        stopColor="#f59e0b"
                         stopOpacity={0}
                       />
                     </linearGradient>
                   </defs>
                   <Area
                     dataKey="value"
-                    stroke="#3b82f6"
-                    fill="url(#usdjpyGrad)"
+                    stroke="#f59e0b"
+                    fill="url(#dxyGrad)"
                     dot={false}
                     strokeWidth={1.5}
                   />
@@ -545,7 +527,7 @@ function UsdJpyCard() {
                       };
                       return (
                         <div className="rounded bg-white px-2 py-1 text-xs text-black shadow">
-                          {p.payload.date}: ¥{p.value?.toFixed(2)}
+                          {p.payload.date}: {p.value?.toFixed(2)}
                         </div>
                       );
                     }}
@@ -557,6 +539,95 @@ function UsdJpyCard() {
         </div>
       ) : (
         <div className="text-gray-500">No data</div>
+      )}
+    </CardShell>
+  );
+}
+
+// ── Carry Trade & Risk (compact) ────────────────────────────────────
+
+function CarryRiskCard() {
+  const timeFrame = useContext(TimeFrameContext);
+
+  const { data: jpy, isLoading: jpyLoading } = api.asset.forexQuote.useQuery(
+    "USDJPY",
+    REFETCH_OPTS,
+  );
+  const { data: jpyHist } = api.asset.forexHistorical.useQuery(
+    "USDJPY",
+    REFETCH_OPTS,
+  );
+  const jpyRate = jpy?.bid ?? jpy?.ask ?? 0;
+  const { changePercent: jpyChange } = useHistoricalChange(
+    jpyHist?.historical,
+    jpyRate || undefined,
+    timeFrame,
+  );
+  const distanceTo160 = 160 - jpyRate;
+  const nearWarning = jpyRate >= 155;
+
+  const { data: btc } = api.asset.equityQuote.useQuery("BTCUSD", REFETCH_OPTS);
+  const { data: btcHist } = api.asset.equityPriceHistoricalFMP.useQuery(
+    "BTCUSD",
+    REFETCH_OPTS,
+  );
+  const btcQuote = btc?.[0];
+  const { changePercent: btcChange } = useHistoricalChange(
+    btcHist?.historical,
+    btcQuote?.price ?? undefined,
+    timeFrame,
+  );
+
+  return (
+    <CardShell title="Carry Trade & Risk">
+      {jpyLoading ? (
+        <SkeletonRows count={3} />
+      ) : (
+        <div>
+          <div className="flex items-center justify-between border-b border-white/5 py-2">
+            <div>
+              <span className="text-sm font-medium text-white">USD/JPY</span>
+              <span className="ml-2 text-xs text-gray-500">Yen Carry</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-300">
+                ¥{jpyRate.toFixed(2)}
+              </span>
+              <ChangeDisplay
+                changePercent={jpyChange}
+                className="min-w-[60px] text-right text-xs"
+              />
+            </div>
+          </div>
+          <div
+            className={`mt-2 rounded px-2 py-1 text-[11px] font-medium ${
+              nearWarning
+                ? "bg-red-500/20 text-red-300"
+                : "bg-green-500/20 text-green-300"
+            }`}
+          >
+            {nearWarning
+              ? `⚠ ${distanceTo160.toFixed(2)} from 160 — BOJ intervention zone`
+              : `${distanceTo160.toFixed(2)} from the 160 intervention level`}
+          </div>
+          <div className="mt-2 flex items-center justify-between py-2">
+            <div>
+              <span className="text-sm font-medium text-white">Bitcoin</span>
+              <span className="ml-2 text-xs text-gray-500">Risk Sentiment</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-300">
+                {btcQuote?.price
+                  ? `$${formatLargeNumber(btcQuote.price)}`
+                  : "—"}
+              </span>
+              <ChangeDisplay
+                changePercent={btcChange}
+                className="min-w-[60px] text-right text-xs"
+              />
+            </div>
+          </div>
+        </div>
       )}
     </CardShell>
   );
@@ -769,11 +840,11 @@ function TreasuryCard() {
     }));
   }, [latestCurve, prevCurve]);
 
-  const is2s10sInverted =
-    latestCurve.length > 0
-      ? (latestCurve.find((d) => d.tenor === "2Y")?.rate ?? 0) >
-        (latestCurve.find((d) => d.tenor === "10Y")?.rate ?? 0)
-      : false;
+  const tenYear = latestCurve.find((d) => d.tenor === "10Y")?.rate;
+  const twoYear = latestCurve.find((d) => d.tenor === "2Y")?.rate;
+  const spreadBps =
+    tenYear != null && twoYear != null ? (tenYear - twoYear) * 100 : null;
+  const is2s10sInverted = spreadBps != null && spreadBps < 0;
 
   return (
     <CardShell title="US Treasury Yield Curve">
@@ -781,6 +852,28 @@ function TreasuryCard() {
         <SkeletonRows count={4} />
       ) : combinedData.length > 0 ? (
         <div>
+          <div className="mb-3 flex items-baseline gap-6">
+            <div>
+              <span className="text-2xl font-bold text-white">
+                {tenYear != null ? `${tenYear.toFixed(2)}%` : "—"}
+              </span>
+              <span className="ml-1.5 text-xs text-gray-500">US 10Y</span>
+            </div>
+            <div>
+              <span
+                className={`text-lg font-semibold ${
+                  spreadBps != null && spreadBps >= 0
+                    ? "text-green-400"
+                    : "text-red-400"
+                }`}
+              >
+                {spreadBps != null
+                  ? `${spreadBps >= 0 ? "+" : ""}${spreadBps.toFixed(0)} bps`
+                  : "—"}
+              </span>
+              <span className="ml-1.5 text-xs text-gray-500">2s/10s</span>
+            </div>
+          </div>
           {is2s10sInverted && (
             <div className="mb-2 rounded bg-red-500/20 px-2 py-1 text-xs font-medium text-red-300">
               2s/10s spread inverted — historically a recession signal
@@ -1204,7 +1297,9 @@ function ForexCard() {
 const COMMODITIES = [
   { symbol: "GCUSD", label: "Gold" },
   { symbol: "SIUSD", label: "Silver" },
+  { symbol: "CLUSD", label: "WTI Crude Oil" },
   { symbol: "BZUSD", label: "Brent Crude Oil" },
+  { symbol: "HGUSD", label: "Copper" },
 ] as const;
 
 function CommodityRow({ symbol, label }: { symbol: string; label: string }) {
@@ -1296,7 +1391,7 @@ export function MacroDashboard() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {/* Row 1: Key indicators */}
           <VixCard />
-          <UsdJpyCard />
+          <DollarIndexCard />
           <TreasuryCard />
 
           {/* Row 2: Markets & Sectors */}
@@ -1305,6 +1400,7 @@ export function MacroDashboard() {
           <div className="flex flex-col gap-4">
             <ForexCard />
             <CommoditiesCard />
+            <CarryRiskCard />
             <FearGreedCard />
           </div>
 
