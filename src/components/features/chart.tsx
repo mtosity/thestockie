@@ -1,7 +1,7 @@
 "use client";
 
 import { LoaderCircle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Area,
   Bar,
@@ -10,6 +10,7 @@ import {
   ComposedChart,
   Line,
   ReferenceLine,
+  ReferenceDot,
   ResponsiveContainer,
   XAxis,
   YAxis,
@@ -49,6 +50,80 @@ const PriceChange = ({ data }: { data?: { price: number }[] }) => {
         {isPositive ? "+" : ""}${priceDiff.toFixed(2)} ({isPositive ? "+" : ""}
         {percentChange.toFixed(2)}%)
       </span>
+    </div>
+  );
+};
+
+interface DragSelection {
+  startIndex: number;
+  endIndex: number;
+}
+
+const RangeSelectionStats = ({
+  range,
+  data,
+  isDragging,
+  onClear,
+  cursorOnRight,
+}: {
+  range: DragSelection;
+  data: ChartDataPoint[];
+  isDragging: boolean;
+  onClear: () => void;
+  cursorOnRight: boolean;
+}) => {
+  const { startIndex, endIndex } = range;
+  const startPoint = data[startIndex];
+  const endPoint = data[endIndex];
+
+  if (!startPoint || !endPoint) return null;
+
+  const startPrice = startPoint.price;
+  const endPrice = endPoint.price;
+  const priceDiff = endPrice - startPrice;
+  const percentChange = (priceDiff / startPrice) * 100;
+  const isPositive = priceDiff >= 0;
+  const days = Math.abs(endIndex - startIndex);
+
+  return (
+    <div
+      className={`absolute top-2 z-50 flex items-center gap-2 rounded-lg border border-[#424975] bg-[#1a1b2e]/95 px-3 py-2 shadow-lg ${
+        cursorOnRight ? "left-2" : "right-2"
+      }`}
+      style={{ pointerEvents: "none" }}
+    >
+      <div className="flex flex-col">
+        <span className="text-xs text-gray-400">
+          {startPoint.date} → {endPoint.date}
+        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm font-semibold text-white">
+            ${startPrice.toFixed(2)} → ${endPrice.toFixed(2)}
+          </span>
+          <span
+            className={`text-sm font-bold ${
+              isPositive ? "text-green-400" : "text-red-400"
+            }`}
+          >
+            {isPositive ? "+" : ""}
+            {percentChange.toFixed(2)}%
+          </span>
+          <span className="text-xs text-gray-500">({days}d)</span>
+        </div>
+      </div>
+      {!isDragging && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClear();
+          }}
+          className="ml-1 rounded p-1 text-gray-500 hover:bg-[#424975] hover:text-white"
+          title="Clear selection"
+          style={{ pointerEvents: "auto" }}
+        >
+          ×
+        </button>
+      )}
     </div>
   );
 };
@@ -135,6 +210,11 @@ export function Chart() {
   const [timeFrame, setTimeFrame] = useState<TimeFrame>("1Y");
   const [symbol] = useSymbol();
   const [indicators, toggleIndicator] = useIndicatorPreferences();
+  const [dragSelection, setDragSelection] = useState<DragSelection | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [cursorOnRight, setCursorOnRight] = useState(false);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading } = api.asset.equityPriceHistoricalFMP.useQuery(
     symbol ?? "",
@@ -238,6 +318,76 @@ export function Chart() {
       .slice(0, 10);
   }, [indicatorData, indicators.sr, activeChartData]);
 
+  /* ── drag-select handlers (click-hold-drag-release) ── */
+  const handleMouseDown = useCallback(() => {
+    if (hoveredIndex === null) return;
+
+    // If we already have a previous selection, clear it first
+    if (dragSelection && !isDragging) {
+      setDragSelection(null);
+    }
+
+    setDragSelection({ startIndex: hoveredIndex, endIndex: hoveredIndex });
+    setIsDragging(true);
+  }, [hoveredIndex, dragSelection, isDragging]);
+
+  const handleMouseMove = useCallback(
+    (state: { activeTooltipIndex?: number }) => {
+      const index = state.activeTooltipIndex;
+      if (index !== undefined && index !== null) {
+        setHoveredIndex(index);
+      }
+      if (!isDragging || !dragSelection || index === undefined || index === null) return;
+      setDragSelection({
+        startIndex: dragSelection.startIndex,
+        endIndex: index,
+      });
+    },
+    [isDragging, dragSelection],
+  );
+
+  const handleMouseUp = useCallback(() => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    // Finalize: clamp start < end, drop if same point (accidental click)
+    setDragSelection((prev) => {
+      if (!prev) return null;
+      const start = Math.min(prev.startIndex, prev.endIndex);
+      const end = Math.max(prev.startIndex, prev.endIndex);
+      if (start === end) return null; // accidental click, drop selection
+      return { startIndex: start, endIndex: end };
+    });
+  }, [isDragging]);
+
+  // Listen for mouseup on document so releasing outside the chart still finalizes
+  useEffect(() => {
+    const onUp = () => handleMouseUp();
+    if (isDragging) {
+      window.addEventListener("mouseup", onUp);
+      return () => window.removeEventListener("mouseup", onUp);
+    }
+  }, [isDragging, handleMouseUp]);
+
+  const handleClearSelection = useCallback(() => {
+    setDragSelection(null);
+    setIsDragging(false);
+  }, []);
+
+  // Track mouse position relative to chart for tooltip positioning
+  useEffect(() => {
+    const handleMouseMoveGlobal = (e: globalThis.MouseEvent) => {
+      if (!chartContainerRef.current) return;
+      const rect = chartContainerRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      setCursorOnRight(x > rect.width / 2);
+    };
+
+    if (isDragging) {
+      window.addEventListener("mousemove", handleMouseMoveGlobal);
+      return () => window.removeEventListener("mousemove", handleMouseMoveGlobal);
+    }
+  }, [isDragging]);
+
   const showRSI = indicators.rsi;
   const showMACD = indicators.macd;
   const hasSubCharts = showRSI || showMACD;
@@ -296,34 +446,55 @@ export function Chart() {
         />
       </div>
 
-      <div className="flex gap-2 px-2 pb-2">
-        {indicatorButtons.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleIndicator(key);
-            }}
-            className={`rounded px-3 py-1 text-xs ${
-              indicators[key]
-                ? "bg-[#424975] text-white"
-                : "bg-transparent text-gray-500 hover:bg-[#424975]/50"
-            }`}
-            style={{ zIndex: 100 }}
-            onTouchStart={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="flex items-center justify-between px-2 pb-2">
+        <div className="flex gap-2">
+          {indicatorButtons.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleIndicator(key);
+              }}
+              className={`rounded px-3 py-1 text-xs ${
+                indicators[key]
+                  ? "bg-[#424975] text-white"
+                  : "bg-transparent text-gray-500 hover:bg-[#424975]/50"
+              }`}
+              style={{ zIndex: 100 }}
+              onTouchStart={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-gray-500">
+          {isDragging ? "" : ""}
+        </span>
       </div>
 
-      <div className="min-h-0 flex-1">
+      <div
+        ref={chartContainerRef}
+        className="relative min-h-0 flex-1"
+        style={{ outline: "none" }}
+        onMouseDown={(e) => e.preventDefault()}
+      >
+        {dragSelection && isDragging && (
+          <RangeSelectionStats
+            range={dragSelection}
+            data={activeChartData}
+            isDragging={isDragging}
+            onClear={handleClearSelection}
+            cursorOnRight={cursorOnRight}
+          />
+        )}
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
-            accessibilityLayer
             data={mergedData}
             margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            style={{ outline: "none" }}
           >
             <defs>
               <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
@@ -418,6 +589,48 @@ export function Chart() {
                   }}
                 />
               ))}
+
+            {/* Selection vertical lines and dots */}
+            {dragSelection && isDragging && activeChartData[dragSelection.startIndex] && (
+              <ReferenceLine
+                x={activeChartData[dragSelection.startIndex]?.date}
+                stroke="#82ca9d"
+                strokeDasharray="4 4"
+                strokeOpacity={0.5}
+                ifOverflow="extendDomain"
+              />
+            )}
+            {dragSelection && isDragging && activeChartData[dragSelection.startIndex] && (
+              <ReferenceDot
+                x={activeChartData[dragSelection.startIndex]?.date}
+                y={activeChartData[dragSelection.startIndex]?.price}
+                r={6}
+                fill="#82ca9d"
+                stroke="#ffffff"
+                strokeWidth={2}
+              />
+            )}
+            {dragSelection && isDragging && activeChartData[dragSelection.endIndex] &&
+              dragSelection.endIndex !== dragSelection.startIndex && (
+                <ReferenceLine
+                  x={activeChartData[dragSelection.endIndex]?.date}
+                  stroke="#82ca9d"
+                  strokeDasharray="4 4"
+                  strokeOpacity={0.5}
+                  ifOverflow="extendDomain"
+                />
+              )}
+            {dragSelection && isDragging && activeChartData[dragSelection.endIndex] &&
+              dragSelection.endIndex !== dragSelection.startIndex && (
+                <ReferenceDot
+                  x={activeChartData[dragSelection.endIndex]?.date}
+                  y={activeChartData[dragSelection.endIndex]?.price}
+                  r={6}
+                  fill="#82ca9d"
+                  stroke="#ffffff"
+                  strokeWidth={2}
+                />
+              )}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
