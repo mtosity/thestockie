@@ -26,6 +26,7 @@ import { api } from "~/trpc/react";
 import { format } from "date-fns";
 import Image from "next/image";
 import { useNewsSummary } from "~/hooks/use-news-summary";
+import { useSectorSummary } from "~/hooks/use-sector-summary";
 
 // ── Types & Context ─────────────────────────────────────────────────
 
@@ -765,6 +766,58 @@ function SectorETFFetcher({
   return null;
 }
 
+// ── Sector Trend AI Summary ────────────────────────────────────────
+
+interface SectorData {
+  label: string;
+  changePercent: number;
+}
+
+function SectorTrendSummary({
+  sectors,
+  timeFrame,
+}: {
+  sectors: SectorData[];
+  timeFrame: MacroTimeFrame;
+}) {
+  const { summary, status, source } = useSectorSummary(
+    sectors,
+    timeFrame,
+    `sector-trends-${timeFrame}`,
+  );
+
+  if (status === "idle") return null;
+
+  return (
+    <div className="mb-3 rounded-lg border border-purple-500/20 bg-purple-500/5 p-3">
+      <div className="mb-1.5 flex items-center gap-1.5">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-400">
+          {source === "ai" ? "AI Sector Analysis" : "Sector Summary"}
+        </span>
+        {status === "summarizing" && (
+          <span className="text-[10px] text-gray-500">analyzing...</span>
+        )}
+        {status === "done" && source && (
+          <span className="ml-auto text-[10px] text-gray-600">
+            {source === "ai" ? "Chrome Built-in AI" : "Auto-generated"}
+          </span>
+        )}
+      </div>
+      {status === "summarizing" ? (
+        <div className="space-y-1.5">
+          <div className="h-3 w-full animate-pulse rounded bg-purple-500/10" />
+          <div className="h-3 w-4/5 animate-pulse rounded bg-purple-500/10" />
+          <div className="h-3 w-3/5 animate-pulse rounded bg-purple-500/10" />
+        </div>
+      ) : (
+        <p className="whitespace-pre-line text-xs leading-relaxed text-gray-300">
+          {summary}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function SectorPerformanceCard() {
   const timeFrame = useContext(TimeFrameContext);
   const [sectorChanges, setSectorChanges] = useState<
@@ -809,6 +862,15 @@ function SectorPerformanceCard() {
           ? "Past Month"
           : "Past Year";
 
+  // Build sector data for AI summary (only when all data is loaded)
+  const sectorSummaryData = useMemo(() => {
+    if (chartData.length !== SECTOR_ETFS.length) return [];
+    return chartData.map((d) => ({
+      label: d.name,
+      changePercent: d.value,
+    }));
+  }, [chartData]);
+
   return (
     <CardShell title={`Sector Performance — ${tfLabel}`}>
       {SECTOR_ETFS.map((etf, i) => (
@@ -820,6 +882,12 @@ function SectorPerformanceCard() {
           onReady={handleReady}
         />
       ))}
+      {sectorSummaryData.length > 0 && (
+        <SectorTrendSummary
+          sectors={sectorSummaryData}
+          timeFrame={timeFrame}
+        />
+      )}
       {chartData.length > 0 ? (
         <div className="h-64">
           <ResponsiveContainer>
