@@ -3,6 +3,7 @@
 import {
   createContext,
   useContext,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -714,29 +715,112 @@ function GlobalIndicesCard() {
   );
 }
 
-// ── Sector Performance ──────────────────────────────────────────────
+// ── Sector Performance (ETF-based, timeframe-aware) ────────────────
 
-function SectorPerformanceCard() {
-  const { data, isLoading } = api.asset.sectorPerformance.useQuery(
-    undefined,
+const SECTOR_ETFS = [
+  { symbol: "XLK", label: "Technology" },
+  { symbol: "XLF", label: "Financials" },
+  { symbol: "XLE", label: "Energy" },
+  { symbol: "XLV", label: "Healthcare" },
+  { symbol: "XLI", label: "Industrials" },
+  { symbol: "XLY", label: "Consumer Disc." },
+  { symbol: "XLP", label: "Consumer Staples" },
+  { symbol: "XLB", label: "Materials" },
+  { symbol: "XLRE", label: "Real Estate" },
+  { symbol: "XLU", label: "Utilities" },
+  { symbol: "XLC", label: "Communication" },
+] as const;
+
+// Per-ETF hook component (respects rules of hooks)
+function SectorETFFetcher({
+  symbol,
+  label,
+  index,
+  onReady,
+}: {
+  symbol: string;
+  label: string;
+  index: number;
+  onReady: (index: number, label: string, changePercent: number | null) => void;
+}) {
+  const timeFrame = useContext(TimeFrameContext);
+  const { data } = api.asset.equityQuote.useQuery(symbol, REFETCH_OPTS);
+  const { data: histData } = api.asset.equityPriceHistoricalFMP.useQuery(
+    symbol,
     REFETCH_OPTS,
   );
 
+  const quote = data?.[0];
+  const { changePercent } = useHistoricalChange(
+    histData?.historical,
+    quote?.price ?? undefined,
+    timeFrame,
+    quote?.previousClose,
+  );
+
+  useEffect(() => {
+    onReady(index, label, changePercent);
+  }, [changePercent, index, label, onReady]);
+
+  return null;
+}
+
+function SectorPerformanceCard() {
+  const timeFrame = useContext(TimeFrameContext);
+  const [sectorChanges, setSectorChanges] = useState<
+    Array<{ label: string; changePercent: number | null }>
+  >(SECTOR_ETFS.map((e) => ({ label: e.label, changePercent: null })));
+
+  // Reset data when timeframe changes
+  useEffect(() => {
+    setSectorChanges(
+      SECTOR_ETFS.map((e) => ({ label: e.label, changePercent: null })),
+    );
+  }, [timeFrame]);
+
+  const handleReady = useCallback(
+    (index: number, label: string, changePercent: number | null) => {
+      setSectorChanges((prev) => {
+        if (prev[index]?.changePercent === changePercent) return prev;
+        const next = [...prev];
+        next[index] = { label, changePercent };
+        return next;
+      });
+    },
+    [],
+  );
+
   const chartData = useMemo(() => {
-    if (!data) return [];
-    return data
-      .map((s) => ({
-        name: s.sector.replace("_", " "),
-        value: parseFloat(s.changesPercentage),
+    return sectorChanges
+      .filter((d) => d.changePercent != null)
+      .map((d) => ({
+        name: d.label,
+        value: d.changePercent as number,
       }))
       .sort((a, b) => b.value - a.value);
-  }, [data]);
+  }, [sectorChanges]);
+
+  const tfLabel =
+    timeFrame === "1D"
+      ? "Today"
+      : timeFrame === "1W"
+        ? "Past Week"
+        : timeFrame === "1M"
+          ? "Past Month"
+          : "Past Year";
 
   return (
-    <CardShell title="Sector Performance">
-      {isLoading ? (
-        <SkeletonRows count={6} />
-      ) : chartData.length > 0 ? (
+    <CardShell title={`Sector Performance — ${tfLabel}`}>
+      {SECTOR_ETFS.map((etf, i) => (
+        <SectorETFFetcher
+          key={etf.symbol}
+          symbol={etf.symbol}
+          label={etf.label}
+          index={i}
+          onReady={handleReady}
+        />
+      ))}
+      {chartData.length > 0 ? (
         <div className="h-64">
           <ResponsiveContainer>
             <BarChart data={chartData} layout="vertical">
@@ -755,7 +839,7 @@ function SectorPerformanceCard() {
                 type="category"
                 dataKey="name"
                 fontSize={10}
-                width={120}
+                width={110}
                 stroke="#9ca3af"
                 tick={{ fill: "#d1d5db" }}
               />
@@ -785,7 +869,7 @@ function SectorPerformanceCard() {
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="text-gray-500">No data</div>
+        <SkeletonRows count={6} />
       )}
     </CardShell>
   );
