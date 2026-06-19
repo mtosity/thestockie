@@ -111,29 +111,16 @@ export const assetsRouter = createTRPCRouter({
   }),
 
   equityQuote: publicProcedure.input(String).query(async ({ input }) => {
-    try {
-      console.log("[equityQuote] Input:", input);
-      console.log(
-        "[equityQuote] API Key:",
-        process.env.FMP_API_KEY ? "SET" : "NOT SET",
-      );
-      const res = await fmp.get<EquityQuoteResponse>(`/api/v3/quote/${input}`, {
-        params: {
-          apikey: process.env.FMP_API_KEY,
-        },
-      });
-      console.log("[equityQuote] Response status:", res.status);
-      console.log("[equityQuote] Response data length:", res?.data?.length);
-      return res?.data;
-    } catch (error) {
-      console.error("[equityQuote] Error:", error);
-      throw error;
-    }
+    const res = await fmp.get<EquityQuoteResponse>(`/api/v3/quote/${input}`, {
+      params: {
+        apikey: process.env.FMP_API_KEY,
+      },
+    });
+    return res?.data;
   }),
 
   // Migrate from OpenBB to FMP
   equitySearch: publicProcedure.input(String).query(async ({ input }) => {
-    console.log("[equitySearch] Input:", input);
     const res = await fmp.get<FMPSearchResponse>(`/api/v3/search`, {
       params: {
         query: input,
@@ -141,7 +128,6 @@ export const assetsRouter = createTRPCRouter({
         apikey: process.env.FMP_API_KEY,
       },
     });
-    console.log("[equitySearch] Response length:", res?.data?.length);
 
     // Transform FMP response to match existing EquitySearch interface
     const transformedResults = res?.data?.map((r) => ({
@@ -216,26 +202,15 @@ export const assetsRouter = createTRPCRouter({
   equityPriceHistoricalFMP: publicProcedure
     .input(String)
     .query(async ({ input }) => {
-      try {
-        console.log("[equityPriceHistoricalFMP] Input:", input);
-        const res = await fmp.get<FMPHistoricalPriceFull>(
-          `/api/v3/historical-price-full/${input}`,
-          {
-            params: {
-              apikey: process.env.FMP_API_KEY,
-            },
+      const res = await fmp.get<FMPHistoricalPriceFull>(
+        `/api/v3/historical-price-full/${input}`,
+        {
+          params: {
+            apikey: process.env.FMP_API_KEY,
           },
-        );
-        console.log("[equityPriceHistoricalFMP] Response status:", res.status);
-        console.log(
-          "[equityPriceHistoricalFMP] Historical length:",
-          res?.data?.historical?.length,
-        );
-        return res?.data;
-      } catch (error) {
-        console.error("[equityPriceHistoricalFMP] Error:", error);
-        throw error;
-      }
+        },
+      );
+      return res?.data;
     }),
 
   // Migrate from OpenBB to FMP - intraday 1min chart

@@ -111,7 +111,7 @@ export function useSectorSummary(
     setStatus("summarizing");
 
     try {
-      const input = sectors
+      const input = [...sectors]
         .sort((a, b) => b.changePercent - a.changePercent)
         .map(
           (s) =>
