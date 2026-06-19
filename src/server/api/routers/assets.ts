@@ -1306,6 +1306,54 @@ export const assetsRouter = createTRPCRouter({
     return res.data;
   }),
 
+  // Timeframe-aware sector performance via the 11 SPDR sector ETFs.
+  // FMP's stock-price-change returns 1D/5D/1M/1Y in a single batched call,
+  // which maps directly onto the macro dashboard's 1D/1W/1M/1Y selector
+  // (1W = 5 trading days). The legacy `sectorPerformance` endpoint above is
+  // 1-day only.
+  sectorPerformanceTimeframe: publicProcedure.query(async () => {
+    // ETF -> sector display name (matches `sectorPerformance` naming).
+    const SECTOR_ETFS: { symbol: string; sector: string }[] = [
+      { symbol: "XLK", sector: "Technology" },
+      { symbol: "XLF", sector: "Financial Services" },
+      { symbol: "XLV", sector: "Healthcare" },
+      { symbol: "XLY", sector: "Consumer Cyclical" },
+      { symbol: "XLP", sector: "Consumer Defensive" },
+      { symbol: "XLE", sector: "Energy" },
+      { symbol: "XLI", sector: "Industrials" },
+      { symbol: "XLB", sector: "Basic Materials" },
+      { symbol: "XLRE", sector: "Real Estate" },
+      { symbol: "XLU", sector: "Utilities" },
+      { symbol: "XLC", sector: "Communication Services" },
+    ];
+
+    const symbols = SECTOR_ETFS.map((s) => s.symbol).join(",");
+    const res = await fmp.get<
+      {
+        symbol: string;
+        "1D": number;
+        "5D": number;
+        "1M": number;
+        "1Y": number;
+      }[]
+    >(`/api/v3/stock-price-change/${symbols}`, {
+      params: { apikey: apiKey },
+    });
+
+    const bySymbol = new Map(res.data?.map((r) => [r.symbol, r]) ?? []);
+    return SECTOR_ETFS.map(({ symbol, sector }) => {
+      const r = bySymbol.get(symbol);
+      return {
+        sector,
+        symbol,
+        "1D": r?.["1D"] ?? null,
+        "1W": r?.["5D"] ?? null,
+        "1M": r?.["1M"] ?? null,
+        "1Y": r?.["1Y"] ?? null,
+      };
+    });
+  }),
+
   treasuryRates: publicProcedure.query(async () => {
     const res = await fmp.get<
       {

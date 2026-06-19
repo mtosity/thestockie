@@ -717,7 +717,8 @@ function GlobalIndicesCard() {
 // ── Sector Performance ──────────────────────────────────────────────
 
 function SectorPerformanceCard() {
-  const { data, isLoading } = api.asset.sectorPerformance.useQuery(
+  const timeFrame = useContext(TimeFrameContext);
+  const { data, isLoading } = api.asset.sectorPerformanceTimeframe.useQuery(
     undefined,
     REFETCH_OPTS,
   );
@@ -727,13 +728,14 @@ function SectorPerformanceCard() {
     return data
       .map((s) => ({
         name: s.sector.replace("_", " "),
-        value: parseFloat(s.changesPercentage),
+        value: s[timeFrame],
       }))
+      .filter((s): s is { name: string; value: number } => s.value !== null)
       .sort((a, b) => b.value - a.value);
-  }, [data]);
+  }, [data, timeFrame]);
 
   return (
-    <CardShell title="Sector Performance">
+    <CardShell title={`Sector Performance · ${timeFrame}`}>
       {isLoading ? (
         <SkeletonRows count={6} />
       ) : chartData.length > 0 ? (
