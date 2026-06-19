@@ -734,11 +734,49 @@ function SectorPerformanceCard() {
       .sort((a, b) => b.value - a.value);
   }, [data, timeFrame]);
 
+  // Money rotation for the selected timeframe: the cross-sector average is the
+  // "market" proxy — capital rotates out of below-average sectors into
+  // above-average ones (relative strength).
+  const rotation = useMemo(() => {
+    const vals = chartData;
+    if (vals.length < 2) return null;
+    const avg = vals.reduce((a, b) => a + b.value, 0) / vals.length;
+    const inflow = vals.filter((s) => s.value > avg).slice(0, 3);
+    const outflow = vals
+      .filter((s) => s.value < avg)
+      .slice(-3)
+      .reverse();
+    return { avg, inflow, outflow };
+  }, [chartData]);
+
+  // Potential trend: compare this week's pace (1W) to the average weekly pace
+  // over the past month (1M ÷ ~4.2 weeks). A positive gap = momentum building.
+  const trending = useMemo(() => {
+    if (!data) return null;
+    const scored = data
+      .map((s) => {
+        const w = s["1W"];
+        const m = s["1M"];
+        if (w == null || m == null) return null;
+        return { name: s.sector.replace("_", " "), accel: w - m / 4.2 };
+      })
+      .filter((x): x is { name: string; accel: number } => x !== null)
+      .sort((a, b) => b.accel - a.accel);
+    if (scored.length < 2) return null;
+    return {
+      gaining: scored.filter((s) => s.accel > 0).slice(0, 3),
+      fading: scored.filter((s) => s.accel < 0).slice(-2).reverse(),
+    };
+  }, [data]);
+
+  const fmtPct = (v: number) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
+
   return (
     <CardShell title={`Sector Performance · ${timeFrame}`}>
       {isLoading ? (
         <SkeletonRows count={6} />
       ) : chartData.length > 0 ? (
+        <>
         <div className="h-64">
           <ResponsiveContainer>
             <BarChart data={chartData} layout="vertical">
@@ -786,6 +824,63 @@ function SectorPerformanceCard() {
             </BarChart>
           </ResponsiveContainer>
         </div>
+
+        {(rotation ?? trending) && (
+          <div className="mt-3 space-y-2 border-t border-[#424975] pt-3 text-xs">
+            {rotation && (
+              <>
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                  <span className="text-gray-400">Money rotating into:</span>
+                  {rotation.inflow.length > 0 ? (
+                    rotation.inflow.map((s) => (
+                      <span key={s.name} className="text-green-400">
+                        {s.name}{" "}
+                        <span className="text-green-500/70">
+                          {fmtPct(s.value)}
+                        </span>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-500">—</span>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                  <span className="text-gray-400">Out of:</span>
+                  {rotation.outflow.length > 0 ? (
+                    rotation.outflow.map((s) => (
+                      <span key={s.name} className="text-red-400">
+                        {s.name}{" "}
+                        <span className="text-red-500/70">
+                          {fmtPct(s.value)}
+                        </span>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-500">—</span>
+                  )}
+                </div>
+              </>
+            )}
+            {trending && trending.gaining.length > 0 && (
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <span className="text-gray-400">
+                  Potential trend <span className="text-gray-500">(1W vs 1M pace)</span>:
+                </span>
+                {trending.gaining.map((s) => (
+                  <span key={s.name} className="text-green-400">
+                    ↑ {s.name}
+                  </span>
+                ))}
+                {trending.fading.map((s) => (
+                  <span key={s.name} className="text-gray-500">
+                    ↓ {s.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        </>
       ) : (
         <div className="text-gray-500">No data</div>
       )}
