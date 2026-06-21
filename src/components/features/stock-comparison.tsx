@@ -979,7 +979,7 @@ export function StockComparison() {
                         return (
                           <tr
                             key={metric.key}
-                            className="border-b border-white/5 transition-colors hover:bg-white/[0.02]"
+                            className="border-b border-white/5 transition-colors hover:bg-white/2"
                           >
                             <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
                               <div className="flex items-center gap-1">
@@ -1080,7 +1080,7 @@ export function StockComparison() {
                   ].map((row) => (
                     <tr
                       key={row.label}
-                      className="border-b border-white/5 transition-colors hover:bg-white/[0.02]"
+                      className="border-b border-white/5 transition-colors hover:bg-white/2"
                     >
                       <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
                         {row.label}

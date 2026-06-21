@@ -40,7 +40,7 @@ interface CustomTooltipProps {
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload?.length) {
     return (
-      <div className="rounded-lg border bg-white p-4 shadow-sm">
+      <div className="rounded-lg border bg-white p-4 shadow-xs">
         <p className="mb-2 font-medium">{formatQuarter(label)}</p>
         {payload.map((entry) => (
           <p key={entry.name} style={{ color: entry.fill ?? entry.stroke }}>

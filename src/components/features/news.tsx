@@ -116,7 +116,7 @@ const ArticleCard = ({
   <div className="rounded-lg border border-gray-200 p-3 hover:bg-gray-800/50">
     <div className="flex gap-3 rounded-lg">
       {images?.[0] && (
-        <div className="relative h-16 w-16 flex-shrink-0">
+        <div className="relative h-16 w-16 shrink-0">
           <Image
             src={images[0].url}
             alt={title}

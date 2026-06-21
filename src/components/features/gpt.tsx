@@ -144,7 +144,7 @@ export const GPT = () => {
                 <MarkdownWithColor content={data.response} />
               ) : null}
             </div>
-            <div className="pointer-events-none absolute bottom-0 h-8 w-full bg-gradient-to-t from-gray-900 to-transparent" />
+            <div className="pointer-events-none absolute bottom-0 h-8 w-full bg-linear-to-t from-gray-900 to-transparent" />
             {data.response ? (
               <Button
                 className="absolute right-2 top-2 h-8 w-8 border border-white/20 bg-gray-800/80 text-gray-300 hover:bg-white/20 hover:text-white"
