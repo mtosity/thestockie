@@ -27,6 +27,22 @@
   }
 }
 
+/*
+  thestockie light-theme modernization — override the design-system's warm
+  cream palette with a cleaner, cooler neutral set (crisp white page, cool
+  slate surfaces + text). The shadcn tokens reference these vars, so they all
+  re-derive. Dark theme + the lime accent are untouched. (mtosity.com keeps the
+  cream palette; promote this into the package if both should modernize.)
+*/
+:root {
+  --bg: #ffffff;
+  --bg-secondary: #f4f5f7;
+  --fg: #0f172a;
+  --border: #0f172a;
+  --border-light: #e4e7ec;
+  --muted: #64748b;
+}
+
 @layer base {
   * {
     @apply border-border;
