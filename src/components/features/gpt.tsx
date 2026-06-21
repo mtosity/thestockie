@@ -13,7 +13,7 @@ import "~/styles/markdown.css";
 
 const MarkdownWithColor = ({ content }: { content: string }) => {
   return (
-    <div className="prose prose-invert max-w-none text-sm">
+    <div className="prose dark:prose-invert max-w-none text-sm">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -64,7 +64,7 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
             }
             if (className) {
               return (
-                <pre className="overflow-x-auto rounded-md bg-foreground/10 p-3 text-sm text-gray-200">
+                <pre className="overflow-x-auto rounded-md bg-foreground/10 p-3 text-sm text-muted-foreground">
                   <code>{children}</code>
                 </pre>
               );

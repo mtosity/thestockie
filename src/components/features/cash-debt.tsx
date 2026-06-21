@@ -29,7 +29,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded border border-border bg-background p-3 text-sm shadow-lg">
-      <p className="mb-1 font-medium text-gray-200">{formatQuarter(label ?? "")}</p>
+      <p className="mb-1 font-medium text-muted-foreground">{formatQuarter(label ?? "")}</p>
       {payload.map((entry) => (
         <p key={entry.name} style={{ color: entry.fill ?? entry.stroke }}>
           {entry.name}: ${formatLargeNumber(entry.value)}
@@ -74,7 +74,7 @@ export const CashDebt = () => {
 
   return (
     <div className="w-full">
-      <h2 className="mt-2 text-center text-xl font-semibold text-gray-200">
+      <h2 className="mt-2 text-center text-xl font-semibold text-muted-foreground">
         Cash &amp; Debt
       </h2>
       <ResponsiveContainer width="100%" height={480}>

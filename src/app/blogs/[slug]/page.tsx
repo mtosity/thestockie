@@ -134,7 +134,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
                 <Badge
                   key={tag}
                   variant="secondary"
-                  className="bg-primary/20 text-primary"
+                  className="bg-primary/20 text-foreground"
                 >
                   {tag}
                 </Badge>
@@ -167,7 +167,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
         {/* Article Content */}
         <article className="px-4 py-12 md:px-8">
-          <div className="prose prose-purple prose-invert mx-auto max-w-4xl prose-headings:text-foreground prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-muted-foreground prose-a:text-primary prose-a:no-underline prose-a:hover:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground prose-strong:text-foreground prose-code:text-primary prose-pre:border prose-pre:border-border prose-pre:bg-foreground/5 prose-li:text-muted-foreground prose-table:text-muted-foreground prose-th:border-border prose-th:text-foreground prose-td:border-border">
+          <div className="prose  dark:prose-invert mx-auto max-w-4xl prose-headings:text-foreground prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-muted-foreground prose-a:text-foreground prose-a:no-underline prose-a:hover:text-foreground prose-blockquote:border-primary prose-blockquote:text-muted-foreground prose-strong:text-foreground prose-code:text-foreground prose-pre:border prose-pre:border-border prose-pre:bg-foreground/5 prose-li:text-muted-foreground prose-table:text-muted-foreground prose-th:border-border prose-th:text-foreground prose-td:border-border">
             <BlogContent content={content} />
           </div>
         </article>

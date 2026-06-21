@@ -166,7 +166,7 @@ export function EarningsCalendar() {
               </span>
               <button
                 onClick={goToCurrentWeek}
-                className="text-xs text-primary transition-colors hover:text-primary"
+                className="text-xs text-foreground transition-colors hover:text-foreground"
               >
                 This week
               </button>
@@ -282,12 +282,12 @@ export function EarningsCalendar() {
                   >
                     <div>
                       <div
-                        className={`text-xs font-semibold uppercase tracking-wide ${today ? "text-primary" : "text-muted-foreground"}`}
+                        className={`text-xs font-semibold uppercase tracking-wide ${today ? "text-foreground" : "text-muted-foreground"}`}
                       >
                         {label.weekday}
                       </div>
                       <div
-                        className={`text-sm font-bold ${today ? "text-primary" : "text-foreground"}`}
+                        className={`text-sm font-bold ${today ? "text-foreground" : "text-foreground"}`}
                       >
                         {label.date}
                       </div>
@@ -338,7 +338,7 @@ export function EarningsCalendar() {
                                     title={company.name}
                                   >
                                     <CompanyLogo symbol={company.symbol} />
-                                    <span className="w-full truncate text-center font-mono text-[11px] font-semibold text-primary">
+                                    <span className="w-full truncate text-center font-mono text-[11px] font-semibold text-foreground">
                                       {company.symbol}
                                     </span>
                                   </div>

@@ -69,7 +69,7 @@ function NewsSummary({
   return (
     <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
       <div className="mb-1.5 flex items-center gap-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground">
           {source === "ai" ? "AI Summary" : "Key Headlines"}
         </span>
         {status === "summarizing" && (

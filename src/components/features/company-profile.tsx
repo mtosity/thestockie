@@ -62,7 +62,7 @@ export const CompanyProfile = () => {
           value ? (
             <div key={label} className="flex items-start justify-between gap-4 text-sm">
               <span className="shrink-0 text-muted-foreground">{label}</span>
-              <span className="text-right font-medium text-gray-100">{value}</span>
+              <span className="text-right font-medium text-muted-foreground">{value}</span>
             </div>
           ) : null,
         )}

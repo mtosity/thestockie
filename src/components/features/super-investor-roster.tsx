@@ -29,7 +29,7 @@ function InvestorCard({ inv }: { inv: Investor }) {
       <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10 shrink-0">
           {inv.avatar && <AvatarImage src={inv.avatar} alt={inv.name} />}
-          <AvatarFallback className="bg-primary/20 text-xs text-primary">
+          <AvatarFallback className="bg-primary/20 text-xs text-foreground">
             {initials(inv.name)}
           </AvatarFallback>
         </Avatar>

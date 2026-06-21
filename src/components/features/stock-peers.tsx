@@ -37,8 +37,8 @@ export const StockPeers = () => {
     return (
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-          <Users className="h-4 w-4 text-primary" />
-          <span className="text-sm font-semibold text-gray-200">
+          <Users className="h-4 w-4 text-foreground" />
+          <span className="text-sm font-semibold text-muted-foreground">
             Competitors
           </span>
         </div>
@@ -59,8 +59,8 @@ export const StockPeers = () => {
     return (
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-          <Users className="h-4 w-4 text-primary" />
-          <span className="text-sm font-semibold text-gray-200">
+          <Users className="h-4 w-4 text-foreground" />
+          <span className="text-sm font-semibold text-muted-foreground">
             Competitors
           </span>
         </div>
@@ -74,8 +74,8 @@ export const StockPeers = () => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-        <Users className="h-4 w-4 text-primary" />
-        <span className="text-sm font-semibold text-gray-200">Competitors</span>
+        <Users className="h-4 w-4 text-foreground" />
+        <span className="text-sm font-semibold text-muted-foreground">Competitors</span>
       </div>
       <div className="flex-1 overflow-auto">
         <table className="w-full text-sm">
@@ -99,7 +99,7 @@ export const StockPeers = () => {
                   <div className="flex items-center gap-2">
                     <PeerLogo symbol={peer.symbol} />
                     <div className="min-w-0">
-                      <div className="font-mono text-xs font-semibold text-primary">
+                      <div className="font-mono text-xs font-semibold text-foreground">
                         {peer.symbol}
                       </div>
                       <div className="truncate text-[10px] text-muted-foreground">
@@ -108,7 +108,7 @@ export const StockPeers = () => {
                     </div>
                   </div>
                 </td>
-                <td className="px-3 py-1.5 text-right font-mono text-xs text-gray-200">
+                <td className="px-3 py-1.5 text-right font-mono text-xs text-muted-foreground">
                   ${peer.price?.toFixed(2)}
                 </td>
                 <td className="px-3 py-1.5 text-right">

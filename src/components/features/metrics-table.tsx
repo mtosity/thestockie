@@ -199,7 +199,7 @@ export const MetricsTable = () => {
       <div className="overflow-x-auto">
         {Object.entries(metricCategories).map(([category, metrics]) => (
           <div key={category} className="mb-8">
-            <h3 className="mb-4 text-lg font-semibold text-gray-200">
+            <h3 className="mb-4 text-lg font-semibold text-muted-foreground">
               {category} Metrics (TTM)
             </h3>
             <Table>

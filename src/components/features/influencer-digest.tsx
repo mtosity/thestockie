@@ -65,7 +65,7 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
       </CardHeader>
 
       <CardContent className="space-y-5">
-        <p className="text-sm leading-relaxed text-gray-200">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           {digest.marketSentiment}
         </p>
 
@@ -74,7 +74,7 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
             {digest.keyThemes.map((theme, i) => (
               <Pill
                 key={i}
-                className="bg-primary/15 text-primary ring-primary/30"
+                className="bg-primary/15 text-foreground ring-primary/30"
               >
                 {theme}
               </Pill>
@@ -113,7 +113,7 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
                 className="flex items-start gap-2 rounded-md bg-black/20 px-3 py-2 text-sm"
               >
                 {a.action && (
-                  <Pill className="mt-0.5 shrink-0 bg-primary/15 text-primary ring-primary/30">
+                  <Pill className="mt-0.5 shrink-0 bg-primary/15 text-foreground ring-primary/30">
                     {a.action}
                   </Pill>
                 )}

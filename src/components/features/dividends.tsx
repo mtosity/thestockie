@@ -31,7 +31,7 @@ const PeriodToggle = ({
         "px-3 py-1 transition-colors",
         period === "quarterly"
           ? "bg-secondary text-foreground"
-          : "text-muted-foreground hover:text-gray-200",
+          : "text-muted-foreground hover:text-muted-foreground",
       )}
     >
       Quarterly
@@ -42,7 +42,7 @@ const PeriodToggle = ({
         "px-3 py-1 transition-colors",
         period === "ttm"
           ? "bg-secondary text-foreground"
-          : "text-muted-foreground hover:text-gray-200",
+          : "text-muted-foreground hover:text-muted-foreground",
       )}
     >
       TTM
@@ -94,7 +94,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded border border-border bg-background p-3 text-sm shadow-lg">
-      <p className="mb-1 font-medium text-gray-200">{formatQuarter(label ?? "")}</p>
+      <p className="mb-1 font-medium text-muted-foreground">{formatQuarter(label ?? "")}</p>
       {payload.map((entry) => (
         <p key={entry.name} style={{ color: entry.fill ?? entry.stroke }}>
           {entry.name}: ${formatLargeNumber(Math.abs(entry.value))}
@@ -149,7 +149,7 @@ export const Dividends = () => {
     <div className="w-full">
       <div className="flex items-center justify-between px-4 pt-2">
         <div className="w-24" />
-        <h2 className="text-center text-xl font-semibold text-gray-200">
+        <h2 className="text-center text-xl font-semibold text-muted-foreground">
           Dividends &amp; Return of Capital
         </h2>
         <PeriodToggle period={period} onChange={setPeriod} />

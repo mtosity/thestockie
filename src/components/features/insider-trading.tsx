@@ -19,7 +19,7 @@ export const InsiderTrading = () => {
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2">
           <ShieldAlert className="h-4 w-4 text-orange-400" />
-          <span className="text-sm font-semibold text-gray-200">Insider Trading</span>
+          <span className="text-sm font-semibold text-muted-foreground">Insider Trading</span>
         </div>
         <div className="flex-1 space-y-2 p-4">
           {[1, 2, 3, 4, 5].map((i) => (
@@ -42,7 +42,7 @@ export const InsiderTrading = () => {
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2">
           <ShieldAlert className="h-4 w-4 text-orange-400" />
-          <span className="text-sm font-semibold text-gray-200">Insider Trading</span>
+          <span className="text-sm font-semibold text-muted-foreground">Insider Trading</span>
         </div>
         <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
           No insider trading data
@@ -64,7 +64,7 @@ export const InsiderTrading = () => {
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <ShieldAlert className="h-4 w-4 text-orange-400" />
-        <span className="text-sm font-semibold text-gray-200">Insider Trading</span>
+        <span className="text-sm font-semibold text-muted-foreground">Insider Trading</span>
       </div>
 
       {/* Summary bar */}
@@ -108,7 +108,7 @@ export const InsiderTrading = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1">
-                  <span className="truncate text-xs font-medium text-gray-200">
+                  <span className="truncate text-xs font-medium text-muted-foreground">
                     {trade.reportingName}
                   </span>
                   <span className="shrink-0 text-[10px] text-muted-foreground">

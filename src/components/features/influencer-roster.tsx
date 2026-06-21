@@ -34,7 +34,7 @@ function Row({ inf }: { inf: Influencer }) {
     >
       <Avatar className="h-9 w-9 shrink-0">
         {inf.avatar && <AvatarImage src={inf.avatar} alt={inf.name} />}
-        <AvatarFallback className="bg-primary/20 text-xs text-primary">
+        <AvatarFallback className="bg-primary/20 text-xs text-foreground">
           {initials(inf.name)}
         </AvatarFallback>
       </Avatar>

@@ -69,7 +69,7 @@ export const HistoricalEPS = () => {
 
   return (
     <div className="w-full">
-      <h2 className="mt-2 text-center text-xl font-semibold text-gray-200">
+      <h2 className="mt-2 text-center text-xl font-semibold text-muted-foreground">
         Earnings Per Share
       </h2>
       <ResponsiveContainer width="100%" height={500}>

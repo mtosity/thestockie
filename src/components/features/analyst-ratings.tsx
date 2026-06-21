@@ -201,7 +201,7 @@ export const AnalystRatings = () => {
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2">
           <ThumbsUp className="h-4 w-4 text-blue-400" />
-          <span className="text-sm font-semibold text-gray-200">
+          <span className="text-sm font-semibold text-muted-foreground">
             Analyst Ratings
           </span>
         </div>
@@ -225,7 +225,7 @@ export const AnalystRatings = () => {
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2">
           <ThumbsUp className="h-4 w-4 text-blue-400" />
-          <span className="text-sm font-semibold text-gray-200">
+          <span className="text-sm font-semibold text-muted-foreground">
             Analyst Ratings
           </span>
         </div>
@@ -313,7 +313,7 @@ export const AnalystRatings = () => {
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-2">
           <ThumbsUp className="h-4 w-4 text-blue-400" />
-          <span className="text-sm font-semibold text-gray-200">
+          <span className="text-sm font-semibold text-muted-foreground">
             Analyst Ratings
           </span>
         </div>
@@ -381,7 +381,7 @@ export const AnalystRatings = () => {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1">
                       <span
-                        className={`truncate text-xs font-medium ${tier1 ? "text-gray-100" : "text-muted-foreground"}`}
+                        className={`truncate text-xs font-medium ${tier1 ? "text-muted-foreground" : "text-muted-foreground"}`}
                       >
                         {grade.gradingCompany}
                       </span>
@@ -410,7 +410,7 @@ export const AnalystRatings = () => {
             {latestPerFirm.length > 10 && (
               <button
                 onClick={() => setShowAll(!showAll)}
-                className="flex w-full items-center justify-center gap-1 py-2 text-[11px] text-primary transition-colors hover:text-primary"
+                className="flex w-full items-center justify-center gap-1 py-2 text-[11px] text-foreground transition-colors hover:text-foreground"
               >
                 {showAll ? (
                   <>

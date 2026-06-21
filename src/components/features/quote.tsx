@@ -11,7 +11,7 @@ export const QuoteMetrics = ({ data }: { data: EquityQuoteItem }) => {
   return (
     <div className="grid gap-4 p-4">
       {/* Price Metrics */}
-      <Card className="bg-transparent p-4 text-gray-50">
+      <Card className="bg-transparent p-4 text-muted-foreground">
         <h3 className="mb-3 flex items-center text-sm font-semibold">
           <DollarSign className="mr-2 h-5 w-5" />
           Price Metrics
@@ -46,7 +46,7 @@ export const QuoteMetrics = ({ data }: { data: EquityQuoteItem }) => {
       </Card>
 
       {/* Volume Metrics */}
-      <Card className="bg-transparent p-4 text-gray-50">
+      <Card className="bg-transparent p-4 text-muted-foreground">
         <h3 className="mb-3 flex items-center text-sm font-semibold">
           <BarChart className="mr-2 h-5 w-5" />
           Volume Metrics
@@ -78,7 +78,7 @@ export const QuoteMetrics = ({ data }: { data: EquityQuoteItem }) => {
       </Card>
 
       {/* Trading Metrics */}
-      <Card className="bg-transparent p-4 text-gray-50">
+      <Card className="bg-transparent p-4 text-muted-foreground">
         <h3 className="mb-3 flex items-center text-sm font-semibold">
           <TrendingUp className="mr-2 h-5 w-5" />
           Trading Metrics

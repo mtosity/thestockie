@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { cn } from "~/lib/utils";
 
-const STANCE_NEUTRAL = "bg-slate-500/15 text-slate-300 ring-slate-500/30";
+const STANCE_NEUTRAL = "bg-slate-500/15 text-muted-foreground ring-slate-500/30";
 const STANCE_STYLES: Record<string, string> = {
   bullish: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30",
   bearish: "bg-rose-500/15 text-rose-300 ring-rose-500/30",

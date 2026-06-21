@@ -16,7 +16,7 @@ function MoveRow({ m, kind }: { m: Move; kind: "buy" | "sell" }) {
       <div className="min-w-0">
         <Link
           href={`/investors/${m.slug}`}
-          className="text-xs text-primary hover:underline"
+          className="text-xs text-foreground hover:underline"
         >
           {m.investor}
         </Link>

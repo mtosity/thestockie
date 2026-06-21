@@ -44,13 +44,13 @@ export function BlogCard({ blog, className }: BlogCardProps) {
               <Badge
                 key={tag}
                 variant="secondary"
-                className="bg-primary/20 text-primary hover:bg-primary/30"
+                className="bg-primary/20 text-foreground hover:bg-primary/30"
               >
                 {tag}
               </Badge>
             ))}
           </div>
-          <h3 className="line-clamp-2 text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
+          <h3 className="line-clamp-2 text-lg font-semibold text-foreground transition-colors group-hover:text-foreground">
             {frontmatter.title}
           </h3>
         </CardHeader>

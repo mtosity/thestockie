@@ -32,7 +32,7 @@ const Row = ({
   <div className="flex items-baseline justify-between gap-1">
     <span className="shrink-0 text-xs text-muted-foreground">{label}</span>
     <div className="text-right">
-      <span className={`font-mono text-sm font-medium ${color ?? "text-gray-200"}`}>
+      <span className={`font-mono text-sm font-medium ${color ?? "text-muted-foreground"}`}>
         {value}
       </span>
       {sub && <div className="text-[10px] text-muted-foreground">{sub}</div>}

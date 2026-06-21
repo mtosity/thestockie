@@ -29,7 +29,7 @@ const MOVE_STYLE: Record<string, string> = {
   added: "bg-emerald-500/10 text-emerald-300 ring-emerald-500/25",
   reduced: "bg-amber-500/15 text-amber-300 ring-amber-500/30",
   sold: "bg-rose-500/15 text-rose-300 ring-rose-500/30",
-  hold: "bg-slate-500/15 text-slate-300 ring-slate-500/30",
+  hold: "bg-slate-500/15 text-muted-foreground ring-slate-500/30",
 };
 
 export function MoveBadge({ type }: { type: string }) {

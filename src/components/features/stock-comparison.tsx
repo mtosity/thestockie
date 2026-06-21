@@ -627,7 +627,7 @@ function StockHeader({
           onError={() => setImgFailed(true)}
         />
       ) : (
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20 text-sm font-bold text-primary">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20 text-sm font-bold text-foreground">
           {stock.symbol.slice(0, 2)}
         </div>
       )}
@@ -636,7 +636,7 @@ function StockHeader({
         {stock.name}
       </span>
       <div className="flex items-center gap-1">
-        <span className="font-mono text-xs text-gray-200">
+        <span className="font-mono text-xs text-muted-foreground">
           ${stock.price.toFixed(2)}
         </span>
         <span
@@ -677,7 +677,7 @@ function MetricCell({
   const isGrowth = formatted.startsWith("+") || formatted.startsWith("-");
   const isNeg = value != null && value < 0;
 
-  let textColor = "text-gray-200";
+  let textColor = "text-muted-foreground";
   if (better !== "neutral" && isBest) textColor = "text-green-400";
   if (better !== "neutral" && isWorst) textColor = "text-red-400";
   if (better === "neutral" && isGrowth) {
@@ -733,8 +733,8 @@ function SuggestedPeers({
   return (
     <div className="rounded-xl border border-border bg-foreground/5 p-4">
       <div className="mb-3 flex items-center gap-2">
-        <Users className="h-4 w-4 text-primary" />
-        <span className="text-sm font-semibold text-gray-200">
+        <Users className="h-4 w-4 text-foreground" />
+        <span className="text-sm font-semibold text-muted-foreground">
           Suggested Competitors
         </span>
       </div>
@@ -927,10 +927,10 @@ export function StockComparison() {
                         className="sticky left-0 z-10 px-4 py-2.5"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-primary">
+                          <span className="text-foreground">
                             {section.icon}
                           </span>
-                          <span className="text-sm font-semibold text-primary">
+                          <span className="text-sm font-semibold text-foreground">
                             {section.title}
                           </span>
                           {isCollapsed ? (
@@ -1020,8 +1020,8 @@ export function StockComparison() {
                   className="sticky left-0 z-10 px-4 py-2.5"
                 >
                   <div className="flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-semibold text-primary">
+                    <BarChart3 className="h-4 w-4 text-foreground" />
+                    <span className="text-sm font-semibold text-foreground">
                       Market Data
                     </span>
                     {collapsedSections.has("__market") ? (
@@ -1090,7 +1090,7 @@ export function StockComparison() {
                           <td
                             key={s}
                             className={cn(
-                              "px-3 py-2 text-center font-mono text-sm text-gray-200",
+                              "px-3 py-2 text-center font-mono text-sm text-muted-foreground",
                               row.className,
                             )}
                           >

@@ -65,7 +65,7 @@ export function InvestorDetail({ slug }: { slug: string }) {
                   {data.investor.avatar && (
                     <AvatarImage src={data.investor.avatar} alt={data.investor.name} />
                   )}
-                  <AvatarFallback className="bg-primary/20 text-primary">
+                  <AvatarFallback className="bg-primary/20 text-foreground">
                     {initials(data.investor.name)}
                   </AvatarFallback>
                 </Avatar>

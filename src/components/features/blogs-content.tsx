@@ -29,7 +29,7 @@ export function BlogsContent({ blogs, tags }: BlogsContentProps) {
         <div className="relative mx-auto max-w-7xl">
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-primary/20 p-3">
-              <BookOpen className="h-8 w-8 text-primary" />
+              <BookOpen className="h-8 w-8 text-foreground" />
             </div>
             <p className="max-w-2xl text-lg text-muted-foreground">
               Insights, guides, and analysis to help you make smarter investment
@@ -74,7 +74,7 @@ export function BlogsContent({ blogs, tags }: BlogsContentProps) {
             </p>
             <button
               onClick={() => setSelectedTag(null)}
-              className="mt-4 text-primary hover:text-primary"
+              className="mt-4 text-foreground hover:text-foreground"
             >
               Clear filter
             </button>
