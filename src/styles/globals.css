@@ -27,16 +27,6 @@
   }
 }
 
-/*
-  thestockie: lift the card surface off the cream page. The design-system's
-  --bg-secondary (cards / popovers / muted surfaces) is a darker beige that
-  read as a dull gray box; use a clean warm near-white so cards sit brighter
-  than the page. Everything else keeps the design-system cream palette.
-*/
-:root {
-  --bg-secondary: #fbfaf6;
-}
-
 @layer base {
   * {
     @apply border-border;
