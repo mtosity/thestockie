@@ -60,19 +60,25 @@ function isToday(dateStr: string): boolean {
 
 function CompanyLogo({ symbol }: { symbol: string }) {
   const [failed, setFailed] = useState(false);
-  return failed ? (
-    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-foreground/10 text-xs font-bold text-muted-foreground">
-      {symbol.slice(0, 2)}
+  // Logos are transparent PNGs and some are white (built for dark backgrounds),
+  // so render every logo on a fixed dark tile that contrasts in both themes.
+  return (
+    <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-md bg-neutral-800">
+      {failed ? (
+        <span className="text-xs font-bold text-neutral-300">
+          {symbol.slice(0, 2)}
+        </span>
+      ) : (
+        <Image
+          src={`https://financialmodelingprep.com/image-stock/${symbol}.png`}
+          alt={symbol}
+          width={40}
+          height={40}
+          className="h-full w-full object-contain p-1"
+          onError={() => setFailed(true)}
+        />
+      )}
     </div>
-  ) : (
-    <Image
-      src={`https://financialmodelingprep.com/image-stock/${symbol}.png`}
-      alt={symbol}
-      width={40}
-      height={40}
-      className="rounded-md object-contain"
-      onError={() => setFailed(true)}
-    />
   );
 }
 

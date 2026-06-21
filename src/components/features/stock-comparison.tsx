@@ -896,7 +896,7 @@ export function StockComparison() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border bg-foreground/5">
-                <th className="sticky left-0 z-10 min-w-[200px] bg-[#1a1b35] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <th className="sticky left-0 z-10 min-w-[200px] bg-card px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Metric
                 </th>
                 {symbols.map((s) => (

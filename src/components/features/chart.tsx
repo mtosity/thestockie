@@ -87,7 +87,7 @@ const RangeSelectionStats = ({
 
   return (
     <div
-      className={`absolute top-2 z-50 flex items-center gap-2 rounded-lg border border-border bg-[#1a1b2e]/95 px-3 py-2 shadow-lg ${
+      className={`absolute top-2 z-50 flex items-center gap-2 rounded-lg border border-border bg-card/95 px-3 py-2 shadow-lg ${
         cursorOnRight ? "left-2" : "right-2"
       }`}
       style={{ pointerEvents: "none" }}
