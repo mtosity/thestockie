@@ -44,7 +44,7 @@ export function InvestorDetail({ slug }: { slug: string }) {
   );
 
   return (
-    <div className="min-h-screen bg-[#15162c] pb-20 text-white">
+    <div className="min-h-screen bg-background pb-20 text-white">
       <div className="mx-auto max-w-5xl px-4 pt-6">
         <Link
           href="/influencers"

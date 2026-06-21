@@ -5,7 +5,7 @@ import { StockComparison } from "~/components/features/stock-comparison";
 
 export default function ComparePage() {
   return (
-    <main className="min-h-screen bg-[#15162c] text-white">
+    <main className="min-h-screen bg-background text-white">
       <Suspense
         fallback={
           <div className="flex items-center justify-center py-32">

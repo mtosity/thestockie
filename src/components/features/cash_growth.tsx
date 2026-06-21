@@ -24,13 +24,13 @@ const PeriodToggle = ({
   period: Period;
   onChange: (p: Period) => void;
 }) => (
-  <div className="flex overflow-hidden rounded border border-[#424975] text-xs">
+  <div className="flex overflow-hidden rounded border border-border text-xs">
     <button
       onClick={() => onChange("quarterly")}
       className={cn(
         "px-3 py-1 transition-colors",
         period === "quarterly"
-          ? "bg-[#424975] text-white"
+          ? "bg-secondary text-white"
           : "text-gray-400 hover:text-gray-200",
       )}
     >
@@ -41,7 +41,7 @@ const PeriodToggle = ({
       className={cn(
         "px-3 py-1 transition-colors",
         period === "ttm"
-          ? "bg-[#424975] text-white"
+          ? "bg-secondary text-white"
           : "text-gray-400 hover:text-gray-200",
       )}
     >
@@ -89,7 +89,7 @@ interface CustomTooltipProps {
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded border border-[#424975] bg-[#151624] p-3 text-sm shadow-lg">
+    <div className="rounded border border-border bg-background p-3 text-sm shadow-lg">
       <p className="mb-1 font-medium text-gray-200">{`Period: ${label}`}</p>
       {payload.map((pld) => (
         <p key={pld.name} style={{ color: pld.fill ?? pld.stroke }}>
@@ -135,7 +135,7 @@ export const CashGrowth = () => {
 
   if (isLoading) {
     return (
-      <div className="h-full w-full animate-pulse bg-[#121327]">
+      <div className="h-full w-full animate-pulse bg-secondary">
         <div className="flex h-full flex-col items-center justify-center">
           <div className="mb-4 h-6 w-48 rounded bg-gray-700"></div>
           <div className="h-[400px] w-full rounded bg-gray-700"></div>

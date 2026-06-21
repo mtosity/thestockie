@@ -19,15 +19,15 @@ export function TableSkeleton({ rows = 10 }: TableSkeletonProps) {
     <div className="rounded-lg border border-white/10 overflow-hidden">
       <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
         <Table>
-          <TableHeader className="sticky top-0 bg-[#15162c] z-10">
+          <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow className="border-white/10 hover:bg-white/5">
-              <TableHead className="text-white bg-[#15162c]">Symbol</TableHead>
-              <TableHead className="text-white bg-[#15162c]">Sector</TableHead>
-              <TableHead className="text-white bg-[#15162c]">Market Cap</TableHead>
-              <TableHead className="text-white bg-[#15162c]">Recommendation</TableHead>
-              <TableHead className="text-white bg-[#15162c]">Report</TableHead>
-              <TableHead className="text-white bg-[#15162c]">Last Updated</TableHead>
-              <TableHead className="text-white bg-[#15162c]">Action</TableHead>
+              <TableHead className="text-white bg-background">Symbol</TableHead>
+              <TableHead className="text-white bg-background">Sector</TableHead>
+              <TableHead className="text-white bg-background">Market Cap</TableHead>
+              <TableHead className="text-white bg-background">Recommendation</TableHead>
+              <TableHead className="text-white bg-background">Report</TableHead>
+              <TableHead className="text-white bg-background">Last Updated</TableHead>
+              <TableHead className="text-white bg-background">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

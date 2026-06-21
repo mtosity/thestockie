@@ -515,11 +515,11 @@ function StockSearchPopover({
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[300px] border-white/10 bg-[#15162c] p-0 text-white"
+        className="w-[300px] border-white/10 bg-background p-0 text-white"
         align="start"
       >
         <Command
-          className="bg-[#15162c] text-white"
+          className="bg-background text-white"
           shouldFilter={
             !!isReady && !!stocks?.length && !!debouncedSearch?.length
           }
@@ -981,7 +981,7 @@ export function StockComparison() {
                             key={metric.key}
                             className="border-b border-white/5 transition-colors hover:bg-white/2"
                           >
-                            <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
+                            <td className="sticky left-0 z-10 bg-background px-4 py-2 text-xs text-gray-300">
                               <div className="flex items-center gap-1">
                                 {metric.label}
                               </div>
@@ -1082,7 +1082,7 @@ export function StockComparison() {
                       key={row.label}
                       className="border-b border-white/5 transition-colors hover:bg-white/2"
                     >
-                      <td className="sticky left-0 z-10 bg-[#15162c] px-4 py-2 text-xs text-gray-300">
+                      <td className="sticky left-0 z-10 bg-background px-4 py-2 text-xs text-gray-300">
                         {row.label}
                       </td>
                       {symbols.map((s, i) =>

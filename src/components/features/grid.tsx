@@ -37,7 +37,7 @@ const Grid = () => {
 
   if (!width || !height) return null;
 
-  const clx = "border border-sm border-[#424975] bg-[#151624]";
+  const clx = "border border-sm border-border bg-background";
 
   return (
     <>

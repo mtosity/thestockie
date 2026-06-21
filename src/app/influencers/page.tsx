@@ -66,7 +66,7 @@ export default function InfluencersPage() {
     (videosQ.data?.length ?? 0) > 0;
 
   return (
-    <div className="min-h-screen bg-[#15162c] pb-20 text-white">
+    <div className="min-h-screen bg-background pb-20 text-white">
       <div className="mx-auto max-w-6xl px-4 pt-6">
         <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>

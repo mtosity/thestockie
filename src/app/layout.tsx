@@ -1,14 +1,34 @@
 import "~/styles/globals.css";
 
-import { GeistSans } from "geist/font/sans";
+import { Inter, Crimson_Text, Lora } from "next/font/google";
 import { type Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { ConvexClientProvider } from "~/components/ConvexClientProvider";
 import { SessionProvider } from "next-auth/react";
+import { ThemeProvider } from "~/components/theme-provider";
 import { Navbar } from "~/components/features/navbar";
 import { auth } from "~/server/auth";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const crimson = Crimson_Text({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-crimson-text",
+  display: "swap",
+});
+
+const lora = Lora({
+  subsets: ["latin"],
+  variable: "--font-lora",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "thestockie - @mtosity",
@@ -42,15 +62,20 @@ export default async function RootLayout({
   const session = await auth();
 
   return (
-    <html lang="en" className={`${GeistSans.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${crimson.variable} ${lora.variable}`}
+      suppressHydrationWarning
+    >
       <body>
-        <ConvexClientProvider>
-          <TRPCReactProvider>
-            <SessionProvider session={session}>
-              <Navbar />
-              {children}
-              <footer>
-                <div className="flex h-16 items-center justify-center gap-8 bg-[#15162c] text-white">
+        <ThemeProvider>
+          <ConvexClientProvider>
+            <TRPCReactProvider>
+              <SessionProvider session={session}>
+                <Navbar />
+                {children}
+                <footer>
+                  <div className="flex h-16 items-center justify-center gap-8 border-t border-border bg-card text-foreground">
                   <p className="text-sm">&copy;{new Date().getFullYear()}</p>
                   <a
                     href="https://mtosity.com"
@@ -70,9 +95,10 @@ export default async function RootLayout({
                   </a>
                 </div>
               </footer>
-            </SessionProvider>
-          </TRPCReactProvider>
-        </ConvexClientProvider>
+              </SessionProvider>
+            </TRPCReactProvider>
+          </ConvexClientProvider>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

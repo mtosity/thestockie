@@ -146,7 +146,7 @@ export function EarningsCalendar() {
   const weekLabel = `${weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${weekEnd.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
 
   return (
-    <div className="min-h-screen bg-[#15162c] pb-20 text-white">
+    <div className="min-h-screen bg-background pb-20 text-white">
       <div className="px-4 pt-4">
         {/* Controls row */}
         <div className="mb-4 flex flex-col gap-3">
@@ -271,7 +271,7 @@ export function EarningsCalendar() {
                   className={`flex flex-col rounded-lg border ${
                     today
                       ? "border-purple-500/60 bg-purple-900/10"
-                      : "border-[#424975] bg-[#151624]"
+                      : "border-border bg-background"
                   }`}
                 >
                   {/* Day header */}
@@ -373,7 +373,7 @@ function DayColumnSkeleton({ dateStr }: { dateStr: string }) {
   const today = isToday(dateStr);
   return (
     <div
-      className={`rounded-lg border ${today ? "border-purple-500/60 bg-purple-900/10" : "border-[#424975] bg-[#151624]"}`}
+      className={`rounded-lg border ${today ? "border-purple-500/60 bg-purple-900/10" : "border-border bg-background"}`}
     >
       <div
         className={`flex items-center justify-between rounded-t-lg px-3 py-2 ${today ? "bg-purple-500/20" : "bg-white/5"}`}

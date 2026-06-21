@@ -101,27 +101,27 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
       <div className="overflow-hidden rounded-lg border border-white/10">
         <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
           <Table>
-            <TableHeader className="sticky top-0 z-10 bg-[#15162c]">
+            <TableHeader className="sticky top-0 z-10 bg-background">
               <TableRow className="border-white/10 hover:bg-white/5">
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-white">
                   Symbol
                 </TableHead>
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-white">
                   Sector
                 </TableHead>
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-white">
                   Market Cap
                 </TableHead>
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-white">
                   Recommendation
                 </TableHead>
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-white">
                   Report
                 </TableHead>
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-white">
                   Last Updated
                 </TableHead>
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-white">
                   Stock details
                 </TableHead>
               </TableRow>

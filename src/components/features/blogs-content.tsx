@@ -19,7 +19,7 @@ export function BlogsContent({ blogs, tags }: BlogsContentProps) {
     : blogs;
 
   return (
-    <main className="min-h-screen bg-[#15162c] text-white">
+    <main className="min-h-screen bg-background text-white">
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-white/10 px-4 py-16 md:px-8 md:py-24">
         <div className="absolute inset-0 bg-linear-to-br from-purple-500/10 via-transparent to-blue-500/10" />

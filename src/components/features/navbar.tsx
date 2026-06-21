@@ -18,6 +18,7 @@ import { useSession } from "next-auth/react";
 import { cn } from "~/lib/utils";
 import { MarketIndices } from "~/components/features/market-indices";
 import { Search } from "~/components/features/search";
+import { ThemeToggle } from "~/components/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -114,7 +115,7 @@ function MoreMenu({ pathname }: { pathname: string }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-44 border-[#424975] bg-[#1e1f36]"
+        className="w-44 border-border bg-secondary"
       >
         {secondaryLinks.map(({ href, icon: Icon, label }) => (
           <DropdownMenuItem key={href} asChild>
@@ -161,7 +162,7 @@ function MobileMoreMenu({ pathname }: { pathname: string }) {
         align="center"
         side="top"
         sideOffset={8}
-        className="w-44 border-[#424975] bg-[#1e1f36]"
+        className="w-44 border-border bg-secondary"
       >
         {secondaryLinks.map(({ href, icon: Icon, label }) => (
           <DropdownMenuItem key={href} asChild>
@@ -189,7 +190,7 @@ export function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#15162c]/95 px-2 py-3 backdrop-blur-xs">
+    <nav className="sticky top-0 z-50 border-b border-white/10 bg-background/95 px-2 py-3 backdrop-blur-xs">
       {/* Row 1: Left (market indices) | Center (search, home only) | Right (nav links + auth) */}
       <div className="flex items-center">
         {/* Left: Market Indices - only on xl screens */}
@@ -219,6 +220,9 @@ export function Navbar() {
             ))}
             <MoreMenu pathname={pathname} />
           </div>
+
+          {/* Theme toggle */}
+          <ThemeToggle />
 
           {/* Auth button */}
           <Link

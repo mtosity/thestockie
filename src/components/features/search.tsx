@@ -81,9 +81,9 @@ export function Search() {
           </p>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="border-white/10 bg-[#15162c] p-0 text-white">
+      <PopoverContent className="border-white/10 bg-background p-0 text-white">
         <Command
-          className="bg-[#15162c] text-white"
+          className="bg-background text-white"
           shouldFilter={
             !!isReady && !!stocks?.length && !!debouncedSearch?.length
           }

@@ -108,7 +108,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <main className="min-h-screen bg-[#15162c] text-white">
+      <main className="min-h-screen bg-background text-white">
         {/* Hero Image */}
         <div className="relative h-64 w-full md:h-80 lg:h-96">
           <Image
@@ -119,7 +119,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
             className="object-cover"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-linear-to-t from-[#15162c] via-[#15162c]/40 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-background via-background/40 to-transparent" />
           <span className="absolute bottom-3 right-4 text-xs text-white/40">
             Photo via Unsplash
           </span>

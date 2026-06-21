@@ -127,7 +127,7 @@ export function StockResponseModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="flex h-[80vh] max-w-5xl flex-col border-white/20 bg-[#15162c] text-white">
+      <DialogContent className="flex h-[80vh] max-w-5xl flex-col border-white/20 bg-background text-white">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white">
             {stock.supabaseId} - Analysis Report

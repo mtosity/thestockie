@@ -7,12 +7,12 @@ export default function MacroPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#15162c] text-white">
+        <div className="flex min-h-screen items-center justify-center bg-background text-white">
           Loading...
         </div>
       }
     >
-      <main className="min-h-screen bg-[#15162c] text-white">
+      <main className="min-h-screen bg-background text-white">
         <div className="px-4 pt-4">
           <div className="mb-2">
             <h1 className="text-3xl font-bold">Macro Overview</h1>

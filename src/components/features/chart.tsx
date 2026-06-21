@@ -87,7 +87,7 @@ const RangeSelectionStats = ({
 
   return (
     <div
-      className={`absolute top-2 z-50 flex items-center gap-2 rounded-lg border border-[#424975] bg-[#1a1b2e]/95 px-3 py-2 shadow-lg ${
+      className={`absolute top-2 z-50 flex items-center gap-2 rounded-lg border border-border bg-[#1a1b2e]/95 px-3 py-2 shadow-lg ${
         cursorOnRight ? "left-2" : "right-2"
       }`}
       style={{ pointerEvents: "none" }}
@@ -117,7 +117,7 @@ const RangeSelectionStats = ({
             e.stopPropagation();
             onClear();
           }}
-          className="ml-1 rounded p-1 text-gray-500 hover:bg-[#424975] hover:text-white"
+          className="ml-1 rounded p-1 text-gray-500 hover:bg-secondary hover:text-white"
           title="Clear selection"
           style={{ pointerEvents: "auto" }}
         >
@@ -430,8 +430,8 @@ export function Chart() {
               }}
               className={`rounded px-3 py-1 text-sm ${
                 timeFrame === tf
-                  ? "bg-[#424975] text-white"
-                  : "bg-transparent text-gray-400 hover:bg-[#424975]/50"
+                  ? "bg-secondary text-white"
+                  : "bg-transparent text-gray-400 hover:bg-secondary/50"
               }`}
               style={{ zIndex: 100 }}
               onTouchStart={(e) => e.stopPropagation()}
@@ -457,8 +457,8 @@ export function Chart() {
               }}
               className={`rounded px-3 py-1 text-xs ${
                 indicators[key]
-                  ? "bg-[#424975] text-white"
-                  : "bg-transparent text-gray-500 hover:bg-[#424975]/50"
+                  ? "bg-secondary text-white"
+                  : "bg-transparent text-gray-500 hover:bg-secondary/50"
               }`}
               style={{ zIndex: 100 }}
               onTouchStart={(e) => e.stopPropagation()}

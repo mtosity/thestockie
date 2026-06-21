@@ -205,7 +205,7 @@ export const MetricsTable = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="sticky left-0 z-20 min-w-[150px] bg-[#15162c]">
+                  <TableHead className="sticky left-0 z-20 min-w-[150px] bg-background">
                     Metric
                   </TableHead>
                   {sortedResults.map((result) => (
@@ -221,7 +221,7 @@ export const MetricsTable = () => {
               <TableBody>
                 {metrics.map((metric) => (
                   <TableRow key={metric.key}>
-                    <TableCell className="sticky left-0 z-20 bg-[#15162c] font-medium">
+                    <TableCell className="sticky left-0 z-20 bg-background font-medium">
                       {metric.label}
                     </TableCell>
                     {sortedResults.map((result) => (

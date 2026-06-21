@@ -66,7 +66,7 @@ function CardShell({
 }) {
   return (
     <div
-      className={`rounded-xl border border-[#424975] bg-[#151624] p-4 ${className}`}
+      className={`rounded-xl border border-border bg-background p-4 ${className}`}
     >
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
         {title}
@@ -111,7 +111,7 @@ function TimeFrameSelector({
 }) {
   const options: MacroTimeFrame[] = ["1D", "1W", "1M", "1Y"];
   return (
-    <div className="inline-flex rounded-lg border border-[#424975] bg-[#151624] p-0.5">
+    <div className="inline-flex rounded-lg border border-border bg-background p-0.5">
       {options.map((tf) => (
         <button
           key={tf}
@@ -783,7 +783,7 @@ function SectorPerformanceCard() {
               <CartesianGrid
                 horizontal={false}
                 strokeDasharray="3 3"
-                stroke="#424975"
+                stroke="var(--border-light)"
               />
               <XAxis
                 type="number"
@@ -826,7 +826,7 @@ function SectorPerformanceCard() {
         </div>
 
         {(rotation ?? trending) && (
-          <div className="mt-3 space-y-2 border-t border-[#424975] pt-3 text-xs">
+          <div className="mt-3 space-y-2 border-t border-border pt-3 text-xs">
             {rotation && (
               <>
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -979,7 +979,7 @@ function TreasuryCard() {
           <div className="h-48">
             <ResponsiveContainer>
               <LineChart data={combinedData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#424975" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
                 <XAxis
                   dataKey="tenor"
                   fontSize={11}
@@ -1467,7 +1467,7 @@ export function MacroDashboard() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-64 animate-pulse rounded-xl border border-[#424975] bg-[#151624]"
+            className="h-64 animate-pulse rounded-xl border border-border bg-background"
           />
         ))}
       </div>

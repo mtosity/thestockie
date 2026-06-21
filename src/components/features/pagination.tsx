@@ -58,7 +58,7 @@ export function Pagination({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#15162c] border-t border-white/10 z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-white/10 z-50">
       <div className="container mx-auto px-2 sm:px-4">
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between py-4">
@@ -109,7 +109,7 @@ export function Pagination({
                       disabled={isLoading}
                       className={
                         currentPage === page
-                          ? "bg-white text-[#15162c] hover:bg-gray-200"
+                          ? "bg-white text-background hover:bg-gray-200"
                           : "bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30"
                       }
                     >
@@ -181,7 +181,7 @@ export function Pagination({
                       disabled={isLoading}
                       className={
                         currentPage === page
-                          ? "bg-white text-[#15162c] hover:bg-gray-200 text-xs px-2 h-7 min-w-7"
+                          ? "bg-white text-background hover:bg-gray-200 text-xs px-2 h-7 min-w-7"
                           : "bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 text-xs px-2 h-7 min-w-7"
                       }
                     >
