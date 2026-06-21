@@ -52,10 +52,10 @@ export function ScreenerFilters({
   return (
     <div className="mb-6">
       {/* Desktop Layout */}
-      <div className="hidden rounded-lg bg-white/5 p-4 md:block">
+      <div className="hidden rounded-lg bg-foreground/5 p-4 md:block">
         <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-5">
           <div className="space-y-2">
-            <Label htmlFor="sector" className="text-white">
+            <Label htmlFor="sector" className="text-foreground">
               Sector
             </Label>
             <Select value={sector} onValueChange={onSectorChange}>
@@ -84,7 +84,7 @@ export function ScreenerFilters({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="recommendation" className="text-white">
+            <Label htmlFor="recommendation" className="text-foreground">
               Recommendation
             </Label>
             <Select
@@ -105,7 +105,7 @@ export function ScreenerFilters({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="marketCapMin" className="text-white">
+            <Label htmlFor="marketCapMin" className="text-foreground">
               Min Market Cap ($M)
             </Label>
             <Input
@@ -118,7 +118,7 @@ export function ScreenerFilters({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="marketCapMax" className="text-white">
+            <Label htmlFor="marketCapMax" className="text-foreground">
               Max Market Cap ($M)
             </Label>
             <Input
@@ -133,7 +133,7 @@ export function ScreenerFilters({
           <Button
             variant="outline"
             onClick={onClearFilters}
-            className="h-10 border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/20"
+            className="h-10 border-border bg-foreground/10 text-foreground hover:border-border hover:bg-accent"
           >
             Clear Filters
           </Button>
@@ -146,13 +146,13 @@ export function ScreenerFilters({
           <CollapsibleTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-between border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/20"
+              className="w-full justify-between border-border bg-foreground/10 text-foreground hover:border-border hover:bg-accent"
             >
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4" />
                 <span>Filters</span>
                 {hasActiveFilters && (
-                  <span className="rounded-full bg-blue-500 px-2 py-0.5 text-xs text-white">
+                  <span className="rounded-full bg-blue-500 px-2 py-0.5 text-xs text-foreground">
                     Active
                   </span>
                 )}
@@ -166,9 +166,9 @@ export function ScreenerFilters({
           </CollapsibleTrigger>
 
           <CollapsibleContent className="mt-4">
-            <div className="space-y-4 rounded-lg bg-white/5 p-4">
+            <div className="space-y-4 rounded-lg bg-foreground/5 p-4">
               <div className="space-y-2">
-                <Label htmlFor="sector-mobile" className="text-white">
+                <Label htmlFor="sector-mobile" className="text-foreground">
                   Sector
                 </Label>
                 <Select value={sector} onValueChange={onSectorChange}>
@@ -197,7 +197,7 @@ export function ScreenerFilters({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="recommendation-mobile" className="text-white">
+                <Label htmlFor="recommendation-mobile" className="text-foreground">
                   Recommendation
                 </Label>
                 <Select
@@ -219,7 +219,7 @@ export function ScreenerFilters({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="marketCapMin-mobile" className="text-white">
+                  <Label htmlFor="marketCapMin-mobile" className="text-foreground">
                     Min Cap ($M)
                   </Label>
                   <Input
@@ -232,7 +232,7 @@ export function ScreenerFilters({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="marketCapMax-mobile" className="text-white">
+                  <Label htmlFor="marketCapMax-mobile" className="text-foreground">
                     Max Cap ($M)
                   </Label>
                   <Input
@@ -248,7 +248,7 @@ export function ScreenerFilters({
               <Button
                 variant="outline"
                 onClick={onClearFilters}
-                className="w-full border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/20"
+                className="w-full border-border bg-foreground/10 text-foreground hover:border-border hover:bg-accent"
               >
                 Clear Filters
               </Button>

@@ -17,9 +17,9 @@ export const CompanyProfile = () => {
     return (
       <div className="flex animate-pulse flex-col gap-3 p-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-4 rounded bg-gray-700" style={{ width: `${60 + (i % 3) * 15}%` }} />
+          <div key={i} className="h-4 rounded bg-muted" style={{ width: `${60 + (i % 3) * 15}%` }} />
         ))}
-        <div className="mt-2 h-20 rounded bg-gray-700" />
+        <div className="mt-2 h-20 rounded bg-muted" />
       </div>
     );
   }
@@ -61,14 +61,14 @@ export const CompanyProfile = () => {
         {rows.map(({ label, value }) =>
           value ? (
             <div key={label} className="flex items-start justify-between gap-4 text-sm">
-              <span className="shrink-0 text-gray-400">{label}</span>
-              <span className="text-right font-medium text-gray-100">{value}</span>
+              <span className="shrink-0 text-muted-foreground">{label}</span>
+              <span className="text-right font-medium text-muted-foreground">{value}</span>
             </div>
           ) : null,
         )}
       </div>
       {data.description && (
-        <p className="mt-4 text-sm leading-relaxed text-gray-400">{data.description}</p>
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{data.description}</p>
       )}
     </div>
   );

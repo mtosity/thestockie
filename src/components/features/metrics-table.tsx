@@ -174,8 +174,8 @@ export const MetricsTable = () => {
   if (isLoading) {
     return (
       <div className="h-full w-full animate-pulse space-y-4 p-4">
-        <div className="h-8 w-48 rounded bg-gray-700" />
-        <div className="h-64 rounded bg-gray-700" />
+        <div className="h-8 w-48 rounded bg-muted" />
+        <div className="h-64 rounded bg-muted" />
       </div>
     );
   }
@@ -199,13 +199,13 @@ export const MetricsTable = () => {
       <div className="overflow-x-auto">
         {Object.entries(metricCategories).map(([category, metrics]) => (
           <div key={category} className="mb-8">
-            <h3 className="mb-4 text-lg font-semibold text-gray-200">
+            <h3 className="mb-4 text-lg font-semibold text-muted-foreground">
               {category} Metrics (TTM)
             </h3>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="sticky left-0 z-20 min-w-[150px] bg-[#15162c]">
+                  <TableHead className="sticky left-0 z-20 min-w-[150px] bg-background">
                     Metric
                   </TableHead>
                   {sortedResults.map((result) => (
@@ -221,7 +221,7 @@ export const MetricsTable = () => {
               <TableBody>
                 {metrics.map((metric) => (
                   <TableRow key={metric.key}>
-                    <TableCell className="sticky left-0 z-20 bg-[#15162c] font-medium">
+                    <TableCell className="sticky left-0 z-20 bg-background font-medium">
                       {metric.label}
                     </TableCell>
                     {sortedResults.map((result) => (

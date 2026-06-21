@@ -87,28 +87,28 @@ const RangeSelectionStats = ({
 
   return (
     <div
-      className={`absolute top-2 z-50 flex items-center gap-2 rounded-lg border border-[#424975] bg-[#1a1b2e]/95 px-3 py-2 shadow-lg ${
+      className={`absolute top-2 z-50 flex items-center gap-2 rounded-lg border border-border bg-card/95 px-3 py-2 shadow-lg ${
         cursorOnRight ? "left-2" : "right-2"
       }`}
       style={{ pointerEvents: "none" }}
     >
       <div className="flex flex-col">
-        <span className="text-xs text-gray-400">
+        <span className="text-xs text-muted-foreground">
           {startPoint.date} → {endPoint.date}
         </span>
         <div className="flex items-center gap-1.5">
-          <span className="text-sm font-semibold text-white">
+          <span className="text-sm font-semibold text-foreground">
             ${startPrice.toFixed(2)} → ${endPrice.toFixed(2)}
           </span>
           <span
             className={`text-sm font-bold ${
-              isPositive ? "text-green-400" : "text-red-400"
+              isPositive ? "text-positive" : "text-negative"
             }`}
           >
             {isPositive ? "+" : ""}
             {percentChange.toFixed(2)}%
           </span>
-          <span className="text-xs text-gray-500">({days}d)</span>
+          <span className="text-xs text-muted-foreground">({days}d)</span>
         </div>
       </div>
       {!isDragging && (
@@ -117,7 +117,7 @@ const RangeSelectionStats = ({
             e.stopPropagation();
             onClear();
           }}
-          className="ml-1 rounded p-1 text-gray-500 hover:bg-[#424975] hover:text-white"
+          className="ml-1 rounded p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
           title="Clear selection"
           style={{ pointerEvents: "auto" }}
         >
@@ -131,8 +131,8 @@ const RangeSelectionStats = ({
 const ChartSkeleton = () => (
   <div className="flex h-full w-full items-center justify-center">
     <div className="flex flex-col items-center gap-2">
-      <LoaderCircle className="h-8 w-8 animate-spin text-gray-400" />
-      <span className="text-sm text-gray-400">Loading chart data...</span>
+      <LoaderCircle className="h-8 w-8 animate-spin text-muted-foreground" />
+      <span className="text-sm text-muted-foreground">Loading chart data...</span>
     </div>
   </div>
 );
@@ -140,7 +140,7 @@ const ChartSkeleton = () => (
 const NoSymbolMessage = () => (
   <div className="flex h-full w-full items-center justify-center">
     <div className="flex flex-col items-center gap-2">
-      <span className="text-sm text-gray-400">
+      <span className="text-sm text-muted-foreground">
         Please select a stock to view the chart
       </span>
     </div>
@@ -157,7 +157,7 @@ const CustomTooltip = ({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-lg bg-white p-2 shadow-xs">
+    <div className="rounded-lg bg-primary p-2 shadow-xs">
       <div className="grid gap-2">
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs text-cyan-700 text-muted-foreground">
@@ -430,8 +430,8 @@ export function Chart() {
               }}
               className={`rounded px-3 py-1 text-sm ${
                 timeFrame === tf
-                  ? "bg-[#424975] text-white"
-                  : "bg-transparent text-gray-400 hover:bg-[#424975]/50"
+                  ? "bg-secondary text-foreground"
+                  : "bg-transparent text-muted-foreground hover:bg-secondary/50"
               }`}
               style={{ zIndex: 100 }}
               onTouchStart={(e) => e.stopPropagation()}
@@ -457,8 +457,8 @@ export function Chart() {
               }}
               className={`rounded px-3 py-1 text-xs ${
                 indicators[key]
-                  ? "bg-[#424975] text-white"
-                  : "bg-transparent text-gray-500 hover:bg-[#424975]/50"
+                  ? "bg-secondary text-foreground"
+                  : "bg-transparent text-muted-foreground hover:bg-secondary/50"
               }`}
               style={{ zIndex: 100 }}
               onTouchStart={(e) => e.stopPropagation()}
@@ -468,7 +468,7 @@ export function Chart() {
             </button>
           ))}
         </div>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-muted-foreground">
           {isDragging ? "" : ""}
         </span>
       </div>
@@ -637,7 +637,7 @@ export function Chart() {
 
       {showRSI && (
         <div style={{ height: 90 }}>
-          <div className="px-2 pt-1 text-xs text-gray-400">RSI (14)</div>
+          <div className="px-2 pt-1 text-xs text-muted-foreground">RSI (14)</div>
           <ResponsiveContainer width="100%" height={72}>
             <ComposedChart
               data={mergedData}
@@ -677,7 +677,7 @@ export function Chart() {
 
       {showMACD && (
         <div style={{ height: 90 }}>
-          <div className="px-2 pt-1 text-xs text-gray-400">MACD (12,26,9)</div>
+          <div className="px-2 pt-1 text-xs text-muted-foreground">MACD (12,26,9)</div>
           <ResponsiveContainer width="100%" height={72}>
             <ComposedChart
               data={mergedData}

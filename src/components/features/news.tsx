@@ -67,13 +67,13 @@ function NewsSummary({
   if (status === "idle") return null;
 
   return (
-    <div className="mb-3 rounded-lg border border-purple-500/20 bg-purple-500/5 p-3">
+    <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
       <div className="mb-1.5 flex items-center gap-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-400">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground">
           {source === "ai" ? "AI Summary" : "Key Headlines"}
         </span>
         {status === "summarizing" && (
-          <span className="text-[10px] text-gray-500">generating...</span>
+          <span className="text-[10px] text-muted-foreground">generating...</span>
         )}
         {status === "done" && source && (
           <span className="ml-auto text-[10px] text-gray-600">
@@ -83,12 +83,12 @@ function NewsSummary({
       </div>
       {status === "summarizing" ? (
         <div className="space-y-1.5">
-          <div className="h-3 w-full animate-pulse rounded bg-purple-500/10" />
-          <div className="h-3 w-4/5 animate-pulse rounded bg-purple-500/10" />
-          <div className="h-3 w-3/5 animate-pulse rounded bg-purple-500/10" />
+          <div className="h-3 w-full animate-pulse rounded bg-primary/10" />
+          <div className="h-3 w-4/5 animate-pulse rounded bg-primary/10" />
+          <div className="h-3 w-3/5 animate-pulse rounded bg-primary/10" />
         </div>
       ) : (
-        <p className="whitespace-pre-line text-xs leading-relaxed text-gray-300">
+        <p className="whitespace-pre-line text-xs leading-relaxed text-muted-foreground">
           {summary}
         </p>
       )}
@@ -113,7 +113,7 @@ const ArticleCard = ({
   source: string;
   text: string;
 }) => (
-  <div className="rounded-lg border border-gray-200 p-3 hover:bg-gray-800/50">
+  <div className="rounded-lg border border-gray-200 p-3 hover:bg-card/50">
     <div className="flex gap-3 rounded-lg">
       {images?.[0] && (
         <div className="relative h-16 w-16 shrink-0">
@@ -133,28 +133,28 @@ const ArticleCard = ({
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-semibold text-orange-50 hover:underline"
+          className="text-xs font-semibold text-warning hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
           {title}
         </a>
-        <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
           <time>{format(new Date(date), "MMM d, h:mm a")}</time>
           <span>•</span>
           <span>{source}</span>
         </div>
-        <p className="text-[11px] leading-relaxed text-gray-300">{text}</p>
+        <p className="text-[11px] leading-relaxed text-muted-foreground">{text}</p>
       </div>
     </div>
   </div>
 );
 
 const LoadingSkeleton = () => (
-  <div className="flex animate-pulse gap-4 rounded-lg border border-gray-700 p-4">
-    <div className="h-24 w-24 rounded-md bg-gray-700"></div>
+  <div className="flex animate-pulse gap-4 rounded-lg border border-border p-4">
+    <div className="h-24 w-24 rounded-md bg-muted"></div>
     <div className="flex flex-1 flex-col gap-2">
-      <div className="h-6 w-3/4 rounded bg-gray-700"></div>
-      <div className="h-4 w-1/2 rounded bg-gray-700"></div>
+      <div className="h-6 w-3/4 rounded bg-muted"></div>
+      <div className="h-4 w-1/2 rounded bg-muted"></div>
     </div>
   </div>
 );
@@ -189,7 +189,7 @@ export const News = () => {
   }
 
   if (!sortedResults.length) {
-    return <div className="p-4 text-gray-400">No news available</div>;
+    return <div className="p-4 text-muted-foreground">No news available</div>;
   }
 
   return (

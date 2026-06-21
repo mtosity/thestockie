@@ -27,14 +27,14 @@ const PeriodToggle = ({
   period: Period;
   onChange: (p: Period) => void;
 }) => (
-  <div className="flex overflow-hidden rounded border border-[#424975] text-xs">
+  <div className="flex overflow-hidden rounded border border-border text-xs">
     <button
       onClick={() => onChange("quarterly")}
       className={cn(
         "px-3 py-1 transition-colors",
         period === "quarterly"
-          ? "bg-[#424975] text-white"
-          : "text-gray-400 hover:text-gray-200",
+          ? "bg-secondary text-foreground"
+          : "text-muted-foreground hover:text-muted-foreground",
       )}
     >
       Quarterly
@@ -44,8 +44,8 @@ const PeriodToggle = ({
       className={cn(
         "px-3 py-1 transition-colors",
         period === "ttm"
-          ? "bg-[#424975] text-white"
-          : "text-gray-400 hover:text-gray-200",
+          ? "bg-secondary text-foreground"
+          : "text-muted-foreground hover:text-muted-foreground",
       )}
     >
       TTM
@@ -105,8 +105,8 @@ interface TooltipProps {
 const ChartTooltip = ({ active, payload, label, format }: TooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded border border-[#424975] bg-[#151624] p-3 text-sm shadow-lg">
-      <p className="mb-1 font-medium text-gray-200">{formatQuarter(label)}</p>
+    <div className="rounded border border-border bg-background p-3 text-sm shadow-lg">
+      <p className="mb-1 font-medium text-muted-foreground">{formatQuarter(label)}</p>
       {payload.map((entry) => (
         <p key={entry.name} style={{ color: entry.fill ?? entry.stroke }}>
           {entry.name}: {format(entry.value)}
@@ -139,10 +139,10 @@ const IncomeChart = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="h-full w-full animate-pulse bg-[#121327]">
+      <div className="h-full w-full animate-pulse bg-secondary">
         <div className="flex h-full flex-col items-center justify-center gap-4">
-          <div className="h-6 w-48 rounded bg-gray-700" />
-          <div className="h-[400px] w-full rounded bg-gray-700" />
+          <div className="h-6 w-48 rounded bg-muted" />
+          <div className="h-[400px] w-full rounded bg-muted" />
         </div>
       </div>
     );
@@ -152,7 +152,7 @@ const IncomeChart = ({
     <div className="w-full">
       <div className="flex items-center justify-between px-4 pt-2">
         <div className="w-24" />
-        <h2 className="text-center text-xl font-semibold text-gray-200">
+        <h2 className="text-center text-xl font-semibold text-muted-foreground">
           {config.title}
         </h2>
         <PeriodToggle period={period} onChange={onPeriodChange} />
@@ -358,10 +358,10 @@ export const MarginTrends = () => {
 
   if (isLoading) {
     return (
-      <div className="h-full w-full animate-pulse bg-[#121327]">
+      <div className="h-full w-full animate-pulse bg-secondary">
         <div className="flex h-full flex-col items-center justify-center gap-4">
-          <div className="h-6 w-48 rounded bg-gray-700" />
-          <div className="h-[400px] w-full rounded bg-gray-700" />
+          <div className="h-6 w-48 rounded bg-muted" />
+          <div className="h-[400px] w-full rounded bg-muted" />
         </div>
       </div>
     );
@@ -371,7 +371,7 @@ export const MarginTrends = () => {
     <div className="w-full">
       <div className="flex items-center justify-between px-4 pt-2">
         <div className="w-24" />
-        <h2 className="text-center text-xl font-semibold text-gray-200">Margin Trends</h2>
+        <h2 className="text-center text-xl font-semibold text-muted-foreground">Margin Trends</h2>
         <PeriodToggle period={period} onChange={setPeriod} />
       </div>
       <ResponsiveContainer width="100%" height={480}>
@@ -420,10 +420,10 @@ export const SharesOutstanding = () => {
 
   if (isLoading) {
     return (
-      <div className="h-full w-full animate-pulse bg-[#121327]">
+      <div className="h-full w-full animate-pulse bg-secondary">
         <div className="flex h-full flex-col items-center justify-center gap-4">
-          <div className="h-6 w-48 rounded bg-gray-700" />
-          <div className="h-[400px] w-full rounded bg-gray-700" />
+          <div className="h-6 w-48 rounded bg-muted" />
+          <div className="h-[400px] w-full rounded bg-muted" />
         </div>
       </div>
     );
@@ -431,7 +431,7 @@ export const SharesOutstanding = () => {
 
   return (
     <div className="w-full">
-      <h2 className="mt-2 text-center text-xl font-semibold text-gray-200">
+      <h2 className="mt-2 text-center text-xl font-semibold text-muted-foreground">
         Shares Outstanding
       </h2>
       <ResponsiveContainer width="100%" height={480}>

@@ -15,7 +15,7 @@
 
 /* Mermaid chart text overrides — force bright readable text */
 .mermaid-container text {
-  fill: #e2e8f0 !important;
+  fill: var(--fg) !important;
 }
 
 .mermaid-container .tick text,
@@ -23,11 +23,11 @@
 .mermaid-container .xAxisLabel,
 .mermaid-container .yAxisLabel,
 .mermaid-container .legend text {
-  fill: #cbd5e1 !important;
+  fill: var(--muted) !important;
 }
 
 .mermaid-container .title {
-  fill: #f1f5f9 !important;
+  fill: var(--fg) !important;
 }
 
 /* Axis lines and ticks */

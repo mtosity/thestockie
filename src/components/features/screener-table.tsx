@@ -48,15 +48,17 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
   const getRecommendationColor = (recommendation: string | null) => {
     switch (recommendation) {
       case "strong_buy":
-        return "bg-green-500 hover:bg-green-600";
+        return "border-transparent bg-positive-surface text-positive ring-1 ring-inset ring-positive/30 hover:bg-positive-surface";
       case "buy":
-        return "bg-green-400 hover:bg-green-500";
+        return "border-transparent bg-positive-surface text-positive ring-1 ring-inset ring-positive/30 hover:bg-positive-surface";
       case "hold":
-        return "bg-yellow-500 hover:bg-yellow-600";
+        return "border-transparent bg-warning-surface text-warning ring-1 ring-inset ring-warning/30 hover:bg-warning-surface";
       case "sell":
-        return "bg-red-500 hover:bg-red-600";
+        return "border-transparent bg-negative-surface text-negative ring-1 ring-inset ring-negative/30 hover:bg-negative-surface";
+      case "strong_sell":
+        return "border-transparent bg-negative-surface text-negative ring-1 ring-inset ring-negative/30 hover:bg-negative-surface";
       default:
-        return "bg-gray-500 hover:bg-gray-600";
+        return "border-transparent bg-muted text-muted-foreground ring-1 ring-inset ring-border";
     }
   };
 
@@ -89,7 +91,7 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
   if (stocks.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-lg text-gray-400">
+        <div className="text-lg text-muted-foreground">
           No stocks found matching your criteria.
         </div>
       </div>
@@ -98,30 +100,30 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
 
   return (
     <>
-      <div className="overflow-hidden rounded-lg border border-white/10">
+      <div className="overflow-hidden rounded-lg border border-border">
         <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
           <Table>
-            <TableHeader className="sticky top-0 z-10 bg-[#15162c]">
-              <TableRow className="border-white/10 hover:bg-white/5">
-                <TableHead className="bg-[#15162c] text-white">
+            <TableHeader className="sticky top-0 z-10 bg-background">
+              <TableRow className="border-border hover:bg-accent">
+                <TableHead className="bg-background text-foreground">
                   Symbol
                 </TableHead>
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-foreground">
                   Sector
                 </TableHead>
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-foreground">
                   Market Cap
                 </TableHead>
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-foreground">
                   Recommendation
                 </TableHead>
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-foreground">
                   Report
                 </TableHead>
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-foreground">
                   Last Updated
                 </TableHead>
-                <TableHead className="bg-[#15162c] text-white">
+                <TableHead className="bg-background text-foreground">
                   Stock details
                 </TableHead>
               </TableRow>
@@ -130,15 +132,15 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
               {stocks.map((stock) => (
                 <TableRow
                   key={stock.supabaseId}
-                  className="border-white/10 hover:bg-white/5"
+                  className="border-border hover:bg-accent"
                 >
-                  <TableCell className="font-medium text-white">
+                  <TableCell className="font-medium text-foreground">
                     {stock.supabaseId}
                   </TableCell>
-                  <TableCell className="text-gray-300">
+                  <TableCell className="text-muted-foreground">
                     {stock.sector ?? "N/A"}
                   </TableCell>
-                  <TableCell className="text-gray-300">
+                  <TableCell className="text-muted-foreground">
                     {formatMarketCap(stock.marketCap ?? null)}
                   </TableCell>
                   <TableCell>
@@ -154,12 +156,12 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
                       size="sm"
                       onClick={() => handleViewReport(stock)}
                       disabled={!stock.response}
-                      className="border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/20 disabled:border-white/10 disabled:bg-white/5 disabled:text-gray-400"
+                      className="border-border bg-foreground/10 text-foreground hover:border-border hover:bg-accent disabled:border-border disabled:bg-foreground/5 disabled:text-muted-foreground"
                     >
                       {stock.response ? "View Report" : "No Report"}
                     </Button>
                   </TableCell>
-                  <TableCell className="text-gray-300">
+                  <TableCell className="text-muted-foreground">
                     {stock.createdAt
                       ? new Date(stock.createdAt).toLocaleDateString()
                       : "N/A"}
@@ -169,7 +171,7 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
                       variant="outline"
                       size="sm"
                       onClick={() => handleSelectStock(stock.supabaseId)}
-                      className="border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/20"
+                      className="border-border bg-foreground/10 text-foreground hover:border-border hover:bg-accent"
                     >
                       <ArrowRight className="h-4 w-4" />
                     </Button>

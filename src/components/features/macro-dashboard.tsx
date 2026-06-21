@@ -66,9 +66,9 @@ function CardShell({
 }) {
   return (
     <div
-      className={`rounded-xl border border-[#424975] bg-[#151624] p-4 ${className}`}
+      className={`rounded-xl border border-border bg-background p-4 ${className}`}
     >
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
         {title}
       </h2>
       {children}
@@ -80,7 +80,7 @@ function SkeletonRows({ count = 4 }: { count?: number }) {
   return (
     <div className="flex flex-col gap-2">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="h-6 animate-pulse rounded bg-gray-700/50" />
+        <div key={i} className="h-6 animate-pulse rounded bg-muted/50" />
       ))}
     </div>
   );
@@ -111,15 +111,15 @@ function TimeFrameSelector({
 }) {
   const options: MacroTimeFrame[] = ["1D", "1W", "1M", "1Y"];
   return (
-    <div className="inline-flex rounded-lg border border-[#424975] bg-[#151624] p-0.5">
+    <div className="inline-flex rounded-lg border border-border bg-background p-0.5">
       {options.map((tf) => (
         <button
           key={tf}
           onClick={() => onChange(tf)}
           className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
             value === tf
-              ? "bg-white/10 text-white shadow-xs"
-              : "text-gray-400 hover:text-gray-200"
+              ? "bg-foreground/10 text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-muted-foreground"
           }`}
         >
           {tf}
@@ -195,12 +195,12 @@ function ChangeDisplay({
   className?: string;
 }) {
   if (changePercent == null) {
-    return <span className={`text-gray-500 ${className}`}>—</span>;
+    return <span className={`text-muted-foreground ${className}`}>—</span>;
   }
   const positive = changePercent >= 0;
   return (
     <span
-      className={`font-semibold ${positive ? "text-green-400" : "text-red-400"} ${className}`}
+      className={`font-semibold ${positive ? "text-positive" : "text-negative"} ${className}`}
     >
       {positive ? "+" : ""}
       {changePercent.toFixed(2)}%
@@ -211,11 +211,11 @@ function ChangeDisplay({
 // ── Fear & Greed / VIX ─────────────────────────────────────────────
 
 const VIX_LEVELS = [
-  { max: 12, label: "Extreme Low", color: "text-green-300" },
-  { max: 20, label: "Normal", color: "text-green-400" },
-  { max: 25, label: "Elevated", color: "text-yellow-400" },
-  { max: 30, label: "High", color: "text-orange-400" },
-  { max: Infinity, label: "Extreme Fear", color: "text-red-400" },
+  { max: 12, label: "Extreme Low", color: "text-positive" },
+  { max: 20, label: "Normal", color: "text-positive" },
+  { max: 25, label: "Elevated", color: "text-warning" },
+  { max: 30, label: "High", color: "text-warning" },
+  { max: Infinity, label: "Extreme Fear", color: "text-negative" },
 ] as const;
 
 function VixCard() {
@@ -254,7 +254,7 @@ function VixCard() {
       ) : quote ? (
         <div>
           <div className="mb-2 flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-white">
+            <span className="text-3xl font-bold text-foreground">
               {quote.price?.toFixed(2)}
             </span>
             <ChangeDisplay changePercent={changePercent} className="text-sm" />
@@ -262,7 +262,7 @@ function VixCard() {
           <span className={`text-sm font-medium ${level?.color}`}>
             {level?.label}
           </span>
-          <div className="mt-1 text-xs text-gray-500">
+          <div className="mt-1 text-xs text-muted-foreground">
             Day range: {quote.dayLow?.toFixed(2)} – {quote.dayHigh?.toFixed(2)}{" "}
             | Year: {quote.yearLow?.toFixed(2)} – {quote.yearHigh?.toFixed(2)}
           </div>
@@ -301,7 +301,7 @@ function VixCard() {
                         value: number;
                       };
                       return (
-                        <div className="rounded bg-white px-2 py-1 text-xs text-black shadow-sm">
+                        <div className="rounded bg-primary px-2 py-1 text-xs text-black shadow-sm">
                           {p.payload.date}: {p.value?.toFixed(2)}
                         </div>
                       );
@@ -313,7 +313,7 @@ function VixCard() {
           )}
         </div>
       ) : (
-        <div className="text-gray-500">No data</div>
+        <div className="text-muted-foreground">No data</div>
       )}
     </CardShell>
   );
@@ -322,11 +322,11 @@ function VixCard() {
 // ── Fear & Greed Index ──────────────────────────────────────────────
 
 const FEAR_GREED_LEVELS = [
-  { max: 24, label: "Extreme Fear", color: "text-green-400", bgColor: "bg-green-500" },
+  { max: 24, label: "Extreme Fear", color: "text-positive", bgColor: "bg-green-500" },
   { max: 44, label: "Fear", color: "text-blue-400", bgColor: "bg-blue-500" },
-  { max: 55, label: "Neutral", color: "text-yellow-400", bgColor: "bg-yellow-500" },
-  { max: 75, label: "Greed", color: "text-orange-400", bgColor: "bg-orange-500" },
-  { max: 100, label: "Extreme Greed", color: "text-red-400", bgColor: "bg-red-500" },
+  { max: 55, label: "Neutral", color: "text-warning", bgColor: "bg-yellow-500" },
+  { max: 75, label: "Greed", color: "text-warning", bgColor: "bg-orange-500" },
+  { max: 100, label: "Extreme Greed", color: "text-negative", bgColor: "bg-red-500" },
 ] as const;
 
 function FearGreedCard() {
@@ -365,7 +365,7 @@ function FearGreedCard() {
       ) : data ? (
         <div>
           <div className="mb-2 flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-white">
+            <span className="text-3xl font-bold text-foreground">
               {data.value}
             </span>
             <div className="flex flex-col">
@@ -373,7 +373,7 @@ function FearGreedCard() {
                 changePercent={data.changePercentage} 
                 className="text-sm" 
               />
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-muted-foreground">
                 vs previous close
               </span>
             </div>
@@ -385,7 +385,7 @@ function FearGreedCard() {
           
           {/* Gauge visualization */}
           <div className="mt-3">
-            <div className="relative h-2 w-full rounded-full bg-gray-700">
+            <div className="relative h-2 w-full rounded-full bg-muted">
               {gaugeSegments.map((seg, i) => (
                 <div
                   key={i}
@@ -397,11 +397,11 @@ function FearGreedCard() {
                 />
               ))}
               <div
-                className="absolute top-1/2 h-4 w-4 -translate-y-1/2 -translate-x-1/2 rounded-full border-2 border-white bg-white shadow-lg"
+                className="absolute top-1/2 h-4 w-4 -translate-y-1/2 -translate-x-1/2 rounded-full border-2 border-border bg-primary shadow-lg"
                 style={{ left: `${data.value}%` }}
               />
             </div>
-            <div className="mt-1 flex justify-between text-xs text-gray-500">
+            <div className="mt-1 flex justify-between text-xs text-muted-foreground">
               <span>0</span>
               <span>25</span>
               <span>45</span>
@@ -411,32 +411,32 @@ function FearGreedCard() {
             </div>
           </div>
           
-          <div className="mt-3 text-xs text-gray-400">
+          <div className="mt-3 text-xs text-muted-foreground">
             <div className="flex justify-between">
               <span>Previous Close:</span>
-              <span className="text-gray-300">{data.previousClose}</span>
+              <span className="text-muted-foreground">{data.previousClose}</span>
             </div>
             <div className="flex justify-between">
               <span>Change:</span>
-              <span className={`${data.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              <span className={`${data.change >= 0 ? 'text-positive' : 'text-negative'}`}>
                 {data.change >= 0 ? '+' : ''}{data.change.toFixed(1)}
               </span>
             </div>
             <div className="flex justify-between">
               <span>Last Updated:</span>
-              <span className="text-gray-300">
+              <span className="text-muted-foreground">
                 {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           </div>
           
-          <div className="mt-3 text-xs text-gray-500">
+          <div className="mt-3 text-xs text-muted-foreground">
             Measures market sentiment from 0 (Extreme Fear) to 100 (Extreme Greed).
             Extreme fear can indicate buying opportunities, while extreme greed may signal overbought conditions.
           </div>
         </div>
       ) : (
-        <div className="text-gray-500">No data</div>
+        <div className="text-muted-foreground">No data</div>
       )}
     </CardShell>
   );
@@ -478,16 +478,16 @@ function DollarIndexCard() {
       ) : quote ? (
         <div>
           <div className="mb-2 flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-white">
+            <span className="text-3xl font-bold text-foreground">
               {quote.price?.toFixed(2)}
             </span>
             <ChangeDisplay changePercent={changePercent} className="text-sm" />
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-muted-foreground">
             Day range: {quote.dayLow?.toFixed(2)} – {quote.dayHigh?.toFixed(2)}{" "}
             | Year: {quote.yearLow?.toFixed(2)} – {quote.yearHigh?.toFixed(2)}
           </div>
-          <div className="mt-1 text-xs text-gray-500">
+          <div className="mt-1 text-xs text-muted-foreground">
             Broad USD strength vs. a basket of major currencies — a rising
             dollar pressures commodities, EM, and US export earnings.
           </div>
@@ -526,7 +526,7 @@ function DollarIndexCard() {
                         value: number;
                       };
                       return (
-                        <div className="rounded bg-white px-2 py-1 text-xs text-black shadow-sm">
+                        <div className="rounded bg-primary px-2 py-1 text-xs text-black shadow-sm">
                           {p.payload.date}: {p.value?.toFixed(2)}
                         </div>
                       );
@@ -538,7 +538,7 @@ function DollarIndexCard() {
           )}
         </div>
       ) : (
-        <div className="text-gray-500">No data</div>
+        <div className="text-muted-foreground">No data</div>
       )}
     </CardShell>
   );
@@ -584,13 +584,13 @@ function CarryRiskCard() {
         <SkeletonRows count={3} />
       ) : (
         <div>
-          <div className="flex items-center justify-between border-b border-white/5 py-2">
+          <div className="flex items-center justify-between border-b border-border py-2">
             <div>
-              <span className="text-sm font-medium text-white">USD/JPY</span>
-              <span className="ml-2 text-xs text-gray-500">Yen Carry</span>
+              <span className="text-sm font-medium text-foreground">USD/JPY</span>
+              <span className="ml-2 text-xs text-muted-foreground">Yen Carry</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-300">
+              <span className="text-sm text-muted-foreground">
                 ¥{jpyRate.toFixed(2)}
               </span>
               <ChangeDisplay
@@ -602,8 +602,8 @@ function CarryRiskCard() {
           <div
             className={`mt-2 rounded px-2 py-1 text-[11px] font-medium ${
               nearWarning
-                ? "bg-red-500/20 text-red-300"
-                : "bg-green-500/20 text-green-300"
+                ? "bg-negative-surface text-negative"
+                : "bg-positive-surface text-positive"
             }`}
           >
             {nearWarning
@@ -612,11 +612,11 @@ function CarryRiskCard() {
           </div>
           <div className="mt-2 flex items-center justify-between py-2">
             <div>
-              <span className="text-sm font-medium text-white">Bitcoin</span>
-              <span className="ml-2 text-xs text-gray-500">Risk Sentiment</span>
+              <span className="text-sm font-medium text-foreground">Bitcoin</span>
+              <span className="ml-2 text-xs text-muted-foreground">Risk Sentiment</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-300">
+              <span className="text-sm text-muted-foreground">
                 {btcQuote?.price
                   ? `$${formatLargeNumber(btcQuote.price)}`
                   : "—"}
@@ -677,8 +677,8 @@ function IndexRow({
   if (isLoading) {
     return (
       <div className="flex items-center justify-between py-2">
-        <div className="h-5 w-32 animate-pulse rounded bg-gray-700/50" />
-        <div className="h-5 w-20 animate-pulse rounded bg-gray-700/50" />
+        <div className="h-5 w-32 animate-pulse rounded bg-muted/50" />
+        <div className="h-5 w-20 animate-pulse rounded bg-muted/50" />
       </div>
     );
   }
@@ -686,13 +686,13 @@ function IndexRow({
   if (!quote) return null;
 
   return (
-    <div className="flex items-center justify-between border-b border-white/5 py-2 last:border-0">
+    <div className="flex items-center justify-between border-b border-border py-2 last:border-0">
       <div>
-        <span className="text-sm font-medium text-white">{label}</span>
-        <span className="ml-2 text-xs text-gray-500">{region}</span>
+        <span className="text-sm font-medium text-foreground">{label}</span>
+        <span className="ml-2 text-xs text-muted-foreground">{region}</span>
       </div>
       <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-300">
+        <span className="text-sm text-muted-foreground">
           {formatLargeNumber(quote.price ?? 0)}
         </span>
         <ChangeDisplay
@@ -783,7 +783,7 @@ function SectorPerformanceCard() {
               <CartesianGrid
                 horizontal={false}
                 strokeDasharray="3 3"
-                stroke="#424975"
+                stroke="var(--border-light)"
               />
               <XAxis
                 type="number"
@@ -807,7 +807,7 @@ function SectorPerformanceCard() {
                     value: number;
                   };
                   return (
-                    <div className="rounded bg-white px-2 py-1 text-xs text-black shadow-sm">
+                    <div className="rounded bg-primary px-2 py-1 text-xs text-black shadow-sm">
                       {p.payload.name}: {p.value?.toFixed(2)}%
                     </div>
                   );
@@ -826,14 +826,14 @@ function SectorPerformanceCard() {
         </div>
 
         {(rotation ?? trending) && (
-          <div className="mt-3 space-y-2 border-t border-[#424975] pt-3 text-xs">
+          <div className="mt-3 space-y-2 border-t border-border pt-3 text-xs">
             {rotation && (
               <>
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <span className="text-gray-400">Money rotating into:</span>
+                  <span className="text-muted-foreground">Money rotating into:</span>
                   {rotation.inflow.length > 0 ? (
                     rotation.inflow.map((s) => (
-                      <span key={s.name} className="text-green-400">
+                      <span key={s.name} className="text-positive">
                         {s.name}{" "}
                         <span className="text-green-500/70">
                           {fmtPct(s.value)}
@@ -841,14 +841,14 @@ function SectorPerformanceCard() {
                       </span>
                     ))
                   ) : (
-                    <span className="text-gray-500">—</span>
+                    <span className="text-muted-foreground">—</span>
                   )}
                 </div>
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <span className="text-gray-400">Out of:</span>
+                  <span className="text-muted-foreground">Out of:</span>
                   {rotation.outflow.length > 0 ? (
                     rotation.outflow.map((s) => (
-                      <span key={s.name} className="text-red-400">
+                      <span key={s.name} className="text-negative">
                         {s.name}{" "}
                         <span className="text-red-500/70">
                           {fmtPct(s.value)}
@@ -856,23 +856,23 @@ function SectorPerformanceCard() {
                       </span>
                     ))
                   ) : (
-                    <span className="text-gray-500">—</span>
+                    <span className="text-muted-foreground">—</span>
                   )}
                 </div>
               </>
             )}
             {trending && trending.gaining.length > 0 && (
               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <span className="text-gray-400">
-                  Potential trend <span className="text-gray-500">(1W vs 1M pace)</span>:
+                <span className="text-muted-foreground">
+                  Potential trend <span className="text-muted-foreground">(1W vs 1M pace)</span>:
                 </span>
                 {trending.gaining.map((s) => (
-                  <span key={s.name} className="text-green-400">
+                  <span key={s.name} className="text-positive">
                     ↑ {s.name}
                   </span>
                 ))}
                 {trending.fading.map((s) => (
-                  <span key={s.name} className="text-gray-500">
+                  <span key={s.name} className="text-muted-foreground">
                     ↓ {s.name}
                   </span>
                 ))}
@@ -882,7 +882,7 @@ function SectorPerformanceCard() {
         )}
         </>
       ) : (
-        <div className="text-gray-500">No data</div>
+        <div className="text-muted-foreground">No data</div>
       )}
     </CardShell>
   );
@@ -951,35 +951,35 @@ function TreasuryCard() {
         <div>
           <div className="mb-3 flex items-baseline gap-6">
             <div>
-              <span className="text-2xl font-bold text-white">
+              <span className="text-2xl font-bold text-foreground">
                 {tenYear != null ? `${tenYear.toFixed(2)}%` : "—"}
               </span>
-              <span className="ml-1.5 text-xs text-gray-500">US 10Y</span>
+              <span className="ml-1.5 text-xs text-muted-foreground">US 10Y</span>
             </div>
             <div>
               <span
                 className={`text-lg font-semibold ${
                   spreadBps != null && spreadBps >= 0
-                    ? "text-green-400"
-                    : "text-red-400"
+                    ? "text-positive"
+                    : "text-negative"
                 }`}
               >
                 {spreadBps != null
                   ? `${spreadBps >= 0 ? "+" : ""}${spreadBps.toFixed(0)} bps`
                   : "—"}
               </span>
-              <span className="ml-1.5 text-xs text-gray-500">2s/10s</span>
+              <span className="ml-1.5 text-xs text-muted-foreground">2s/10s</span>
             </div>
           </div>
           {is2s10sInverted && (
-            <div className="mb-2 rounded bg-red-500/20 px-2 py-1 text-xs font-medium text-red-300">
+            <div className="mb-2 rounded bg-negative-surface px-2 py-1 text-xs font-medium text-negative">
               2s/10s spread inverted — historically a recession signal
             </div>
           )}
           <div className="h-48">
             <ResponsiveContainer>
               <LineChart data={combinedData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#424975" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
                 <XAxis
                   dataKey="tenor"
                   fontSize={11}
@@ -996,7 +996,7 @@ function TreasuryCard() {
                   content={({ payload, active, label }) => {
                     if (!active || !payload?.length) return null;
                     return (
-                      <div className="rounded bg-white px-2 py-1 text-xs text-black shadow-sm">
+                      <div className="rounded bg-primary px-2 py-1 text-xs text-black shadow-sm">
                         <div className="font-semibold">{label as string}</div>
                         {(
                           payload as {
@@ -1032,7 +1032,7 @@ function TreasuryCard() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-2 flex gap-4 text-xs text-gray-400">
+          <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <span className="inline-block h-0.5 w-4 bg-blue-500" /> Today (
               {data?.[0]?.date})
@@ -1044,7 +1044,7 @@ function TreasuryCard() {
           </div>
         </div>
       ) : (
-        <div className="text-gray-500">No data</div>
+        <div className="text-muted-foreground">No data</div>
       )}
     </CardShell>
   );
@@ -1090,7 +1090,7 @@ function EconomicCalendarCard() {
         <div className="max-h-80 overflow-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-white/10 text-gray-400">
+              <tr className="border-b border-border text-muted-foreground">
                 <th className="pb-2 text-left font-medium">Date</th>
                 <th className="pb-2 text-left font-medium">Event</th>
                 <th className="pb-2 text-center font-medium">Impact</th>
@@ -1100,29 +1100,29 @@ function EconomicCalendarCard() {
             </thead>
             <tbody>
               {events.map((e, i) => (
-                <tr key={i} className="border-b border-white/5">
-                  <td className="py-1.5 text-gray-400">
+                <tr key={i} className="border-b border-border">
+                  <td className="py-1.5 text-muted-foreground">
                     {format(new Date(e.date), "MMM d")}
                   </td>
-                  <td className="py-1.5 text-white">
-                    <span className="mr-1 text-gray-500">{e.country}</span>
+                  <td className="py-1.5 text-foreground">
+                    <span className="mr-1 text-muted-foreground">{e.country}</span>
                     {e.event}
                   </td>
                   <td className="py-1.5 text-center">
                     <span
                       className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold ${
                         e.impact === "High"
-                          ? "bg-red-500/20 text-red-300"
-                          : "bg-yellow-500/20 text-yellow-300"
+                          ? "bg-negative-surface text-negative"
+                          : "bg-warning-surface text-warning"
                       }`}
                     >
                       {e.impact}
                     </span>
                   </td>
-                  <td className="py-1.5 text-right text-gray-300">
+                  <td className="py-1.5 text-right text-muted-foreground">
                     {e.estimate != null ? e.estimate : "—"}
                   </td>
-                  <td className="py-1.5 text-right text-gray-400">
+                  <td className="py-1.5 text-right text-muted-foreground">
                     {e.previous != null ? e.previous : "—"}
                   </td>
                 </tr>
@@ -1131,7 +1131,7 @@ function EconomicCalendarCard() {
           </table>
         </div>
       ) : (
-        <div className="text-gray-500">No upcoming events</div>
+        <div className="text-muted-foreground">No upcoming events</div>
       )}
     </CardShell>
   );
@@ -1204,13 +1204,13 @@ function NewsSummary({
   if (status === "idle") return null;
 
   return (
-    <div className="mb-3 rounded-lg border border-purple-500/20 bg-purple-500/5 p-3">
+    <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
       <div className="mb-1.5 flex items-center gap-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-400">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground">
           {source === "ai" ? "AI Summary" : "Key Headlines"}
         </span>
         {status === "summarizing" && (
-          <span className="text-[10px] text-gray-500">generating...</span>
+          <span className="text-[10px] text-muted-foreground">generating...</span>
         )}
         {status === "done" && source && (
           <span className="ml-auto text-[10px] text-gray-600">
@@ -1220,12 +1220,12 @@ function NewsSummary({
       </div>
       {status === "summarizing" ? (
         <div className="space-y-1.5">
-          <div className="h-3 w-full animate-pulse rounded bg-purple-500/10" />
-          <div className="h-3 w-4/5 animate-pulse rounded bg-purple-500/10" />
-          <div className="h-3 w-3/5 animate-pulse rounded bg-purple-500/10" />
+          <div className="h-3 w-full animate-pulse rounded bg-primary/10" />
+          <div className="h-3 w-4/5 animate-pulse rounded bg-primary/10" />
+          <div className="h-3 w-3/5 animate-pulse rounded bg-primary/10" />
         </div>
       ) : (
-        <p className="whitespace-pre-line text-xs leading-relaxed text-gray-300">
+        <p className="whitespace-pre-line text-xs leading-relaxed text-muted-foreground">
           {summary}
         </p>
       )}
@@ -1258,12 +1258,12 @@ function GeneralNewsCard() {
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="flex animate-pulse gap-3 border-b border-white/5 pb-3"
+              className="flex animate-pulse gap-3 border-b border-border pb-3"
             >
-              <div className="h-16 w-16 rounded bg-gray-700/50" />
+              <div className="h-16 w-16 rounded bg-muted/50" />
               <div className="flex flex-1 flex-col gap-1">
-                <div className="h-4 w-3/4 rounded bg-gray-700/50" />
-                <div className="h-3 w-1/2 rounded bg-gray-700/50" />
+                <div className="h-4 w-3/4 rounded bg-muted/50" />
+                <div className="h-3 w-1/2 rounded bg-muted/50" />
               </div>
             </div>
           ))}
@@ -1283,7 +1283,7 @@ function GeneralNewsCard() {
                   href={article.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex gap-3 rounded-lg border-b border-white/5 pb-3 transition-colors hover:bg-white/5 last:border-0"
+                  className="flex gap-3 rounded-lg border-b border-border pb-3 transition-colors hover:bg-accent last:border-0"
                 >
                   {article.image && (
                     <div className="relative h-16 w-16 shrink-0">
@@ -1297,15 +1297,15 @@ function GeneralNewsCard() {
                     </div>
                   )}
                   <div className="flex flex-1 flex-col gap-0.5">
-                    <span className="text-sm font-medium text-white hover:underline">
+                    <span className="text-sm font-medium text-foreground hover:underline">
                       {article.title}
                     </span>
                     {article.text && (
-                      <p className="line-clamp-2 text-xs text-gray-400">
+                      <p className="line-clamp-2 text-xs text-muted-foreground">
                         {article.text}
                       </p>
                     )}
-                    <div className="flex items-center gap-2 text-[11px] text-gray-500">
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                       <span>{article.site}</span>
                       <span>
                         {format(
@@ -1321,7 +1321,7 @@ function GeneralNewsCard() {
           </div>
         </div>
       ) : (
-        <div className="text-gray-500">No news available</div>
+        <div className="text-muted-foreground">No news available</div>
       )}
     </CardShell>
   );
@@ -1357,8 +1357,8 @@ function ForexRow({ pair, label }: { pair: string; label: string }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-between py-2">
-        <div className="h-5 w-20 animate-pulse rounded bg-gray-700/50" />
-        <div className="h-5 w-16 animate-pulse rounded bg-gray-700/50" />
+        <div className="h-5 w-20 animate-pulse rounded bg-muted/50" />
+        <div className="h-5 w-16 animate-pulse rounded bg-muted/50" />
       </div>
     );
   }
@@ -1366,10 +1366,10 @@ function ForexRow({ pair, label }: { pair: string; label: string }) {
   if (!data) return null;
 
   return (
-    <div className="flex items-center justify-between border-b border-white/5 py-2 last:border-0">
-      <span className="text-sm font-medium text-white">{label}</span>
+    <div className="flex items-center justify-between border-b border-border py-2 last:border-0">
+      <span className="text-sm font-medium text-foreground">{label}</span>
       <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-300">{data.bid?.toFixed(4)}</span>
+        <span className="text-sm text-muted-foreground">{data.bid?.toFixed(4)}</span>
         <ChangeDisplay
           changePercent={changePercent}
           className="min-w-[60px] text-right text-xs"
@@ -1421,8 +1421,8 @@ function CommodityRow({ symbol, label }: { symbol: string; label: string }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-between py-2">
-        <div className="h-5 w-20 animate-pulse rounded bg-gray-700/50" />
-        <div className="h-5 w-16 animate-pulse rounded bg-gray-700/50" />
+        <div className="h-5 w-20 animate-pulse rounded bg-muted/50" />
+        <div className="h-5 w-16 animate-pulse rounded bg-muted/50" />
       </div>
     );
   }
@@ -1430,10 +1430,10 @@ function CommodityRow({ symbol, label }: { symbol: string; label: string }) {
   if (!quote) return null;
 
   return (
-    <div className="flex items-center justify-between border-b border-white/5 py-2 last:border-0">
-      <span className="text-sm font-medium text-white">{label}</span>
+    <div className="flex items-center justify-between border-b border-border py-2 last:border-0">
+      <span className="text-sm font-medium text-foreground">{label}</span>
       <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-300">
+        <span className="text-sm text-muted-foreground">
           ${quote.price?.toFixed(2)}
         </span>
         <ChangeDisplay
@@ -1467,7 +1467,7 @@ export function MacroDashboard() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-64 animate-pulse rounded-xl border border-[#424975] bg-[#151624]"
+            className="h-64 animate-pulse rounded-xl border border-border bg-background"
           />
         ))}
       </div>
@@ -1479,7 +1479,7 @@ export function MacroDashboard() {
       <div className="p-4">
         {/* Sticky timeframe selector */}
         <div className="mb-4 flex items-center justify-between">
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-muted-foreground">
             Showing % change over selected period
           </span>
           <TimeFrameSelector value={timeFrame} onChange={setTimeFrame} />

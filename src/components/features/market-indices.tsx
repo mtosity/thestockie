@@ -98,9 +98,9 @@ function IndexChip({ symbol, label }: { symbol: string; label: string }) {
   if (quoteLoading || histLoading) {
     return (
       <div className="flex animate-pulse items-center gap-1.5">
-        <div className="h-3 w-10 rounded bg-gray-700" />
-        <div className="h-5 w-12 rounded bg-gray-700" />
-        <div className="h-3 w-12 rounded bg-gray-700" />
+        <div className="h-3 w-10 rounded bg-muted" />
+        <div className="h-5 w-12 rounded bg-muted" />
+        <div className="h-3 w-12 rounded bg-muted" />
       </div>
     );
   }
@@ -109,18 +109,18 @@ function IndexChip({ symbol, label }: { symbol: string; label: string }) {
 
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-xs font-medium text-gray-400">{label}</span>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
       {prices.length > 1 ? (
         <MiniSparkline prices={prices} positive={positive} />
       ) : (
         <span
-          className={`text-xs ${positive ? "text-green-400" : "text-red-400"}`}
+          className={`text-xs ${positive ? "text-positive" : "text-negative"}`}
         >
           {positive ? "\u25B2" : "\u25BC"}
         </span>
       )}
       <span
-        className={`text-xs font-semibold ${positive ? "text-green-400" : "text-red-400"}`}
+        className={`text-xs font-semibold ${positive ? "text-positive" : "text-negative"}`}
       >
         {positive ? "+" : ""}
         {changePercent.toFixed(2)}%

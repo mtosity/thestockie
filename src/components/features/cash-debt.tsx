@@ -28,8 +28,8 @@ interface TooltipProps {
 const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded border border-[#424975] bg-[#151624] p-3 text-sm shadow-lg">
-      <p className="mb-1 font-medium text-gray-200">{formatQuarter(label ?? "")}</p>
+    <div className="rounded border border-border bg-background p-3 text-sm shadow-lg">
+      <p className="mb-1 font-medium text-muted-foreground">{formatQuarter(label ?? "")}</p>
       {payload.map((entry) => (
         <p key={entry.name} style={{ color: entry.fill ?? entry.stroke }}>
           {entry.name}: ${formatLargeNumber(entry.value)}
@@ -63,10 +63,10 @@ export const CashDebt = () => {
 
   if (isLoading) {
     return (
-      <div className="h-full w-full animate-pulse bg-[#121327]">
+      <div className="h-full w-full animate-pulse bg-secondary">
         <div className="flex h-full flex-col items-center justify-center gap-4">
-          <div className="h-6 w-48 rounded bg-gray-700" />
-          <div className="h-[400px] w-full rounded bg-gray-700" />
+          <div className="h-6 w-48 rounded bg-muted" />
+          <div className="h-[400px] w-full rounded bg-muted" />
         </div>
       </div>
     );
@@ -74,7 +74,7 @@ export const CashDebt = () => {
 
   return (
     <div className="w-full">
-      <h2 className="mt-2 text-center text-xl font-semibold text-gray-200">
+      <h2 className="mt-2 text-center text-xl font-semibold text-muted-foreground">
         Cash &amp; Debt
       </h2>
       <ResponsiveContainer width="100%" height={480}>

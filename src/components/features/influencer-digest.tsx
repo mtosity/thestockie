@@ -53,11 +53,11 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
   ].filter(Boolean);
 
   return (
-    <Card className="border-white/10 bg-white/5 text-white">
+    <Card className="border-border bg-foreground/5 text-foreground">
       <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
         <div>
           <h2 className="text-lg font-semibold">Daily Market Digest</h2>
-          <p className="text-xs text-gray-400">{meta.join(" · ")}</p>
+          <p className="text-xs text-muted-foreground">{meta.join(" · ")}</p>
         </div>
         {digest.sentimentLabel && (
           <SentimentBadge label={digest.sentimentLabel} />
@@ -65,7 +65,7 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
       </CardHeader>
 
       <CardContent className="space-y-5">
-        <p className="text-sm leading-relaxed text-gray-200">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           {digest.marketSentiment}
         </p>
 
@@ -74,7 +74,7 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
             {digest.keyThemes.map((theme, i) => (
               <Pill
                 key={i}
-                className="bg-purple-500/15 text-purple-200 ring-purple-500/30"
+                className="bg-primary/15 text-foreground ring-primary/30"
               >
                 {theme}
               </Pill>
@@ -84,19 +84,19 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
 
         {rotations.length > 0 && (
           <div className="space-y-2">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-300">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
               <Repeat className="h-3.5 w-3.5" /> Sector rotation
             </div>
             {rotations.map((r, i) => (
-              <div key={i} className="rounded-md bg-black/20 px-3 py-2 text-sm">
+              <div key={i} className="rounded-md bg-muted px-3 py-2 text-sm">
                 {(r.from ?? r.to) && (
-                  <div className="mb-0.5 flex items-center gap-1.5 text-xs font-medium text-white">
+                  <div className="mb-0.5 flex items-center gap-1.5 text-xs font-medium text-foreground">
                     {r.from && <span>{r.from}</span>}
-                    <ArrowRight className="h-3 w-3 text-gray-500" />
+                    <ArrowRight className="h-3 w-3 text-muted-foreground" />
                     {r.to && <span>{r.to}</span>}
                   </div>
                 )}
-                <p className="text-gray-300">{r.rationale}</p>
+                <p className="text-muted-foreground">{r.rationale}</p>
               </div>
             ))}
           </div>
@@ -104,22 +104,22 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
 
         {actions.length > 0 && (
           <div className="space-y-2">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-300">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
               <Lightbulb className="h-3.5 w-3.5" /> Recommended actions
             </div>
             {actions.map((a, i) => (
               <div
                 key={i}
-                className="flex items-start gap-2 rounded-md bg-black/20 px-3 py-2 text-sm"
+                className="flex items-start gap-2 rounded-md bg-muted px-3 py-2 text-sm"
               >
                 {a.action && (
-                  <Pill className="mt-0.5 shrink-0 bg-purple-500/15 text-purple-200 ring-purple-500/30">
+                  <Pill className="mt-0.5 shrink-0 bg-primary/15 text-foreground ring-primary/30">
                     {a.action}
                   </Pill>
                 )}
-                <p className="text-gray-300">
+                <p className="text-muted-foreground">
                   {a.symbol && (
-                    <span className="font-semibold text-white">{a.symbol}: </span>
+                    <span className="font-semibold text-foreground">{a.symbol}: </span>
                   )}
                   {a.rationale}
                 </p>

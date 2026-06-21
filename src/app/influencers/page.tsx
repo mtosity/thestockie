@@ -15,12 +15,12 @@ function LoadingState() {
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
-        <Skeleton className="h-72 w-full rounded-xl bg-white/5" />
-        <Skeleton className="h-64 w-full rounded-xl bg-white/5" />
+        <Skeleton className="h-72 w-full rounded-xl bg-foreground/5" />
+        <Skeleton className="h-64 w-full rounded-xl bg-foreground/5" />
       </div>
       <div className="space-y-4">
-        <Skeleton className="h-48 w-full rounded-xl bg-white/5" />
-        <Skeleton className="h-64 w-full rounded-xl bg-white/5" />
+        <Skeleton className="h-48 w-full rounded-xl bg-foreground/5" />
+        <Skeleton className="h-64 w-full rounded-xl bg-foreground/5" />
       </div>
     </div>
   );
@@ -28,12 +28,12 @@ function LoadingState() {
 
 function EmptyState() {
   return (
-    <Card className="border-white/10 bg-white/5 text-white">
+    <Card className="border-border bg-foreground/5 text-foreground">
       <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
         <Inbox className="h-10 w-10 text-gray-600" />
         <h2 className="text-lg font-semibold">No influencer data yet</h2>
-        <p className="max-w-md text-sm text-gray-400">
-          Run the <code className="rounded bg-black/30 px-1.5 py-0.5 text-purple-200">
+        <p className="max-w-md text-sm text-muted-foreground">
+          Run the <code className="rounded bg-muted px-1.5 py-0.5 text-foreground">
             thestockie-influencer
           </code>{" "}
           job to scan tracked creators, transcribe their latest videos, and
@@ -66,20 +66,20 @@ export default function InfluencersPage() {
     (videosQ.data?.length ?? 0) > 0;
 
   return (
-    <div className="min-h-screen bg-[#15162c] pb-20 text-white">
+    <div className="min-h-screen bg-background pb-20 text-foreground">
       <div className="mx-auto max-w-6xl px-4 pt-6">
         <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="flex items-center gap-2 text-3xl font-bold">
-              <Radar className="h-7 w-7 text-purple-400" /> Influencer Radar
+              <Radar className="h-7 w-7 text-foreground" /> Influencer Radar
             </h1>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               What YouTube stock creators are buying, selling, and saying —
               aggregated daily.
             </p>
           </div>
           {lastUpdated && (
-            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <RefreshCw className="h-3.5 w-3.5" /> Updated{" "}
               {formatRelative(lastUpdated)}
             </div>

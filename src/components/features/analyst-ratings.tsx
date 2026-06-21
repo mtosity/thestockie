@@ -74,7 +74,7 @@ function isTier1(firm: string) {
 function gradeColor(grade: string): string {
   const g = grade.toLowerCase();
   if (g.includes("strong buy") || g.includes("conviction"))
-    return "text-green-400";
+    return "text-positive";
   if (
     g.includes("buy") ||
     g.includes("outperform") ||
@@ -82,7 +82,7 @@ function gradeColor(grade: string): string {
     g.includes("positive") ||
     g.includes("accumulate")
   )
-    return "text-green-300";
+    return "text-positive";
   if (
     g.includes("hold") ||
     g.includes("neutral") ||
@@ -92,7 +92,7 @@ function gradeColor(grade: string): string {
     g.includes("sector perform") ||
     g.includes("in-line")
   )
-    return "text-yellow-300";
+    return "text-warning";
   if (
     g.includes("sell") ||
     g.includes("underperform") ||
@@ -100,14 +100,14 @@ function gradeColor(grade: string): string {
     g.includes("negative") ||
     g.includes("reduce")
   )
-    return "text-red-400";
-  return "text-gray-300";
+    return "text-negative";
+  return "text-muted-foreground";
 }
 
 function gradeBgColor(grade: string): string {
   const g = grade.toLowerCase();
   if (g.includes("strong buy") || g.includes("conviction"))
-    return "bg-green-500/20";
+    return "bg-positive-surface";
   if (
     g.includes("buy") ||
     g.includes("outperform") ||
@@ -115,7 +115,7 @@ function gradeBgColor(grade: string): string {
     g.includes("positive") ||
     g.includes("accumulate")
   )
-    return "bg-green-500/10";
+    return "bg-positive-surface";
   if (
     g.includes("hold") ||
     g.includes("neutral") ||
@@ -125,7 +125,7 @@ function gradeBgColor(grade: string): string {
     g.includes("sector perform") ||
     g.includes("in-line")
   )
-    return "bg-yellow-500/10";
+    return "bg-warning-surface";
   if (
     g.includes("sell") ||
     g.includes("underperform") ||
@@ -133,8 +133,8 @@ function gradeBgColor(grade: string): string {
     g.includes("negative") ||
     g.includes("reduce")
   )
-    return "bg-red-500/10";
-  return "bg-white/5";
+    return "bg-negative-surface";
+  return "bg-foreground/5";
 }
 
 function getDirection(
@@ -199,17 +199,17 @@ export const AnalystRatings = () => {
   if (isLoading) {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
+        <div className="flex items-center gap-2 border-b border-border px-4 py-2">
           <ThumbsUp className="h-4 w-4 text-blue-400" />
-          <span className="text-sm font-semibold text-gray-200">
+          <span className="text-sm font-semibold text-muted-foreground">
             Analyst Ratings
           </span>
         </div>
         <div className="flex-1 space-y-3 p-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex animate-pulse items-center gap-3">
-              <div className="h-3 w-24 rounded bg-white/10" />
-              <div className="ml-auto h-3 w-14 rounded bg-white/10" />
+              <div className="h-3 w-24 rounded bg-foreground/10" />
+              <div className="ml-auto h-3 w-14 rounded bg-foreground/10" />
             </div>
           ))}
         </div>
@@ -223,13 +223,13 @@ export const AnalystRatings = () => {
   if (!latest && !hasGrades) {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
+        <div className="flex items-center gap-2 border-b border-border px-4 py-2">
           <ThumbsUp className="h-4 w-4 text-blue-400" />
-          <span className="text-sm font-semibold text-gray-200">
+          <span className="text-sm font-semibold text-muted-foreground">
             Analyst Ratings
           </span>
         </div>
-        <div className="flex flex-1 items-center justify-center text-sm text-gray-500">
+        <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
           No analyst data
         </div>
       </div>
@@ -249,44 +249,44 @@ export const AnalystRatings = () => {
       label: "Strong Buy",
       count: strongBuy,
       color: "bg-green-500",
-      textColor: "text-green-400",
+      textColor: "text-positive",
     },
     {
       label: "Buy",
       count: buy,
       color: "bg-green-400",
-      textColor: "text-green-300",
+      textColor: "text-positive",
     },
     {
       label: "Hold",
       count: hold,
       color: "bg-yellow-400",
-      textColor: "text-yellow-300",
+      textColor: "text-warning",
     },
     {
       label: "Sell",
       count: sell,
       color: "bg-red-400",
-      textColor: "text-red-300",
+      textColor: "text-negative",
     },
     {
       label: "Strong Sell",
       count: strongSell,
       color: "bg-red-500",
-      textColor: "text-red-400",
+      textColor: "text-negative",
     },
   ];
 
   const bullish = strongBuy + buy;
   const bearish = sell + strongSell;
   let consensus = "Hold";
-  let consensusColor = "text-yellow-400";
+  let consensusColor = "text-warning";
   if (bullish > bearish + hold) {
     consensus = "Buy";
-    consensusColor = "text-green-400";
+    consensusColor = "text-positive";
   } else if (bearish > bullish + hold) {
     consensus = "Sell";
-    consensusColor = "text-red-400";
+    consensusColor = "text-negative";
   }
 
   // Sort grades: tier1 first, then by date desc
@@ -310,10 +310,10 @@ export const AnalystRatings = () => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-2">
           <ThumbsUp className="h-4 w-4 text-blue-400" />
-          <span className="text-sm font-semibold text-gray-200">
+          <span className="text-sm font-semibold text-muted-foreground">
             Analyst Ratings
           </span>
         </div>
@@ -339,7 +339,7 @@ export const AnalystRatings = () => {
                   ),
               )}
             </div>
-            <div className="mt-1.5 flex justify-between text-[10px] text-gray-500">
+            <div className="mt-1.5 flex justify-between text-[10px] text-muted-foreground">
               <span>{bullish} Buy</span>
               <span>{hold} Hold</span>
               <span>{bearish} Sell</span>
@@ -350,7 +350,7 @@ export const AnalystRatings = () => {
         {/* Per-firm grades */}
         {displayGrades.length > 0 && (
           <div className="mt-2">
-            <div className="border-b border-white/5 px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+            <div className="border-b border-border px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               Firm Ratings (latest per firm)
             </div>
             {displayGrades.map((grade, idx) => {
@@ -362,18 +362,18 @@ export const AnalystRatings = () => {
               return (
                 <div
                   key={`${grade.gradingCompany}-${idx}`}
-                  className="flex items-center gap-2 border-b border-white/5 px-3 py-1.5 transition-colors hover:bg-white/5"
+                  className="flex items-center gap-2 border-b border-border px-3 py-1.5 transition-colors hover:bg-accent"
                 >
                   {/* Direction icon */}
                   <div className="shrink-0">
                     {direction === "upgrade" && (
-                      <ArrowUp className="h-3 w-3 text-green-400" />
+                      <ArrowUp className="h-3 w-3 text-positive" />
                     )}
                     {direction === "downgrade" && (
-                      <ArrowDown className="h-3 w-3 text-red-400" />
+                      <ArrowDown className="h-3 w-3 text-negative" />
                     )}
                     {direction === "same" && (
-                      <Minus className="h-3 w-3 text-gray-500" />
+                      <Minus className="h-3 w-3 text-muted-foreground" />
                     )}
                   </div>
 
@@ -381,7 +381,7 @@ export const AnalystRatings = () => {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1">
                       <span
-                        className={`truncate text-xs font-medium ${tier1 ? "text-gray-100" : "text-gray-400"}`}
+                        className={`truncate text-xs font-medium ${tier1 ? "text-muted-foreground" : "text-muted-foreground"}`}
                       >
                         {grade.gradingCompany}
                       </span>
@@ -391,7 +391,7 @@ export const AnalystRatings = () => {
                         </span>
                       )}
                     </div>
-                    <div className="text-[10px] text-gray-500">
+                    <div className="text-[10px] text-muted-foreground">
                       {format(new Date(grade.date), "MMM d, yyyy")}
                     </div>
                   </div>
@@ -410,7 +410,7 @@ export const AnalystRatings = () => {
             {latestPerFirm.length > 10 && (
               <button
                 onClick={() => setShowAll(!showAll)}
-                className="flex w-full items-center justify-center gap-1 py-2 text-[11px] text-purple-400 transition-colors hover:text-purple-300"
+                className="flex w-full items-center justify-center gap-1 py-2 text-[11px] text-foreground transition-colors hover:text-foreground"
               >
                 {showAll ? (
                   <>

@@ -24,19 +24,19 @@ export function SuperInvestorsSection() {
   const hasData = (investorsQ.data?.length ?? 0) > 0;
 
   return (
-    <section className="mt-12 border-t border-white/10 pt-8">
+    <section className="mt-12 border-t border-border pt-8">
       <div className="mb-1 flex items-center gap-2">
-        <Landmark className="h-6 w-6 text-amber-400" />
+        <Landmark className="h-6 w-6 text-warning" />
         <h2 className="text-2xl font-bold">Super Investors</h2>
         {period && (
-          <span className="rounded-md bg-white/5 px-2 py-0.5 text-xs text-gray-400">
+          <span className="rounded-md bg-foreground/5 px-2 py-0.5 text-xs text-muted-foreground">
             13F · {periodLabel(period)}
           </span>
         )}
       </div>
-      <p className="mb-4 max-w-3xl text-sm text-gray-400">
+      <p className="mb-4 max-w-3xl text-sm text-muted-foreground">
         How legendary fund managers moved their books, from quarterly SEC 13F filings.{" "}
-        <span className="text-gray-500">
+        <span className="text-muted-foreground">
           13F covers long US positions only and lags ~45 days, so a sale means trimmed or
           exited — not short.
         </span>
@@ -44,12 +44,12 @@ export function SuperInvestorsSection() {
 
       {loading ? (
         <div className="space-y-4">
-          <Skeleton className="h-56 w-full rounded-xl bg-white/5" />
-          <Skeleton className="h-56 w-full rounded-xl bg-white/5" />
+          <Skeleton className="h-56 w-full rounded-xl bg-foreground/5" />
+          <Skeleton className="h-56 w-full rounded-xl bg-foreground/5" />
         </div>
       ) : !hasData ? (
-        <Card className="border-white/10 bg-white/5 text-white">
-          <CardContent className="py-12 text-center text-sm text-gray-400">
+        <Card className="border-border bg-foreground/5 text-foreground">
+          <CardContent className="py-12 text-center text-sm text-muted-foreground">
             No 13F data yet — run the superinvestor-job.
           </CardContent>
         </Card>

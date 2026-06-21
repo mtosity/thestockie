@@ -24,12 +24,12 @@ interface StockResponseModalProps {
 
 const MarkdownWithColor = ({ content }: { content: string }) => {
   return (
-    <div className="prose prose-invert max-w-none text-sm">
+    <div className="prose dark:prose-invert max-w-none text-sm">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           p: ({ children }) => {
-            return <p className="mt-2 text-white">{children}</p>;
+            return <p className="mt-2 text-foreground">{children}</p>;
           },
           strong: ({ children }) => {
             const text = typeof children === "string" ? children : null;
@@ -62,32 +62,32 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
           },
           h1: ({ children }) => {
             return (
-              <h1 className="text-2xl font-bold text-white">{children}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{children}</h1>
             );
           },
           h2: ({ children }) => {
             return (
-              <h2 className="mb-2 mt-4 text-xl font-bold text-white">
+              <h2 className="mb-2 mt-4 text-xl font-bold text-foreground">
                 {children}
               </h2>
             );
           },
           h3: ({ children }) => {
             return (
-              <h3 className="mb-2 mt-3 text-lg font-bold text-white">
+              <h3 className="mb-2 mt-3 text-lg font-bold text-foreground">
                 {children}
               </h3>
             );
           },
           ul: ({ children }) => {
             return (
-              <ul className="list-inside list-disc space-y-1 text-white">
+              <ul className="list-inside list-disc space-y-1 text-foreground">
                 {children}
               </ul>
             );
           },
           li: ({ children }) => {
-            return <li className="text-white">{children}</li>;
+            return <li className="text-foreground">{children}</li>;
           },
           pre: ({ children }) => {
             return <>{children}</>;
@@ -99,13 +99,13 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
             }
             if (className) {
               return (
-                <pre className="overflow-x-auto rounded-md bg-white/10 p-3 text-sm text-gray-200">
+                <pre className="overflow-x-auto rounded-md bg-foreground/10 p-3 text-sm text-muted-foreground">
                   <code>{children}</code>
                 </pre>
               );
             }
             return (
-              <code className="rounded bg-white/10 px-1 py-0.5 text-sm text-gray-200">
+              <code className="rounded bg-foreground/10 px-1 py-0.5 text-sm text-muted-foreground">
                 {children}
               </code>
             );
@@ -127,19 +127,19 @@ export function StockResponseModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="flex h-[80vh] max-w-5xl flex-col border-white/20 bg-[#15162c] text-white">
+      <DialogContent className="flex h-[80vh] max-w-5xl flex-col border-border bg-background text-foreground">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-white">
+          <DialogTitle className="text-xl font-bold text-foreground">
             {stock.supabaseId} - Analysis Report
           </DialogTitle>
         </DialogHeader>
         <div className="min-h-0 flex-1">
           <ScrollArea className="h-full w-full">
-            <div className="rounded-md border border-white/10 bg-white/5 p-4">
+            <div className="rounded-md border border-border bg-foreground/5 p-4">
               {stock.response ? (
                 <MarkdownWithColor content={stock.response} />
               ) : (
-                <p className="text-gray-400">No analysis available</p>
+                <p className="text-muted-foreground">No analysis available</p>
               )}
             </div>
           </ScrollArea>

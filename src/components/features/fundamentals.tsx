@@ -30,12 +30,12 @@ const Row = ({
   color?: string;
 }) => (
   <div className="flex items-baseline justify-between gap-1">
-    <span className="shrink-0 text-xs text-gray-400">{label}</span>
+    <span className="shrink-0 text-xs text-muted-foreground">{label}</span>
     <div className="text-right">
-      <span className={`font-mono text-sm font-medium ${color ?? "text-gray-200"}`}>
+      <span className={`font-mono text-sm font-medium ${color ?? "text-muted-foreground"}`}>
         {value}
       </span>
-      {sub && <div className="text-[10px] text-gray-500">{sub}</div>}
+      {sub && <div className="text-[10px] text-muted-foreground">{sub}</div>}
     </div>
   </div>
 );
@@ -70,7 +70,7 @@ export const Fundamentals = () => {
       <div className="h-full w-full animate-pulse p-3">
         <div className="flex flex-wrap gap-6">
           {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="h-3 w-36 rounded bg-gray-700" />
+            <div key={i} className="h-3 w-36 rounded bg-muted" />
           ))}
         </div>
       </div>
@@ -157,7 +157,7 @@ export const Fundamentals = () => {
           <Row
             label="SBC Impact"
             value={`-${fmtPct(Math.abs(sbcImpact))}`}
-            color="text-red-400"
+            color="text-negative"
           />
         </Section>
 
@@ -169,14 +169,14 @@ export const Fundamentals = () => {
             <Row
               label="Revenue (YoY)"
               value={yoy(revenueYoY)}
-              color={revenueYoY >= 0 ? "text-green-400" : "text-red-400"}
+              color={revenueYoY >= 0 ? "text-positive" : "text-negative"}
             />
           )}
           {epsYoY !== null && (
             <Row
               label="Earnings (YoY)"
               value={yoy(epsYoY)}
-              color={epsYoY >= 0 ? "text-green-400" : "text-red-400"}
+              color={epsYoY >= 0 ? "text-positive" : "text-negative"}
             />
           )}
         </Section>
@@ -188,7 +188,7 @@ export const Fundamentals = () => {
           <Row
             label="Net Cash"
             value={`${netCash >= 0 ? "" : "-"}$${formatLargeNumber(Math.abs(netCash))}`}
-            color={netCash >= 0 ? "text-green-400" : "text-red-400"}
+            color={netCash >= 0 ? "text-positive" : "text-negative"}
           />
         </Section>
 

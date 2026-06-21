@@ -40,7 +40,7 @@ interface CustomTooltipProps {
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload?.length) {
     return (
-      <div className="rounded-lg border bg-white p-4 shadow-xs">
+      <div className="rounded-lg border bg-primary p-4 shadow-xs">
         <p className="mb-2 font-medium">{formatQuarter(label)}</p>
         {payload.map((entry) => (
           <p key={entry.name} style={{ color: entry.fill ?? entry.stroke }}>
@@ -76,7 +76,7 @@ export const HistoricalRevenue = () => {
 
   return (
     <div>
-      <h2 className="mt-2 text-center text-xl font-semibold text-gray-200">
+      <h2 className="mt-2 text-center text-xl font-semibold text-muted-foreground">
         Revenue
       </h2>
       <ResponsiveContainer height={500}>

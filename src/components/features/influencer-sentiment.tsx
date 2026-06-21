@@ -56,28 +56,28 @@ function CreatorCount({
 
 function SymbolRow({ row, rank }: { row: Row; rank: number }) {
   return (
-    <div className="flex items-center gap-3 rounded-md bg-black/20 px-3 py-2">
-      <span className="w-4 shrink-0 text-right text-xs text-gray-500">{rank}</span>
+    <div className="flex items-center gap-3 rounded-md bg-muted px-3 py-2">
+      <span className="w-4 shrink-0 text-right text-xs text-muted-foreground">{rank}</span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-white">{row.symbol}</span>
+          <span className="font-semibold text-foreground">{row.symbol}</span>
           <ConsensusBadge consensus={row.consensus} />
         </div>
         {row.companyName && (
-          <p className="truncate text-xs text-gray-500">{row.companyName}</p>
+          <p className="truncate text-xs text-muted-foreground">{row.companyName}</p>
         )}
       </div>
       <div className="shrink-0 text-right text-sm">
         <CreatorCount
           count={row.bullishCount}
           arrow="↑"
-          color="text-emerald-400"
+          color="text-positive"
           names={row.bullishCreators ?? []}
         />{" "}
         <CreatorCount
           count={row.bearishCount}
           arrow="↓"
-          color="text-rose-400"
+          color="text-negative"
           names={row.bearishCreators ?? []}
         />
         {row.neutralCount > 0 && (
@@ -110,7 +110,7 @@ function LeaderCard({
   empty: string;
 }) {
   return (
-    <Card className="border-white/10 bg-white/5 text-white">
+    <Card className="border-border bg-foreground/5 text-foreground">
       <CardHeader className="space-y-0 pb-3">
         <div className={`flex items-center gap-2 text-sm font-semibold ${accent}`}>
           {icon} {title}
@@ -118,7 +118,7 @@ function LeaderCard({
       </CardHeader>
       <CardContent className="space-y-1.5">
         {rows.length === 0 ? (
-          <p className="py-6 text-center text-sm text-gray-500">{empty}</p>
+          <p className="py-6 text-center text-sm text-muted-foreground">{empty}</p>
         ) : (
           rows.map((row, i) => <SymbolRow key={row.symbol} row={row} rank={i + 1} />)
         )}
@@ -134,14 +134,14 @@ export function SentimentLeaderboard({ sentiment }: { sentiment: Sentiment }) {
         <LeaderCard
           title="Most bullish"
           icon={<Flame className="h-4 w-4" />}
-          accent="text-emerald-400"
+          accent="text-positive"
           rows={sentiment.bullish}
           empty="No bullish consensus yet."
         />
         <LeaderCard
           title="Most bearish"
           icon={<Snowflake className="h-4 w-4" />}
-          accent="text-rose-400"
+          accent="text-negative"
           rows={sentiment.bearish}
           empty="No bearish consensus yet."
         />

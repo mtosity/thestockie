@@ -20,8 +20,8 @@ export function BlogTagFilter({
         className={cn(
           "rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
           selectedTag === null
-            ? "bg-purple-500 text-white shadow-lg shadow-purple-500/25"
-            : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+            : "bg-foreground/5 text-muted-foreground hover:bg-accent hover:text-foreground"
         )}
       >
         All
@@ -33,8 +33,8 @@ export function BlogTagFilter({
           className={cn(
             "rounded-full px-4 py-2 text-sm font-medium capitalize transition-all duration-200",
             selectedTag === tag
-              ? "bg-purple-500 text-white shadow-lg shadow-purple-500/25"
-              : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+              : "bg-foreground/5 text-muted-foreground hover:bg-accent hover:text-foreground"
           )}
         >
           {tag}
