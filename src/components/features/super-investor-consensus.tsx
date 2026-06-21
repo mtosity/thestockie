@@ -77,8 +77,8 @@ function SymbolRow({ row, rank }: { row: Row; rank: number }) {
         {row.name && <p className="truncate text-xs text-muted-foreground">{row.name}</p>}
       </div>
       <div className="shrink-0 text-right text-sm">
-        <InvestorCount count={buyers} arrow="↑" color="text-emerald-700 dark:text-emerald-400" names={buyerNames} />{" "}
-        <InvestorCount count={sellers} arrow="↓" color="text-rose-700 dark:text-rose-400" names={sellerNames} />
+        <InvestorCount count={buyers} arrow="↑" color="text-positive" names={buyerNames} />{" "}
+        <InvestorCount count={sellers} arrow="↓" color="text-negative" names={sellerNames} />
       </div>
     </div>
   );
@@ -122,14 +122,14 @@ export function InvestorConsensus({ consensus }: { consensus: Consensus }) {
         <Side
           title="Most bought"
           icon={<ShoppingCart className="h-4 w-4" />}
-          accent="text-emerald-700 dark:text-emerald-400"
+          accent="text-positive"
           rows={consensus.bought}
           empty="No multi-investor buying this quarter."
         />
         <Side
           title="Most sold"
           icon={<TrendingDown className="h-4 w-4" />}
-          accent="text-rose-700 dark:text-rose-400"
+          accent="text-negative"
           rows={consensus.sold}
           empty="No multi-investor selling this quarter."
         />

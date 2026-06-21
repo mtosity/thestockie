@@ -43,7 +43,7 @@ function Row({ inf }: { inf: Influencer }) {
           <span className="truncate font-medium text-foreground group-hover:underline">
             {inf.name}
           </span>
-          <Youtube className="h-3.5 w-3.5 shrink-0 text-rose-700 dark:text-rose-400" />
+          <Youtube className="h-3.5 w-3.5 shrink-0 text-negative" />
         </div>
         {inf.handle && <p className="truncate text-xs text-muted-foreground">{inf.handle}</p>}
       </div>

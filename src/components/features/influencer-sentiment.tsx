@@ -71,13 +71,13 @@ function SymbolRow({ row, rank }: { row: Row; rank: number }) {
         <CreatorCount
           count={row.bullishCount}
           arrow="↑"
-          color="text-emerald-700 dark:text-emerald-400"
+          color="text-positive"
           names={row.bullishCreators ?? []}
         />{" "}
         <CreatorCount
           count={row.bearishCount}
           arrow="↓"
-          color="text-rose-700 dark:text-rose-400"
+          color="text-negative"
           names={row.bearishCreators ?? []}
         />
         {row.neutralCount > 0 && (
@@ -134,14 +134,14 @@ export function SentimentLeaderboard({ sentiment }: { sentiment: Sentiment }) {
         <LeaderCard
           title="Most bullish"
           icon={<Flame className="h-4 w-4" />}
-          accent="text-emerald-700 dark:text-emerald-400"
+          accent="text-positive"
           rows={sentiment.bullish}
           empty="No bullish consensus yet."
         />
         <LeaderCard
           title="Most bearish"
           icon={<Snowflake className="h-4 w-4" />}
-          accent="text-rose-700 dark:text-rose-400"
+          accent="text-negative"
           rows={sentiment.bearish}
           empty="No bearish consensus yet."
         />

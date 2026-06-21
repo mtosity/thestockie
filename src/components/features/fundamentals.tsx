@@ -157,7 +157,7 @@ export const Fundamentals = () => {
           <Row
             label="SBC Impact"
             value={`-${fmtPct(Math.abs(sbcImpact))}`}
-            color="text-red-700 dark:text-red-400"
+            color="text-negative"
           />
         </Section>
 
@@ -169,14 +169,14 @@ export const Fundamentals = () => {
             <Row
               label="Revenue (YoY)"
               value={yoy(revenueYoY)}
-              color={revenueYoY >= 0 ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}
+              color={revenueYoY >= 0 ? "text-positive" : "text-negative"}
             />
           )}
           {epsYoY !== null && (
             <Row
               label="Earnings (YoY)"
               value={yoy(epsYoY)}
-              color={epsYoY >= 0 ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}
+              color={epsYoY >= 0 ? "text-positive" : "text-negative"}
             />
           )}
         </Section>
@@ -188,7 +188,7 @@ export const Fundamentals = () => {
           <Row
             label="Net Cash"
             value={`${netCash >= 0 ? "" : "-"}$${formatLargeNumber(Math.abs(netCash))}`}
-            color={netCash >= 0 ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}
+            color={netCash >= 0 ? "text-positive" : "text-negative"}
           />
         </Section>
 

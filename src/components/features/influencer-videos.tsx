@@ -9,8 +9,8 @@ type Video = RouterOutputs["influencer"]["recentVideos"][number];
 type Mention = Video["mentions"][number];
 
 const STANCE_CHIP: Record<string, string> = {
-  bullish: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 ring-emerald-500/30",
-  bearish: "bg-rose-500/15 text-rose-700 dark:text-rose-400 ring-rose-500/30",
+  bullish: "bg-positive-surface text-positive ring-positive/30",
+  bearish: "bg-negative-surface text-negative ring-negative/30",
   neutral: "bg-slate-500/15 text-muted-foreground ring-slate-500/30",
 };
 

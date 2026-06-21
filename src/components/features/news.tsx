@@ -133,7 +133,7 @@ const ArticleCard = ({
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-semibold text-orange-700 dark:text-orange-300 hover:underline"
+          className="text-xs font-semibold text-warning hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
           {title}

@@ -35,7 +35,7 @@ function MoveRow({ m, kind }: { m: Move; kind: "buy" | "sell" }) {
         </div>
       </div>
       <div className="shrink-0 text-right">
-        <div className={kind === "buy" ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}>
+        <div className={kind === "buy" ? "text-positive" : "text-negative"}>
           {formatMoney(m.value)}
         </div>
         {kind === "buy" && m.pctPortfolio > 0 && (
@@ -98,7 +98,7 @@ export function InvestorMoves({ moves }: { moves: Moves }) {
       <MoveCard
         title="Biggest new buys"
         icon={<Sparkles className="h-4 w-4" />}
-        accent="text-emerald-700 dark:text-emerald-400"
+        accent="text-positive"
         rows={moves.newBuys}
         empty="No new positions this quarter."
         kind="buy"
@@ -106,7 +106,7 @@ export function InvestorMoves({ moves }: { moves: Moves }) {
       <MoveCard
         title="Full exits"
         icon={<DoorOpen className="h-4 w-4" />}
-        accent="text-rose-700 dark:text-rose-400"
+        accent="text-negative"
         rows={moves.exits}
         empty="No full exits this quarter."
         kind="sell"

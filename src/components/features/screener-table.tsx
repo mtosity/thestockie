@@ -48,15 +48,15 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
   const getRecommendationColor = (recommendation: string | null) => {
     switch (recommendation) {
       case "strong_buy":
-        return "border-transparent bg-emerald-500/20 text-emerald-800 ring-1 ring-inset ring-emerald-500/40 hover:bg-emerald-500/30 dark:text-emerald-200";
+        return "border-transparent bg-positive-surface text-positive ring-1 ring-inset ring-positive/30 hover:bg-positive-surface";
       case "buy":
-        return "border-transparent bg-emerald-500/15 text-emerald-700 ring-1 ring-inset ring-emerald-500/30 hover:bg-emerald-500/25 dark:text-emerald-400";
+        return "border-transparent bg-positive-surface text-positive ring-1 ring-inset ring-positive/30 hover:bg-positive-surface";
       case "hold":
-        return "border-transparent bg-amber-500/15 text-amber-700 ring-1 ring-inset ring-amber-500/30 hover:bg-amber-500/25 dark:text-amber-400";
+        return "border-transparent bg-warning-surface text-warning ring-1 ring-inset ring-warning/30 hover:bg-warning-surface";
       case "sell":
-        return "border-transparent bg-rose-500/15 text-rose-700 ring-1 ring-inset ring-rose-500/30 hover:bg-rose-500/25 dark:text-rose-400";
+        return "border-transparent bg-negative-surface text-negative ring-1 ring-inset ring-negative/30 hover:bg-negative-surface";
       case "strong_sell":
-        return "border-transparent bg-rose-500/20 text-rose-800 ring-1 ring-inset ring-rose-500/40 hover:bg-rose-500/30 dark:text-rose-200";
+        return "border-transparent bg-negative-surface text-negative ring-1 ring-inset ring-negative/30 hover:bg-negative-surface";
       default:
         return "border-transparent bg-muted text-muted-foreground ring-1 ring-inset ring-border";
     }

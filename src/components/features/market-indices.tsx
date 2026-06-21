@@ -114,13 +114,13 @@ function IndexChip({ symbol, label }: { symbol: string; label: string }) {
         <MiniSparkline prices={prices} positive={positive} />
       ) : (
         <span
-          className={`text-xs ${positive ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}`}
+          className={`text-xs ${positive ? "text-positive" : "text-negative"}`}
         >
           {positive ? "\u25B2" : "\u25BC"}
         </span>
       )}
       <span
-        className={`text-xs font-semibold ${positive ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}`}
+        className={`text-xs font-semibold ${positive ? "text-positive" : "text-negative"}`}
       >
         {positive ? "+" : ""}
         {changePercent.toFixed(2)}%

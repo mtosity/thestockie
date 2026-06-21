@@ -74,7 +74,7 @@ function isTier1(firm: string) {
 function gradeColor(grade: string): string {
   const g = grade.toLowerCase();
   if (g.includes("strong buy") || g.includes("conviction"))
-    return "text-green-700 dark:text-green-400";
+    return "text-positive";
   if (
     g.includes("buy") ||
     g.includes("outperform") ||
@@ -82,7 +82,7 @@ function gradeColor(grade: string): string {
     g.includes("positive") ||
     g.includes("accumulate")
   )
-    return "text-green-700 dark:text-green-400";
+    return "text-positive";
   if (
     g.includes("hold") ||
     g.includes("neutral") ||
@@ -92,7 +92,7 @@ function gradeColor(grade: string): string {
     g.includes("sector perform") ||
     g.includes("in-line")
   )
-    return "text-yellow-700 dark:text-yellow-400";
+    return "text-warning";
   if (
     g.includes("sell") ||
     g.includes("underperform") ||
@@ -100,14 +100,14 @@ function gradeColor(grade: string): string {
     g.includes("negative") ||
     g.includes("reduce")
   )
-    return "text-red-700 dark:text-red-400";
+    return "text-negative";
   return "text-muted-foreground";
 }
 
 function gradeBgColor(grade: string): string {
   const g = grade.toLowerCase();
   if (g.includes("strong buy") || g.includes("conviction"))
-    return "bg-green-500/20";
+    return "bg-positive-surface";
   if (
     g.includes("buy") ||
     g.includes("outperform") ||
@@ -115,7 +115,7 @@ function gradeBgColor(grade: string): string {
     g.includes("positive") ||
     g.includes("accumulate")
   )
-    return "bg-green-500/10";
+    return "bg-positive-surface";
   if (
     g.includes("hold") ||
     g.includes("neutral") ||
@@ -125,7 +125,7 @@ function gradeBgColor(grade: string): string {
     g.includes("sector perform") ||
     g.includes("in-line")
   )
-    return "bg-yellow-500/10";
+    return "bg-warning-surface";
   if (
     g.includes("sell") ||
     g.includes("underperform") ||
@@ -133,7 +133,7 @@ function gradeBgColor(grade: string): string {
     g.includes("negative") ||
     g.includes("reduce")
   )
-    return "bg-red-500/10";
+    return "bg-negative-surface";
   return "bg-foreground/5";
 }
 
@@ -249,44 +249,44 @@ export const AnalystRatings = () => {
       label: "Strong Buy",
       count: strongBuy,
       color: "bg-green-500",
-      textColor: "text-green-700 dark:text-green-400",
+      textColor: "text-positive",
     },
     {
       label: "Buy",
       count: buy,
       color: "bg-green-400",
-      textColor: "text-green-700 dark:text-green-400",
+      textColor: "text-positive",
     },
     {
       label: "Hold",
       count: hold,
       color: "bg-yellow-400",
-      textColor: "text-yellow-700 dark:text-yellow-400",
+      textColor: "text-warning",
     },
     {
       label: "Sell",
       count: sell,
       color: "bg-red-400",
-      textColor: "text-red-700 dark:text-red-400",
+      textColor: "text-negative",
     },
     {
       label: "Strong Sell",
       count: strongSell,
       color: "bg-red-500",
-      textColor: "text-red-700 dark:text-red-400",
+      textColor: "text-negative",
     },
   ];
 
   const bullish = strongBuy + buy;
   const bearish = sell + strongSell;
   let consensus = "Hold";
-  let consensusColor = "text-yellow-700 dark:text-yellow-400";
+  let consensusColor = "text-warning";
   if (bullish > bearish + hold) {
     consensus = "Buy";
-    consensusColor = "text-green-700 dark:text-green-400";
+    consensusColor = "text-positive";
   } else if (bearish > bullish + hold) {
     consensus = "Sell";
-    consensusColor = "text-red-700 dark:text-red-400";
+    consensusColor = "text-negative";
   }
 
   // Sort grades: tier1 first, then by date desc
@@ -367,10 +367,10 @@ export const AnalystRatings = () => {
                   {/* Direction icon */}
                   <div className="shrink-0">
                     {direction === "upgrade" && (
-                      <ArrowUp className="h-3 w-3 text-green-700 dark:text-green-400" />
+                      <ArrowUp className="h-3 w-3 text-positive" />
                     )}
                     {direction === "downgrade" && (
-                      <ArrowDown className="h-3 w-3 text-red-700 dark:text-red-400" />
+                      <ArrowDown className="h-3 w-3 text-negative" />
                     )}
                     {direction === "same" && (
                       <Minus className="h-3 w-3 text-muted-foreground" />

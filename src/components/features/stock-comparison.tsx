@@ -613,7 +613,7 @@ function StockHeader({
     <div className="group relative flex w-[180px] flex-col items-center gap-2 rounded-xl border border-border bg-foreground/5 px-3 py-4 transition-all hover:border-primary/30">
       <button
         onClick={onRemove}
-        className="absolute -right-2 -top-2 hidden rounded-full bg-red-500/90 p-1 text-foreground transition-all hover:bg-red-400 group-hover:block"
+        className="absolute -right-2 -top-2 hidden rounded-full bg-negative-surface p-1 text-foreground transition-all hover:bg-red-400 group-hover:block"
       >
         <X className="h-3 w-3" />
       </button>
@@ -642,7 +642,7 @@ function StockHeader({
         <span
           className={cn(
             "font-mono text-[10px]",
-            stock.changesPercentage >= 0 ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400",
+            stock.changesPercentage >= 0 ? "text-positive" : "text-negative",
           )}
         >
           {stock.changesPercentage >= 0 ? "+" : ""}
@@ -678,10 +678,10 @@ function MetricCell({
   const isNeg = value != null && value < 0;
 
   let textColor = "text-muted-foreground";
-  if (better !== "neutral" && isBest) textColor = "text-green-700 dark:text-green-400";
-  if (better !== "neutral" && isWorst) textColor = "text-red-700 dark:text-red-400";
+  if (better !== "neutral" && isBest) textColor = "text-positive";
+  if (better !== "neutral" && isWorst) textColor = "text-negative";
   if (better === "neutral" && isGrowth) {
-    textColor = isNeg ? "text-red-700 dark:text-red-400" : "text-green-700 dark:text-green-400";
+    textColor = isNeg ? "text-negative" : "text-positive";
   }
 
   return (
@@ -689,17 +689,17 @@ function MetricCell({
       <div
         className={cn(
           "inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-mono text-sm font-medium",
-          isBest && better !== "neutral" && "bg-green-500/10",
-          isWorst && better !== "neutral" && "bg-red-500/10",
+          isBest && better !== "neutral" && "bg-positive-surface",
+          isWorst && better !== "neutral" && "bg-negative-surface",
           textColor,
         )}
       >
         {formatted}
         {isBest && better !== "neutral" && (
-          <TrendingUp className="h-3 w-3 text-green-700 dark:text-green-400" />
+          <TrendingUp className="h-3 w-3 text-positive" />
         )}
         {isWorst && better !== "neutral" && (
-          <TrendingDown className="h-3 w-3 text-red-700 dark:text-red-400" />
+          <TrendingDown className="h-3 w-3 text-negative" />
         )}
       </div>
     </td>

@@ -200,7 +200,7 @@ function ChangeDisplay({
   const positive = changePercent >= 0;
   return (
     <span
-      className={`font-semibold ${positive ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"} ${className}`}
+      className={`font-semibold ${positive ? "text-positive" : "text-negative"} ${className}`}
     >
       {positive ? "+" : ""}
       {changePercent.toFixed(2)}%
@@ -211,11 +211,11 @@ function ChangeDisplay({
 // ── Fear & Greed / VIX ─────────────────────────────────────────────
 
 const VIX_LEVELS = [
-  { max: 12, label: "Extreme Low", color: "text-green-700 dark:text-green-400" },
-  { max: 20, label: "Normal", color: "text-green-700 dark:text-green-400" },
-  { max: 25, label: "Elevated", color: "text-yellow-700 dark:text-yellow-400" },
-  { max: 30, label: "High", color: "text-orange-700 dark:text-orange-400" },
-  { max: Infinity, label: "Extreme Fear", color: "text-red-700 dark:text-red-400" },
+  { max: 12, label: "Extreme Low", color: "text-positive" },
+  { max: 20, label: "Normal", color: "text-positive" },
+  { max: 25, label: "Elevated", color: "text-warning" },
+  { max: 30, label: "High", color: "text-warning" },
+  { max: Infinity, label: "Extreme Fear", color: "text-negative" },
 ] as const;
 
 function VixCard() {
@@ -322,11 +322,11 @@ function VixCard() {
 // ── Fear & Greed Index ──────────────────────────────────────────────
 
 const FEAR_GREED_LEVELS = [
-  { max: 24, label: "Extreme Fear", color: "text-green-700 dark:text-green-400", bgColor: "bg-green-500" },
+  { max: 24, label: "Extreme Fear", color: "text-positive", bgColor: "bg-green-500" },
   { max: 44, label: "Fear", color: "text-blue-400", bgColor: "bg-blue-500" },
-  { max: 55, label: "Neutral", color: "text-yellow-700 dark:text-yellow-400", bgColor: "bg-yellow-500" },
-  { max: 75, label: "Greed", color: "text-orange-700 dark:text-orange-400", bgColor: "bg-orange-500" },
-  { max: 100, label: "Extreme Greed", color: "text-red-700 dark:text-red-400", bgColor: "bg-red-500" },
+  { max: 55, label: "Neutral", color: "text-warning", bgColor: "bg-yellow-500" },
+  { max: 75, label: "Greed", color: "text-warning", bgColor: "bg-orange-500" },
+  { max: 100, label: "Extreme Greed", color: "text-negative", bgColor: "bg-red-500" },
 ] as const;
 
 function FearGreedCard() {
@@ -418,7 +418,7 @@ function FearGreedCard() {
             </div>
             <div className="flex justify-between">
               <span>Change:</span>
-              <span className={`${data.change >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+              <span className={`${data.change >= 0 ? 'text-positive' : 'text-negative'}`}>
                 {data.change >= 0 ? '+' : ''}{data.change.toFixed(1)}
               </span>
             </div>
@@ -602,8 +602,8 @@ function CarryRiskCard() {
           <div
             className={`mt-2 rounded px-2 py-1 text-[11px] font-medium ${
               nearWarning
-                ? "bg-red-500/20 text-red-700 dark:text-red-400"
-                : "bg-green-500/20 text-green-700 dark:text-green-400"
+                ? "bg-negative-surface text-negative"
+                : "bg-positive-surface text-positive"
             }`}
           >
             {nearWarning
@@ -833,7 +833,7 @@ function SectorPerformanceCard() {
                   <span className="text-muted-foreground">Money rotating into:</span>
                   {rotation.inflow.length > 0 ? (
                     rotation.inflow.map((s) => (
-                      <span key={s.name} className="text-green-700 dark:text-green-400">
+                      <span key={s.name} className="text-positive">
                         {s.name}{" "}
                         <span className="text-green-500/70">
                           {fmtPct(s.value)}
@@ -848,7 +848,7 @@ function SectorPerformanceCard() {
                   <span className="text-muted-foreground">Out of:</span>
                   {rotation.outflow.length > 0 ? (
                     rotation.outflow.map((s) => (
-                      <span key={s.name} className="text-red-700 dark:text-red-400">
+                      <span key={s.name} className="text-negative">
                         {s.name}{" "}
                         <span className="text-red-500/70">
                           {fmtPct(s.value)}
@@ -867,7 +867,7 @@ function SectorPerformanceCard() {
                   Potential trend <span className="text-muted-foreground">(1W vs 1M pace)</span>:
                 </span>
                 {trending.gaining.map((s) => (
-                  <span key={s.name} className="text-green-700 dark:text-green-400">
+                  <span key={s.name} className="text-positive">
                     ↑ {s.name}
                   </span>
                 ))}
@@ -960,8 +960,8 @@ function TreasuryCard() {
               <span
                 className={`text-lg font-semibold ${
                   spreadBps != null && spreadBps >= 0
-                    ? "text-green-700 dark:text-green-400"
-                    : "text-red-700 dark:text-red-400"
+                    ? "text-positive"
+                    : "text-negative"
                 }`}
               >
                 {spreadBps != null
@@ -972,7 +972,7 @@ function TreasuryCard() {
             </div>
           </div>
           {is2s10sInverted && (
-            <div className="mb-2 rounded bg-red-500/20 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-400">
+            <div className="mb-2 rounded bg-negative-surface px-2 py-1 text-xs font-medium text-negative">
               2s/10s spread inverted — historically a recession signal
             </div>
           )}
@@ -1112,8 +1112,8 @@ function EconomicCalendarCard() {
                     <span
                       className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold ${
                         e.impact === "High"
-                          ? "bg-red-500/20 text-red-700 dark:text-red-400"
-                          : "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
+                          ? "bg-negative-surface text-negative"
+                          : "bg-warning-surface text-warning"
                       }`}
                     >
                       {e.impact}
