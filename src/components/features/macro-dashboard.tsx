@@ -118,7 +118,7 @@ function TimeFrameSelector({
           onClick={() => onChange(tf)}
           className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
             value === tf
-              ? "bg-white/10 text-white shadow-sm"
+              ? "bg-white/10 text-white shadow-xs"
               : "text-gray-400 hover:text-gray-200"
           }`}
         >
@@ -301,7 +301,7 @@ function VixCard() {
                         value: number;
                       };
                       return (
-                        <div className="rounded bg-white px-2 py-1 text-xs text-black shadow">
+                        <div className="rounded bg-white px-2 py-1 text-xs text-black shadow-sm">
                           {p.payload.date}: {p.value?.toFixed(2)}
                         </div>
                       );
@@ -526,7 +526,7 @@ function DollarIndexCard() {
                         value: number;
                       };
                       return (
-                        <div className="rounded bg-white px-2 py-1 text-xs text-black shadow">
+                        <div className="rounded bg-white px-2 py-1 text-xs text-black shadow-sm">
                           {p.payload.date}: {p.value?.toFixed(2)}
                         </div>
                       );
@@ -807,7 +807,7 @@ function SectorPerformanceCard() {
                     value: number;
                   };
                   return (
-                    <div className="rounded bg-white px-2 py-1 text-xs text-black shadow">
+                    <div className="rounded bg-white px-2 py-1 text-xs text-black shadow-sm">
                       {p.payload.name}: {p.value?.toFixed(2)}%
                     </div>
                   );
@@ -996,7 +996,7 @@ function TreasuryCard() {
                   content={({ payload, active, label }) => {
                     if (!active || !payload?.length) return null;
                     return (
-                      <div className="rounded bg-white px-2 py-1 text-xs text-black shadow">
+                      <div className="rounded bg-white px-2 py-1 text-xs text-black shadow-sm">
                         <div className="font-semibold">{label as string}</div>
                         {(
                           payload as {
@@ -1286,7 +1286,7 @@ function GeneralNewsCard() {
                   className="flex gap-3 rounded-lg border-b border-white/5 pb-3 transition-colors hover:bg-white/5 last:border-0"
                 >
                   {article.image && (
-                    <div className="relative h-16 w-16 flex-shrink-0">
+                    <div className="relative h-16 w-16 shrink-0">
                       <Image
                         src={article.image}
                         alt={article.title}

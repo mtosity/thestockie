@@ -189,7 +189,7 @@ export function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#15162c]/95 px-2 py-3 backdrop-blur-sm">
+    <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#15162c]/95 px-2 py-3 backdrop-blur-xs">
       {/* Row 1: Left (market indices) | Center (search, home only) | Right (nav links + auth) */}
       <div className="flex items-center">
         {/* Left: Market Indices - only on xl screens */}

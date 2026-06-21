@@ -22,7 +22,7 @@ export function BlogsContent({ blogs, tags }: BlogsContentProps) {
     <main className="min-h-screen bg-[#15162c] text-white">
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-white/10 px-4 py-16 md:px-8 md:py-24">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10" />
+        <div className="absolute inset-0 bg-linear-to-br from-purple-500/10 via-transparent to-blue-500/10" />
         <div className="absolute -left-1/4 -top-1/2 h-96 w-96 rounded-full bg-purple-500/20 blur-3xl" />
         <div className="absolute -bottom-1/2 -right-1/4 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
 
