@@ -80,7 +80,7 @@ function SkeletonRows({ count = 4 }: { count?: number }) {
   return (
     <div className="flex flex-col gap-2">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="h-6 animate-pulse rounded bg-gray-700/50" />
+        <div key={i} className="h-6 animate-pulse rounded bg-muted/50" />
       ))}
     </div>
   );
@@ -385,7 +385,7 @@ function FearGreedCard() {
           
           {/* Gauge visualization */}
           <div className="mt-3">
-            <div className="relative h-2 w-full rounded-full bg-gray-700">
+            <div className="relative h-2 w-full rounded-full bg-muted">
               {gaugeSegments.map((seg, i) => (
                 <div
                   key={i}
@@ -677,8 +677,8 @@ function IndexRow({
   if (isLoading) {
     return (
       <div className="flex items-center justify-between py-2">
-        <div className="h-5 w-32 animate-pulse rounded bg-gray-700/50" />
-        <div className="h-5 w-20 animate-pulse rounded bg-gray-700/50" />
+        <div className="h-5 w-32 animate-pulse rounded bg-muted/50" />
+        <div className="h-5 w-20 animate-pulse rounded bg-muted/50" />
       </div>
     );
   }
@@ -1260,10 +1260,10 @@ function GeneralNewsCard() {
               key={i}
               className="flex animate-pulse gap-3 border-b border-border pb-3"
             >
-              <div className="h-16 w-16 rounded bg-gray-700/50" />
+              <div className="h-16 w-16 rounded bg-muted/50" />
               <div className="flex flex-1 flex-col gap-1">
-                <div className="h-4 w-3/4 rounded bg-gray-700/50" />
-                <div className="h-3 w-1/2 rounded bg-gray-700/50" />
+                <div className="h-4 w-3/4 rounded bg-muted/50" />
+                <div className="h-3 w-1/2 rounded bg-muted/50" />
               </div>
             </div>
           ))}
@@ -1357,8 +1357,8 @@ function ForexRow({ pair, label }: { pair: string; label: string }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-between py-2">
-        <div className="h-5 w-20 animate-pulse rounded bg-gray-700/50" />
-        <div className="h-5 w-16 animate-pulse rounded bg-gray-700/50" />
+        <div className="h-5 w-20 animate-pulse rounded bg-muted/50" />
+        <div className="h-5 w-16 animate-pulse rounded bg-muted/50" />
       </div>
     );
   }
@@ -1421,8 +1421,8 @@ function CommodityRow({ symbol, label }: { symbol: string; label: string }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-between py-2">
-        <div className="h-5 w-20 animate-pulse rounded bg-gray-700/50" />
-        <div className="h-5 w-16 animate-pulse rounded bg-gray-700/50" />
+        <div className="h-5 w-20 animate-pulse rounded bg-muted/50" />
+        <div className="h-5 w-16 animate-pulse rounded bg-muted/50" />
       </div>
     );
   }

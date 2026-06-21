@@ -60,8 +60,8 @@ export const BalanceGrowth = () => {
     return (
       <div className="h-full w-full animate-pulse bg-secondary">
         <div className="flex h-full flex-col items-center justify-center">
-          <div className="mb-4 h-6 w-48 rounded bg-gray-700"></div>
-          <div className="h-[400px] w-full rounded bg-gray-700"></div>
+          <div className="mb-4 h-6 w-48 rounded bg-muted"></div>
+          <div className="h-[400px] w-full rounded bg-muted"></div>
         </div>
       </div>
     );

@@ -17,9 +17,9 @@ export const CompanyProfile = () => {
     return (
       <div className="flex animate-pulse flex-col gap-3 p-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-4 rounded bg-gray-700" style={{ width: `${60 + (i % 3) * 15}%` }} />
+          <div key={i} className="h-4 rounded bg-muted" style={{ width: `${60 + (i % 3) * 15}%` }} />
         ))}
-        <div className="mt-2 h-20 rounded bg-gray-700" />
+        <div className="mt-2 h-20 rounded bg-muted" />
       </div>
     );
   }

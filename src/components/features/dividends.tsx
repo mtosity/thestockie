@@ -138,8 +138,8 @@ export const Dividends = () => {
     return (
       <div className="h-full w-full animate-pulse bg-secondary">
         <div className="flex h-full flex-col items-center justify-center gap-4">
-          <div className="h-6 w-48 rounded bg-gray-700" />
-          <div className="h-[400px] w-full rounded bg-gray-700" />
+          <div className="h-6 w-48 rounded bg-muted" />
+          <div className="h-[400px] w-full rounded bg-muted" />
         </div>
       </div>
     );

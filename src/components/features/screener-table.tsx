@@ -56,7 +56,7 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
       case "sell":
         return "bg-red-500 hover:bg-red-600";
       default:
-        return "bg-gray-500 hover:bg-gray-600";
+        return "bg-gray-500 hover:bg-muted";
     }
   };
 

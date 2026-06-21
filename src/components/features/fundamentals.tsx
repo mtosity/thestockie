@@ -70,7 +70,7 @@ export const Fundamentals = () => {
       <div className="h-full w-full animate-pulse p-3">
         <div className="flex flex-wrap gap-6">
           {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="h-3 w-36 rounded bg-gray-700" />
+            <div key={i} className="h-3 w-36 rounded bg-muted" />
           ))}
         </div>
       </div>

@@ -174,8 +174,8 @@ export const MetricsTable = () => {
   if (isLoading) {
     return (
       <div className="h-full w-full animate-pulse space-y-4 p-4">
-        <div className="h-8 w-48 rounded bg-gray-700" />
-        <div className="h-64 rounded bg-gray-700" />
+        <div className="h-8 w-48 rounded bg-muted" />
+        <div className="h-64 rounded bg-muted" />
       </div>
     );
   }

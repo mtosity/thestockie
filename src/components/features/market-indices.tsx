@@ -98,9 +98,9 @@ function IndexChip({ symbol, label }: { symbol: string; label: string }) {
   if (quoteLoading || histLoading) {
     return (
       <div className="flex animate-pulse items-center gap-1.5">
-        <div className="h-3 w-10 rounded bg-gray-700" />
-        <div className="h-5 w-12 rounded bg-gray-700" />
-        <div className="h-3 w-12 rounded bg-gray-700" />
+        <div className="h-3 w-10 rounded bg-muted" />
+        <div className="h-5 w-12 rounded bg-muted" />
+        <div className="h-3 w-12 rounded bg-muted" />
       </div>
     );
   }

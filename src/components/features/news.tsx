@@ -113,7 +113,7 @@ const ArticleCard = ({
   source: string;
   text: string;
 }) => (
-  <div className="rounded-lg border border-gray-200 p-3 hover:bg-gray-800/50">
+  <div className="rounded-lg border border-gray-200 p-3 hover:bg-card/50">
     <div className="flex gap-3 rounded-lg">
       {images?.[0] && (
         <div className="relative h-16 w-16 shrink-0">
@@ -150,11 +150,11 @@ const ArticleCard = ({
 );
 
 const LoadingSkeleton = () => (
-  <div className="flex animate-pulse gap-4 rounded-lg border border-gray-700 p-4">
-    <div className="h-24 w-24 rounded-md bg-gray-700"></div>
+  <div className="flex animate-pulse gap-4 rounded-lg border border-border p-4">
+    <div className="h-24 w-24 rounded-md bg-muted"></div>
     <div className="flex flex-1 flex-col gap-2">
-      <div className="h-6 w-3/4 rounded bg-gray-700"></div>
-      <div className="h-4 w-1/2 rounded bg-gray-700"></div>
+      <div className="h-6 w-3/4 rounded bg-muted"></div>
+      <div className="h-4 w-1/2 rounded bg-muted"></div>
     </div>
   </div>
 );

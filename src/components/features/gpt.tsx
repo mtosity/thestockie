@@ -112,7 +112,7 @@ export const GPT = () => {
             <p>Input data: live quote, fundamental metrics, news summary</p>
           </div>
           <Button
-            className="self-end border border-border bg-slate-900 text-foreground hover:bg-slate-600"
+            className="self-end border border-border bg-primary text-primary-foreground hover:bg-primary/90"
             variant="secondary"
             disabled={isPending}
           >
@@ -122,7 +122,7 @@ export const GPT = () => {
               width={20}
               height={20}
               alt="gpt"
-              color="white"
+              className="brightness-0"
               style={{
                 animation: isPending ? "spin 1s linear infinite" : undefined,
               }}
@@ -139,15 +139,15 @@ export const GPT = () => {
       {data && data.supabaseId === symbol ? (
         <div className="mt-4">
           <div className="relative mt-2">
-            <div className="scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 max-h-[500px] overflow-y-auto rounded-lg border border-gray-700 bg-gray-800/50 p-4 py-8">
+            <div className="scrollbar-thin scrollbar-track-secondary scrollbar-thumb-border max-h-[500px] overflow-y-auto rounded-lg border border-border bg-card p-4 py-8">
               {data.response ? (
                 <MarkdownWithColor content={data.response} />
               ) : null}
             </div>
-            <div className="pointer-events-none absolute bottom-0 h-8 w-full bg-linear-to-t from-gray-900 to-transparent" />
+            <div className="pointer-events-none absolute bottom-0 h-8 w-full bg-linear-to-t from-card to-transparent" />
             {data.response ? (
               <Button
-                className="absolute right-2 top-2 h-8 w-8 border border-border bg-gray-800/80 text-muted-foreground hover:bg-accent hover:text-foreground"
+                className="absolute right-2 top-2 h-8 w-8 border border-border bg-card/80 text-muted-foreground hover:bg-accent hover:text-foreground"
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsModalOpen(true)}
@@ -169,12 +169,12 @@ export const GPT = () => {
 
       {isPending ? (
         <div className="mt-4 space-y-4">
-          <div className="h-4 w-48 animate-pulse rounded-md bg-gray-700" />
+          <div className="h-4 w-48 animate-pulse rounded-md bg-muted" />
           <div className="space-y-3">
-            <div className="h-4 w-full animate-pulse rounded-md bg-gray-700" />
-            <div className="h-4 w-3/4 animate-pulse rounded-md bg-gray-700" />
-            <div className="h-4 w-5/6 animate-pulse rounded-md bg-gray-700" />
-            <div className="h-4 w-2/3 animate-pulse rounded-md bg-gray-700" />
+            <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-3/4 animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-5/6 animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-2/3 animate-pulse rounded-md bg-muted" />
           </div>
         </div>
       ) : null}
