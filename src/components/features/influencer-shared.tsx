@@ -3,25 +3,25 @@ import { cn } from "~/lib/utils";
 
 const STANCE_NEUTRAL = "bg-slate-500/15 text-muted-foreground ring-slate-500/30";
 const STANCE_STYLES: Record<string, string> = {
-  bullish: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30",
-  bearish: "bg-rose-500/15 text-rose-300 ring-rose-500/30",
+  bullish: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 ring-emerald-500/30",
+  bearish: "bg-rose-500/15 text-rose-700 dark:text-rose-400 ring-rose-500/30",
   neutral: STANCE_NEUTRAL,
 };
 
-const CONSENSUS_MIXED = "bg-amber-500/15 text-amber-300 ring-amber-500/30";
+const CONSENSUS_MIXED = "bg-amber-500/15 text-amber-700 dark:text-amber-400 ring-amber-500/30";
 const CONSENSUS_STYLES: Record<string, string> = {
   strong_bullish: "bg-emerald-500/20 text-emerald-200 ring-emerald-500/40",
-  bullish: "bg-emerald-500/10 text-emerald-300 ring-emerald-500/25",
+  bullish: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-emerald-500/25",
   mixed: CONSENSUS_MIXED,
-  bearish: "bg-rose-500/10 text-rose-300 ring-rose-500/25",
+  bearish: "bg-rose-500/10 text-rose-700 dark:text-rose-400 ring-rose-500/25",
   strong_bearish: "bg-rose-500/20 text-rose-200 ring-rose-500/40",
 };
 
-const SENTIMENT_NEUTRAL = "bg-amber-500/15 text-amber-300 ring-amber-500/30";
+const SENTIMENT_NEUTRAL = "bg-amber-500/15 text-amber-700 dark:text-amber-400 ring-amber-500/30";
 const SENTIMENT_STYLES: Record<string, string> = {
-  risk_on: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30",
+  risk_on: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 ring-emerald-500/30",
   neutral: SENTIMENT_NEUTRAL,
-  risk_off: "bg-rose-500/15 text-rose-300 ring-rose-500/30",
+  risk_off: "bg-rose-500/15 text-rose-700 dark:text-rose-400 ring-rose-500/30",
 };
 
 export function Pill({
@@ -64,8 +64,8 @@ export function SentimentBadge({ label }: { label: string }) {
 }
 
 export function netColor(net: number): string {
-  if (net > 0) return "text-emerald-400";
-  if (net < 0) return "text-rose-400";
+  if (net > 0) return "text-emerald-700 dark:text-emerald-400";
+  if (net < 0) return "text-rose-700 dark:text-rose-400";
   return "text-slate-400";
 }
 

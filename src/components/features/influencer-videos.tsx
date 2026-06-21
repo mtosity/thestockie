@@ -9,8 +9,8 @@ type Video = RouterOutputs["influencer"]["recentVideos"][number];
 type Mention = Video["mentions"][number];
 
 const STANCE_CHIP: Record<string, string> = {
-  bullish: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30",
-  bearish: "bg-rose-500/15 text-rose-300 ring-rose-500/30",
+  bullish: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 ring-emerald-500/30",
+  bearish: "bg-rose-500/15 text-rose-700 dark:text-rose-400 ring-rose-500/30",
   neutral: "bg-slate-500/15 text-muted-foreground ring-slate-500/30",
 };
 
@@ -24,7 +24,7 @@ function SymbolChip({ mention }: { mention: Mention }) {
 
 function VideoRow({ video }: { video: Video }) {
   return (
-    <div className="space-y-1.5 rounded-md bg-black/20 px-3 py-2.5">
+    <div className="space-y-1.5 rounded-md bg-muted px-3 py-2.5">
       <div className="flex items-center justify-between gap-2 text-xs">
         <span className="truncate font-medium text-foreground">
           {video.influencerName}

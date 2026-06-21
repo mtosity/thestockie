@@ -24,7 +24,7 @@ function InvestorCard({ inv }: { inv: Investor }) {
   return (
     <Link
       href={`/investors/${inv.slug}`}
-      className="group block rounded-lg border border-border bg-black/20 p-3 transition-colors hover:bg-accent"
+      className="group block rounded-lg border border-border bg-muted p-3 transition-colors hover:bg-accent"
     >
       <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10 shrink-0">
@@ -45,10 +45,10 @@ function InvestorCard({ inv }: { inv: Investor }) {
         )}
       </div>
       <div className="mt-2 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px]">
-        {moves.new > 0 && <span className="text-emerald-400">{moves.new} new</span>}
-        {moves.added > 0 && <span className="text-emerald-300">{moves.added} added</span>}
-        {moves.reduced > 0 && <span className="text-amber-300">{moves.reduced} trimmed</span>}
-        {moves.sold > 0 && <span className="text-rose-400">{moves.sold} exited</span>}
+        {moves.new > 0 && <span className="text-emerald-700 dark:text-emerald-400">{moves.new} new</span>}
+        {moves.added > 0 && <span className="text-emerald-700 dark:text-emerald-400">{moves.added} added</span>}
+        {moves.reduced > 0 && <span className="text-amber-700 dark:text-amber-400">{moves.reduced} trimmed</span>}
+        {moves.sold > 0 && <span className="text-rose-700 dark:text-rose-400">{moves.sold} exited</span>}
         {inv.period === null && <span className="text-gray-600">no filing yet</span>}
       </div>
     </Link>

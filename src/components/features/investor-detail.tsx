@@ -122,7 +122,7 @@ export function InvestorDetail({ slug }: { slug: string }) {
                         </TableCell>
                         <TableCell className="max-w-[220px] truncate text-muted-foreground">
                           {p.name}
-                          {p.isOption && <span className="ml-1 text-[10px] text-amber-400">OPT</span>}
+                          {p.isOption && <span className="ml-1 text-[10px] text-amber-700 dark:text-amber-400">OPT</span>}
                         </TableCell>
                         <TableCell>
                           <MoveBadge type={p.changeType} />

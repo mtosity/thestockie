@@ -18,7 +18,7 @@ export const InsiderTrading = () => {
     return (
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-          <ShieldAlert className="h-4 w-4 text-orange-400" />
+          <ShieldAlert className="h-4 w-4 text-orange-700 dark:text-orange-400" />
           <span className="text-sm font-semibold text-muted-foreground">Insider Trading</span>
         </div>
         <div className="flex-1 space-y-2 p-4">
@@ -41,7 +41,7 @@ export const InsiderTrading = () => {
     return (
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-          <ShieldAlert className="h-4 w-4 text-orange-400" />
+          <ShieldAlert className="h-4 w-4 text-orange-700 dark:text-orange-400" />
           <span className="text-sm font-semibold text-muted-foreground">Insider Trading</span>
         </div>
         <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
@@ -63,27 +63,27 @@ export const InsiderTrading = () => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-        <ShieldAlert className="h-4 w-4 text-orange-400" />
+        <ShieldAlert className="h-4 w-4 text-orange-700 dark:text-orange-400" />
         <span className="text-sm font-semibold text-muted-foreground">Insider Trading</span>
       </div>
 
       {/* Summary bar */}
       <div className="grid grid-cols-2 gap-2 border-b border-border px-4 py-2">
         <div className="rounded-md bg-green-500/10 px-3 py-1.5 text-center">
-          <div className="text-[10px] uppercase text-green-400">Buys (12m)</div>
-          <div className="font-mono text-sm font-bold text-green-300">
+          <div className="text-[10px] uppercase text-green-700 dark:text-green-400">Buys (12m)</div>
+          <div className="font-mono text-sm font-bold text-green-700 dark:text-green-400">
             {buys.length}
           </div>
-          <div className="font-mono text-[10px] text-green-400/70">
+          <div className="font-mono text-[10px] text-green-700 dark:text-green-400/70">
             ${formatLargeNumber(totalBuyValue)}
           </div>
         </div>
         <div className="rounded-md bg-red-500/10 px-3 py-1.5 text-center">
-          <div className="text-[10px] uppercase text-red-400">Sells (12m)</div>
-          <div className="font-mono text-sm font-bold text-red-300">
+          <div className="text-[10px] uppercase text-red-700 dark:text-red-400">Sells (12m)</div>
+          <div className="font-mono text-sm font-bold text-red-700 dark:text-red-400">
             {sells.length}
           </div>
-          <div className="font-mono text-[10px] text-red-400/70">
+          <div className="font-mono text-[10px] text-red-700 dark:text-red-400/70">
             ${formatLargeNumber(totalSellValue)}
           </div>
         </div>
@@ -101,9 +101,9 @@ export const InsiderTrading = () => {
             >
               <div className="mt-0.5">
                 {isBuy ? (
-                  <ArrowUpRight className="h-4 w-4 text-green-400" />
+                  <ArrowUpRight className="h-4 w-4 text-green-700 dark:text-green-400" />
                 ) : (
-                  <ArrowDownRight className="h-4 w-4 text-red-400" />
+                  <ArrowDownRight className="h-4 w-4 text-red-700 dark:text-red-400" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
@@ -123,7 +123,7 @@ export const InsiderTrading = () => {
               <div className="shrink-0 text-right">
                 <div
                   className={`font-mono text-xs font-medium ${
-                    isBuy ? "text-green-400" : "text-red-400"
+                    isBuy ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"
                   }`}
                 >
                   {value > 0 ? `${isBuy ? "+" : "-"}$${formatLargeNumber(value)}` : "Unknown"}

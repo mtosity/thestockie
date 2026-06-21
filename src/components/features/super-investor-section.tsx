@@ -26,7 +26,7 @@ export function SuperInvestorsSection() {
   return (
     <section className="mt-12 border-t border-border pt-8">
       <div className="mb-1 flex items-center gap-2">
-        <Landmark className="h-6 w-6 text-amber-400" />
+        <Landmark className="h-6 w-6 text-amber-700 dark:text-amber-400" />
         <h2 className="text-2xl font-bold">Super Investors</h2>
         {period && (
           <span className="rounded-md bg-foreground/5 px-2 py-0.5 text-xs text-muted-foreground">

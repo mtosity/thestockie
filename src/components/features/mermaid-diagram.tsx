@@ -166,7 +166,7 @@ export function MermaidDiagram({ content }: { content: string }) {
 
   if (error) {
     return (
-      <pre className="overflow-x-auto rounded-md bg-foreground/10 p-3 text-sm text-red-400">
+      <pre className="overflow-x-auto rounded-md bg-foreground/10 p-3 text-sm text-red-700 dark:text-red-400">
         {content}
       </pre>
     );

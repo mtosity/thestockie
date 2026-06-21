@@ -12,7 +12,7 @@ type Move = Moves["newBuys"][number];
 
 function MoveRow({ m, kind }: { m: Move; kind: "buy" | "sell" }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md bg-black/20 px-3 py-2 text-sm">
+    <div className="flex items-center justify-between gap-3 rounded-md bg-muted px-3 py-2 text-sm">
       <div className="min-w-0">
         <Link
           href={`/investors/${m.slug}`}
@@ -35,7 +35,7 @@ function MoveRow({ m, kind }: { m: Move; kind: "buy" | "sell" }) {
         </div>
       </div>
       <div className="shrink-0 text-right">
-        <div className={kind === "buy" ? "text-emerald-400" : "text-rose-400"}>
+        <div className={kind === "buy" ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}>
           {formatMoney(m.value)}
         </div>
         {kind === "buy" && m.pctPortfolio > 0 && (
@@ -98,7 +98,7 @@ export function InvestorMoves({ moves }: { moves: Moves }) {
       <MoveCard
         title="Biggest new buys"
         icon={<Sparkles className="h-4 w-4" />}
-        accent="text-emerald-400"
+        accent="text-emerald-700 dark:text-emerald-400"
         rows={moves.newBuys}
         empty="No new positions this quarter."
         kind="buy"
@@ -106,7 +106,7 @@ export function InvestorMoves({ moves }: { moves: Moves }) {
       <MoveCard
         title="Full exits"
         icon={<DoorOpen className="h-4 w-4" />}
-        accent="text-rose-400"
+        accent="text-rose-700 dark:text-rose-400"
         rows={moves.exits}
         empty="No full exits this quarter."
         kind="sell"

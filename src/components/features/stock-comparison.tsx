@@ -642,7 +642,7 @@ function StockHeader({
         <span
           className={cn(
             "font-mono text-[10px]",
-            stock.changesPercentage >= 0 ? "text-green-400" : "text-red-400",
+            stock.changesPercentage >= 0 ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400",
           )}
         >
           {stock.changesPercentage >= 0 ? "+" : ""}
@@ -678,10 +678,10 @@ function MetricCell({
   const isNeg = value != null && value < 0;
 
   let textColor = "text-muted-foreground";
-  if (better !== "neutral" && isBest) textColor = "text-green-400";
-  if (better !== "neutral" && isWorst) textColor = "text-red-400";
+  if (better !== "neutral" && isBest) textColor = "text-green-700 dark:text-green-400";
+  if (better !== "neutral" && isWorst) textColor = "text-red-700 dark:text-red-400";
   if (better === "neutral" && isGrowth) {
-    textColor = isNeg ? "text-red-400" : "text-green-400";
+    textColor = isNeg ? "text-red-700 dark:text-red-400" : "text-green-700 dark:text-green-400";
   }
 
   return (
@@ -696,10 +696,10 @@ function MetricCell({
       >
         {formatted}
         {isBest && better !== "neutral" && (
-          <TrendingUp className="h-3 w-3 text-green-400" />
+          <TrendingUp className="h-3 w-3 text-green-700 dark:text-green-400" />
         )}
         {isWorst && better !== "neutral" && (
-          <TrendingDown className="h-3 w-3 text-red-400" />
+          <TrendingDown className="h-3 w-3 text-red-700 dark:text-red-400" />
         )}
       </div>
     </td>

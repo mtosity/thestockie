@@ -74,7 +74,7 @@ function isTier1(firm: string) {
 function gradeColor(grade: string): string {
   const g = grade.toLowerCase();
   if (g.includes("strong buy") || g.includes("conviction"))
-    return "text-green-400";
+    return "text-green-700 dark:text-green-400";
   if (
     g.includes("buy") ||
     g.includes("outperform") ||
@@ -82,7 +82,7 @@ function gradeColor(grade: string): string {
     g.includes("positive") ||
     g.includes("accumulate")
   )
-    return "text-green-300";
+    return "text-green-700 dark:text-green-400";
   if (
     g.includes("hold") ||
     g.includes("neutral") ||
@@ -92,7 +92,7 @@ function gradeColor(grade: string): string {
     g.includes("sector perform") ||
     g.includes("in-line")
   )
-    return "text-yellow-300";
+    return "text-yellow-700 dark:text-yellow-400";
   if (
     g.includes("sell") ||
     g.includes("underperform") ||
@@ -100,7 +100,7 @@ function gradeColor(grade: string): string {
     g.includes("negative") ||
     g.includes("reduce")
   )
-    return "text-red-400";
+    return "text-red-700 dark:text-red-400";
   return "text-muted-foreground";
 }
 
@@ -249,44 +249,44 @@ export const AnalystRatings = () => {
       label: "Strong Buy",
       count: strongBuy,
       color: "bg-green-500",
-      textColor: "text-green-400",
+      textColor: "text-green-700 dark:text-green-400",
     },
     {
       label: "Buy",
       count: buy,
       color: "bg-green-400",
-      textColor: "text-green-300",
+      textColor: "text-green-700 dark:text-green-400",
     },
     {
       label: "Hold",
       count: hold,
       color: "bg-yellow-400",
-      textColor: "text-yellow-300",
+      textColor: "text-yellow-700 dark:text-yellow-400",
     },
     {
       label: "Sell",
       count: sell,
       color: "bg-red-400",
-      textColor: "text-red-300",
+      textColor: "text-red-700 dark:text-red-400",
     },
     {
       label: "Strong Sell",
       count: strongSell,
       color: "bg-red-500",
-      textColor: "text-red-400",
+      textColor: "text-red-700 dark:text-red-400",
     },
   ];
 
   const bullish = strongBuy + buy;
   const bearish = sell + strongSell;
   let consensus = "Hold";
-  let consensusColor = "text-yellow-400";
+  let consensusColor = "text-yellow-700 dark:text-yellow-400";
   if (bullish > bearish + hold) {
     consensus = "Buy";
-    consensusColor = "text-green-400";
+    consensusColor = "text-green-700 dark:text-green-400";
   } else if (bearish > bullish + hold) {
     consensus = "Sell";
-    consensusColor = "text-red-400";
+    consensusColor = "text-red-700 dark:text-red-400";
   }
 
   // Sort grades: tier1 first, then by date desc
@@ -367,10 +367,10 @@ export const AnalystRatings = () => {
                   {/* Direction icon */}
                   <div className="shrink-0">
                     {direction === "upgrade" && (
-                      <ArrowUp className="h-3 w-3 text-green-400" />
+                      <ArrowUp className="h-3 w-3 text-green-700 dark:text-green-400" />
                     )}
                     {direction === "downgrade" && (
-                      <ArrowDown className="h-3 w-3 text-red-400" />
+                      <ArrowDown className="h-3 w-3 text-red-700 dark:text-red-400" />
                     )}
                     {direction === "same" && (
                       <Minus className="h-3 w-3 text-muted-foreground" />

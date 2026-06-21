@@ -88,7 +88,7 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
               <Repeat className="h-3.5 w-3.5" /> Sector rotation
             </div>
             {rotations.map((r, i) => (
-              <div key={i} className="rounded-md bg-black/20 px-3 py-2 text-sm">
+              <div key={i} className="rounded-md bg-muted px-3 py-2 text-sm">
                 {(r.from ?? r.to) && (
                   <div className="mb-0.5 flex items-center gap-1.5 text-xs font-medium text-foreground">
                     {r.from && <span>{r.from}</span>}
@@ -110,7 +110,7 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
             {actions.map((a, i) => (
               <div
                 key={i}
-                className="flex items-start gap-2 rounded-md bg-black/20 px-3 py-2 text-sm"
+                className="flex items-start gap-2 rounded-md bg-muted px-3 py-2 text-sm"
               >
                 {a.action && (
                   <Pill className="mt-0.5 shrink-0 bg-primary/15 text-foreground ring-primary/30">

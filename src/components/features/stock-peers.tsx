@@ -115,8 +115,8 @@ export const StockPeers = () => {
                   <span
                     className={`font-mono text-xs ${
                       peer.changesPercentage >= 0
-                        ? "text-green-400"
-                        : "text-red-400"
+                        ? "text-green-700 dark:text-green-400"
+                        : "text-red-700 dark:text-red-400"
                     }`}
                   >
                     {peer.changesPercentage >= 0 ? "+" : ""}

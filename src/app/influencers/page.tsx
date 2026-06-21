@@ -33,7 +33,7 @@ function EmptyState() {
         <Inbox className="h-10 w-10 text-gray-600" />
         <h2 className="text-lg font-semibold">No influencer data yet</h2>
         <p className="max-w-md text-sm text-muted-foreground">
-          Run the <code className="rounded bg-black/30 px-1.5 py-0.5 text-foreground">
+          Run the <code className="rounded bg-muted px-1.5 py-0.5 text-foreground">
             thestockie-influencer
           </code>{" "}
           job to scan tracked creators, transcribe their latest videos, and
