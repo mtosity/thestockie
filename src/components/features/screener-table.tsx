@@ -48,15 +48,17 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
   const getRecommendationColor = (recommendation: string | null) => {
     switch (recommendation) {
       case "strong_buy":
-        return "bg-green-500 hover:bg-green-600";
+        return "border-transparent bg-emerald-500/20 text-emerald-800 ring-1 ring-inset ring-emerald-500/40 hover:bg-emerald-500/30 dark:text-emerald-200";
       case "buy":
-        return "bg-green-400 hover:bg-green-500";
+        return "border-transparent bg-emerald-500/15 text-emerald-700 ring-1 ring-inset ring-emerald-500/30 hover:bg-emerald-500/25 dark:text-emerald-400";
       case "hold":
-        return "bg-yellow-500 hover:bg-yellow-600";
+        return "border-transparent bg-amber-500/15 text-amber-700 ring-1 ring-inset ring-amber-500/30 hover:bg-amber-500/25 dark:text-amber-400";
       case "sell":
-        return "bg-red-500 hover:bg-red-600";
+        return "border-transparent bg-rose-500/15 text-rose-700 ring-1 ring-inset ring-rose-500/30 hover:bg-rose-500/25 dark:text-rose-400";
+      case "strong_sell":
+        return "border-transparent bg-rose-500/20 text-rose-800 ring-1 ring-inset ring-rose-500/40 hover:bg-rose-500/30 dark:text-rose-200";
       default:
-        return "bg-gray-500 hover:bg-muted";
+        return "border-transparent bg-muted text-muted-foreground ring-1 ring-inset ring-border";
     }
   };
 
