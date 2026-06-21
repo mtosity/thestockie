@@ -19,19 +19,19 @@ export function BlogsContent({ blogs, tags }: BlogsContentProps) {
     : blogs;
 
   return (
-    <main className="min-h-screen bg-background text-white">
+    <main className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
-      <div className="relative overflow-hidden border-b border-white/10 px-4 py-16 md:px-8 md:py-24">
-        <div className="absolute inset-0 bg-linear-to-br from-purple-500/10 via-transparent to-blue-500/10" />
-        <div className="absolute -left-1/4 -top-1/2 h-96 w-96 rounded-full bg-purple-500/20 blur-3xl" />
+      <div className="relative overflow-hidden border-b border-border px-4 py-16 md:px-8 md:py-24">
+        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-blue-500/10" />
+        <div className="absolute -left-1/4 -top-1/2 h-96 w-96 rounded-full bg-primary/20 blur-3xl" />
         <div className="absolute -bottom-1/2 -right-1/4 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-purple-500/20 p-3">
-              <BookOpen className="h-8 w-8 text-purple-400" />
+            <div className="rounded-xl bg-primary/20 p-3">
+              <BookOpen className="h-8 w-8 text-primary" />
             </div>
-            <p className="max-w-2xl text-lg text-gray-400">
+            <p className="max-w-2xl text-lg text-muted-foreground">
               Insights, guides, and analysis to help you make smarter investment
               decisions. Learn about fundamentals, market trends, and investment
               strategies.
@@ -44,7 +44,7 @@ export function BlogsContent({ blogs, tags }: BlogsContentProps) {
       <div className="mx-auto max-w-7xl px-4 py-12 md:px-8">
         {/* Tag Filter */}
         <div className="mb-8">
-          <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
+          <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">
             Filter by topic
           </h2>
           <BlogTagFilter
@@ -63,18 +63,18 @@ export function BlogsContent({ blogs, tags }: BlogsContentProps) {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="rounded-full bg-white/5 p-6">
+            <div className="rounded-full bg-foreground/5 p-6">
               <BookOpen className="h-12 w-12 text-gray-600" />
             </div>
-            <h3 className="mt-6 text-xl font-semibold text-gray-300">
+            <h3 className="mt-6 text-xl font-semibold text-muted-foreground">
               No posts found
             </h3>
-            <p className="mt-2 text-gray-500">
+            <p className="mt-2 text-muted-foreground">
               No blog posts match the selected filter.
             </p>
             <button
               onClick={() => setSelectedTag(null)}
-              className="mt-4 text-purple-400 hover:text-purple-300"
+              className="mt-4 text-primary hover:text-primary"
             >
               Clear filter
             </button>

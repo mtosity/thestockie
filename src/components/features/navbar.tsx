@@ -83,8 +83,8 @@ function NavLink({
       className={cn(
         "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 text-sm font-medium transition-colors lg:px-3",
         isActive(href, pathname)
-          ? "bg-white/10 text-white"
-          : "text-gray-300 hover:bg-white/10 hover:text-white",
+          ? "bg-foreground/10 text-foreground"
+          : "text-muted-foreground hover:bg-accent hover:text-foreground",
       )}
     >
       <Icon className="h-4 w-4 shrink-0" />
@@ -105,8 +105,8 @@ function MoreMenu({ pathname }: { pathname: string }) {
           className={cn(
             "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 text-sm font-medium transition-colors lg:px-3",
             anySecondaryActive
-              ? "bg-white/10 text-white"
-              : "text-gray-300 hover:bg-white/10 hover:text-white",
+              ? "bg-foreground/10 text-foreground"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground",
           )}
         >
           <MoreHorizontal className="h-4 w-4 shrink-0" />
@@ -124,8 +124,8 @@ function MoreMenu({ pathname }: { pathname: string }) {
               className={cn(
                 "flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm",
                 isActive(href, pathname)
-                  ? "bg-white/10 text-white"
-                  : "text-gray-300 hover:bg-white/10 hover:text-white",
+                  ? "bg-foreground/10 text-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
               )}
             >
               <Icon className="h-4 w-4" />
@@ -150,8 +150,8 @@ function MobileMoreMenu({ pathname }: { pathname: string }) {
           className={cn(
             "flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors",
             anySecondaryActive
-              ? "bg-white/10 text-white"
-              : "text-gray-300 hover:bg-white/10 hover:text-white",
+              ? "bg-foreground/10 text-foreground"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground",
           )}
         >
           <MoreHorizontal className="h-3.5 w-3.5" />
@@ -171,8 +171,8 @@ function MobileMoreMenu({ pathname }: { pathname: string }) {
               className={cn(
                 "flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm",
                 isActive(href, pathname)
-                  ? "bg-white/10 text-white"
-                  : "text-gray-300 hover:bg-white/10 hover:text-white",
+                  ? "bg-foreground/10 text-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
               )}
             >
               <Icon className="h-4 w-4" />
@@ -190,7 +190,7 @@ export function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-background/95 px-2 py-3 backdrop-blur-xs">
+    <nav className="sticky top-0 z-50 border-b border-border bg-background/95 px-2 py-3 backdrop-blur-xs">
       {/* Row 1: Left (market indices) | Center (search, home only) | Right (nav links + auth) */}
       <div className="flex items-center">
         {/* Left: Market Indices - only on xl screens */}
@@ -206,7 +206,7 @@ export function Navbar() {
             <Search />
           </div>
         ) : (
-          <h1 className="shrink-0 text-base font-semibold text-white">
+          <h1 className="shrink-0 text-base font-semibold text-foreground">
             {getPageTitle(pathname)}
           </h1>
         )}
@@ -227,7 +227,7 @@ export function Navbar() {
           {/* Auth button */}
           <Link
             href={session ? "/api/auth/signout" : "/api/auth/signin"}
-            className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-purple-500 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-600"
+            className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             {session ? (
               <LogOut className="h-4 w-4" />
@@ -250,8 +250,8 @@ export function Navbar() {
             className={cn(
               "flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors",
               isActive(href, pathname)
-                ? "bg-white/10 text-white"
-                : "text-gray-300 hover:bg-white/10 hover:text-white",
+                ? "bg-foreground/10 text-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
           >
             <Icon className="h-3.5 w-3.5" />

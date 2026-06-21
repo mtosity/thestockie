@@ -61,7 +61,7 @@ function isToday(dateStr: string): boolean {
 function CompanyLogo({ symbol }: { symbol: string }) {
   const [failed, setFailed] = useState(false);
   return failed ? (
-    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white/10 text-xs font-bold text-gray-300">
+    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-foreground/10 text-xs font-bold text-muted-foreground">
       {symbol.slice(0, 2)}
     </div>
   ) : (
@@ -146,7 +146,7 @@ export function EarningsCalendar() {
   const weekLabel = `${weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${weekEnd.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
 
   return (
-    <div className="min-h-screen bg-background pb-20 text-white">
+    <div className="min-h-screen bg-background pb-20 text-foreground">
       <div className="px-4 pt-4">
         {/* Controls row */}
         <div className="mb-4 flex flex-col gap-3">
@@ -156,7 +156,7 @@ export function EarningsCalendar() {
               variant="outline"
               size="sm"
               onClick={goToPrevWeek}
-              className="border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/20"
+              className="border-border bg-foreground/10 text-foreground hover:border-border hover:bg-accent"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -166,7 +166,7 @@ export function EarningsCalendar() {
               </span>
               <button
                 onClick={goToCurrentWeek}
-                className="text-xs text-purple-400 transition-colors hover:text-purple-300"
+                className="text-xs text-primary transition-colors hover:text-primary"
               >
                 This week
               </button>
@@ -175,7 +175,7 @@ export function EarningsCalendar() {
               variant="outline"
               size="sm"
               onClick={goToNextWeek}
-              className="border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/20"
+              className="border-border bg-foreground/10 text-foreground hover:border-border hover:bg-accent"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -184,7 +184,7 @@ export function EarningsCalendar() {
           {/* Filters row — wraps on small screens */}
           <div className="flex flex-wrap items-center justify-center gap-2">
             {/* Market cap filter */}
-            <div className="flex items-center gap-0.5 rounded-lg bg-white/5 p-1">
+            <div className="flex items-center gap-0.5 rounded-lg bg-foreground/5 p-1">
               {([0, 1e9, 10e9, 100e9] as const).map((cap) => (
                 <button
                   key={cap}
@@ -194,8 +194,8 @@ export function EarningsCalendar() {
                   }}
                   className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${
                     minMarketCap === cap
-                      ? "bg-purple-600 text-white"
-                      : "text-gray-400 hover:text-white"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {cap === 0
@@ -210,7 +210,7 @@ export function EarningsCalendar() {
             </div>
 
             {/* US / Global toggle */}
-            <div className="flex items-center gap-0.5 rounded-lg bg-white/5 p-1">
+            <div className="flex items-center gap-0.5 rounded-lg bg-foreground/5 p-1">
               <button
                 onClick={() => {
                   setUsOnly(true);
@@ -218,8 +218,8 @@ export function EarningsCalendar() {
                 }}
                 className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${
                   usOnly
-                    ? "bg-purple-600 text-white"
-                    : "text-gray-400 hover:text-white"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 🇺🇸 US Only
@@ -231,8 +231,8 @@ export function EarningsCalendar() {
                 }}
                 className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${
                   !usOnly
-                    ? "bg-purple-600 text-white"
-                    : "text-gray-400 hover:text-white"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Global
@@ -249,10 +249,10 @@ export function EarningsCalendar() {
           </div>
         ) : data && Object.keys(data).length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
-            <p className="text-lg font-semibold text-gray-300">
+            <p className="text-lg font-semibold text-muted-foreground">
               No earnings data available
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Earnings data is typically available up to ~2 weeks ahead.
             </p>
           </div>
@@ -270,29 +270,29 @@ export function EarningsCalendar() {
                   key={dateStr}
                   className={`flex flex-col rounded-lg border ${
                     today
-                      ? "border-purple-500/60 bg-purple-900/10"
+                      ? "border-primary/60 bg-primary/10"
                       : "border-border bg-background"
                   }`}
                 >
                   {/* Day header */}
                   <div
                     className={`flex items-center justify-between rounded-t-lg px-3 py-2 ${
-                      today ? "bg-purple-500/20" : "bg-white/5"
+                      today ? "bg-primary/20" : "bg-foreground/5"
                     }`}
                   >
                     <div>
                       <div
-                        className={`text-xs font-semibold uppercase tracking-wide ${today ? "text-purple-300" : "text-gray-400"}`}
+                        className={`text-xs font-semibold uppercase tracking-wide ${today ? "text-primary" : "text-muted-foreground"}`}
                       >
                         {label.weekday}
                       </div>
                       <div
-                        className={`text-sm font-bold ${today ? "text-purple-200" : "text-white"}`}
+                        className={`text-sm font-bold ${today ? "text-primary" : "text-foreground"}`}
                       >
                         {label.date}
                       </div>
                     </div>
-                    <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-gray-300">
+                    <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-xs text-muted-foreground">
                       {companies.length}
                     </span>
                   </div>
@@ -303,7 +303,7 @@ export function EarningsCalendar() {
                     style={{ maxHeight: "calc(100vh - 260px)" }}
                   >
                     {companies.length === 0 ? (
-                      <div className="flex h-16 items-center justify-center text-xs text-gray-500">
+                      <div className="flex h-16 items-center justify-center text-xs text-muted-foreground">
                         No earnings
                       </div>
                     ) : (
@@ -321,7 +321,7 @@ export function EarningsCalendar() {
                           if (group.length === 0) return null;
                           return (
                             <div key={groupLabel}>
-                              <div className="border-b border-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+                              <div className="border-b border-border px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                                 {groupLabel}
                               </div>
                               <div
@@ -334,11 +334,11 @@ export function EarningsCalendar() {
                                 {group.map((company, idx) => (
                                   <div
                                     key={`${company.symbol}-${idx}`}
-                                    className="flex max-w-[80px] flex-col items-center gap-1 rounded-md p-1 transition-colors hover:bg-white/5"
+                                    className="flex max-w-[80px] flex-col items-center gap-1 rounded-md p-1 transition-colors hover:bg-accent"
                                     title={company.name}
                                   >
                                     <CompanyLogo symbol={company.symbol} />
-                                    <span className="w-full truncate text-center font-mono text-[11px] font-semibold text-purple-300">
+                                    <span className="w-full truncate text-center font-mono text-[11px] font-semibold text-primary">
                                       {company.symbol}
                                     </span>
                                   </div>
@@ -373,18 +373,18 @@ function DayColumnSkeleton({ dateStr }: { dateStr: string }) {
   const today = isToday(dateStr);
   return (
     <div
-      className={`rounded-lg border ${today ? "border-purple-500/60 bg-purple-900/10" : "border-border bg-background"}`}
+      className={`rounded-lg border ${today ? "border-primary/60 bg-primary/10" : "border-border bg-background"}`}
     >
       <div
-        className={`flex items-center justify-between rounded-t-lg px-3 py-2 ${today ? "bg-purple-500/20" : "bg-white/5"}`}
+        className={`flex items-center justify-between rounded-t-lg px-3 py-2 ${today ? "bg-primary/20" : "bg-foreground/5"}`}
       >
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {label.weekday}
           </div>
           <div className="text-sm font-bold">{label.date}</div>
         </div>
-        <div className="h-5 w-6 animate-pulse rounded-full bg-white/10" />
+        <div className="h-5 w-6 animate-pulse rounded-full bg-foreground/10" />
       </div>
       <div
         className="grid gap-0 p-2"
@@ -395,8 +395,8 @@ function DayColumnSkeleton({ dateStr }: { dateStr: string }) {
             key={i}
             className="flex max-w-[80px] flex-col items-center gap-1 p-1"
           >
-            <div className="h-10 w-10 animate-pulse rounded-md bg-white/10" />
-            <div className="h-2.5 w-8 animate-pulse rounded bg-white/10" />
+            <div className="h-10 w-10 animate-pulse rounded-md bg-foreground/10" />
+            <div className="h-2.5 w-8 animate-pulse rounded bg-foreground/10" />
           </div>
         ))}
       </div>

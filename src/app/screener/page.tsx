@@ -153,7 +153,7 @@ function ScreenerContent() {
     };
 
   return (
-    <div className="min-h-screen bg-background pb-20 text-white">
+    <div className="min-h-screen bg-background pb-20 text-foreground">
       <div className="px-4 pt-4">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Screener</h1>

@@ -69,7 +69,7 @@ export function Search() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="justify-between border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+          className="justify-between border-border bg-foreground/10 text-foreground hover:bg-accent hover:text-foreground"
         >
           <p className="w-32 overflow-hidden text-ellipsis whitespace-nowrap sm:w-64">
             {stocks && !!symbol && !open
@@ -81,9 +81,9 @@ export function Search() {
           </p>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="border-white/10 bg-background p-0 text-white">
+      <PopoverContent className="border-border bg-background p-0 text-foreground">
         <Command
-          className="bg-background text-white"
+          className="bg-background text-foreground"
           shouldFilter={
             !!isReady && !!stocks?.length && !!debouncedSearch?.length
           }
@@ -101,8 +101,8 @@ export function Search() {
         >
           <CommandInput
             placeholder="Search stock..."
-            className="h-9 text-white placeholder:text-white/50"
-            containerClassName="border-white/10"
+            className="h-9 text-foreground placeholder:text-foreground/50"
+            containerClassName="border-border"
             value={search}
             onValueChange={(value) => setSearch(value)}
           />
@@ -122,7 +122,7 @@ export function Search() {
                       key={stock.value}
                       value={stock.value}
                       keywords={[stock.value, stock.label]}
-                      className="text-white hover:bg-white/10 aria-selected:bg-white/10"
+                      className="text-foreground hover:bg-accent aria-selected:bg-foreground/10"
                       onSelect={(currentValue) => {
                         setSymbol(currentValue);
 

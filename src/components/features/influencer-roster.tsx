@@ -30,24 +30,24 @@ function Row({ inf }: { inf: Influencer }) {
       href={channelUrl(inf)}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-white/5"
+      className="group flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-accent"
     >
       <Avatar className="h-9 w-9 shrink-0">
         {inf.avatar && <AvatarImage src={inf.avatar} alt={inf.name} />}
-        <AvatarFallback className="bg-purple-500/20 text-xs text-purple-200">
+        <AvatarFallback className="bg-primary/20 text-xs text-primary">
           {initials(inf.name)}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="truncate font-medium text-white group-hover:underline">
+          <span className="truncate font-medium text-foreground group-hover:underline">
             {inf.name}
           </span>
           <Youtube className="h-3.5 w-3.5 shrink-0 text-rose-400" />
         </div>
-        {inf.handle && <p className="truncate text-xs text-gray-500">{inf.handle}</p>}
+        {inf.handle && <p className="truncate text-xs text-muted-foreground">{inf.handle}</p>}
       </div>
-      <div className="shrink-0 text-right text-xs text-gray-400">
+      <div className="shrink-0 text-right text-xs text-muted-foreground">
         <div>{inf.videoCount} videos</div>
         <div className="text-gray-600">{formatRelative(inf.lastPublishedAt)}</div>
       </div>
@@ -61,13 +61,13 @@ export function InfluencerRoster({
   influencers: Influencer[];
 }) {
   return (
-    <Card className="border-white/10 bg-white/5 text-white">
+    <Card className="border-border bg-foreground/5 text-foreground">
       <CardHeader className="pb-3">
         <h2 className="text-sm font-semibold">Tracked creators ({(influencers?.length ?? 0)})</h2>
       </CardHeader>
       <CardContent className="space-y-0.5">
         {(influencers?.length ?? 0) === 0 ? (
-          <p className="py-6 text-center text-sm text-gray-500">
+          <p className="py-6 text-center text-sm text-muted-foreground">
             No creators yet.
           </p>
         ) : (

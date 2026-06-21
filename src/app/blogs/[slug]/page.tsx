@@ -108,7 +108,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <main className="min-h-screen bg-background text-white">
+      <main className="min-h-screen bg-background text-foreground">
         {/* Hero Image */}
         <div className="relative h-64 w-full md:h-80 lg:h-96">
           <Image
@@ -120,13 +120,13 @@ export default async function BlogPage({ params }: BlogPageProps) {
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-linear-to-t from-background via-background/40 to-transparent" />
-          <span className="absolute bottom-3 right-4 text-xs text-white/40">
+          <span className="absolute bottom-3 right-4 text-xs text-foreground/40">
             Photo via Unsplash
           </span>
         </div>
 
         {/* Article Header */}
-        <header className="border-b border-white/10 px-4 py-12 md:px-8 md:py-16">
+        <header className="border-b border-border px-4 py-12 md:px-8 md:py-16">
           <div className="mx-auto max-w-4xl">
             {/* Tags */}
             <div className="mb-6 flex flex-wrap gap-2">
@@ -134,7 +134,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
                 <Badge
                   key={tag}
                   variant="secondary"
-                  className="bg-purple-500/20 text-purple-300"
+                  className="bg-primary/20 text-primary"
                 >
                   {tag}
                 </Badge>
@@ -147,10 +147,10 @@ export default async function BlogPage({ params }: BlogPageProps) {
             </h1>
 
             {/* Excerpt */}
-            <p className="mt-6 text-lg text-gray-400">{frontmatter.excerpt}</p>
+            <p className="mt-6 text-lg text-muted-foreground">{frontmatter.excerpt}</p>
 
             {/* Meta */}
-            <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-gray-500">
+            <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 <time dateTime={frontmatter.publishedAt}>
@@ -167,21 +167,21 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
         {/* Article Content */}
         <article className="px-4 py-12 md:px-8">
-          <div className="prose prose-purple prose-invert mx-auto max-w-4xl prose-headings:text-white prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-gray-300 prose-a:text-purple-400 prose-a:no-underline prose-a:hover:text-purple-300 prose-blockquote:border-purple-500 prose-blockquote:text-gray-400 prose-strong:text-white prose-code:text-purple-300 prose-pre:border prose-pre:border-white/10 prose-pre:bg-white/5 prose-li:text-gray-300 prose-table:text-gray-300 prose-th:border-white/10 prose-th:text-white prose-td:border-white/10">
+          <div className="prose prose-purple prose-invert mx-auto max-w-4xl prose-headings:text-foreground prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-muted-foreground prose-a:text-primary prose-a:no-underline prose-a:hover:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground prose-strong:text-foreground prose-code:text-primary prose-pre:border prose-pre:border-border prose-pre:bg-foreground/5 prose-li:text-muted-foreground prose-table:text-muted-foreground prose-th:border-border prose-th:text-foreground prose-td:border-border">
             <BlogContent content={content} />
           </div>
         </article>
 
         {/* Related Posts / CTA */}
-        <section className="border-t border-white/10 px-4 py-12 md:px-8">
+        <section className="border-t border-border px-4 py-12 md:px-8">
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="text-2xl font-bold">Continue Learning</h2>
-            <p className="mt-2 text-gray-400">
+            <p className="mt-2 text-muted-foreground">
               Explore more articles to improve your investment knowledge.
             </p>
             <Link
               href="/blogs"
-              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-purple-500 px-6 py-3 font-medium text-white transition-colors hover:bg-purple-600"
+              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               View All Posts
             </Link>

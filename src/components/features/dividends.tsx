@@ -30,8 +30,8 @@ const PeriodToggle = ({
       className={cn(
         "px-3 py-1 transition-colors",
         period === "quarterly"
-          ? "bg-secondary text-white"
-          : "text-gray-400 hover:text-gray-200",
+          ? "bg-secondary text-foreground"
+          : "text-muted-foreground hover:text-gray-200",
       )}
     >
       Quarterly
@@ -41,8 +41,8 @@ const PeriodToggle = ({
       className={cn(
         "px-3 py-1 transition-colors",
         period === "ttm"
-          ? "bg-secondary text-white"
-          : "text-gray-400 hover:text-gray-200",
+          ? "bg-secondary text-foreground"
+          : "text-muted-foreground hover:text-gray-200",
       )}
     >
       TTM

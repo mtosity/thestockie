@@ -1,72 +1,11 @@
 @import "tailwindcss";
-@import "@mtosity/design-system/tokens.css";
+@import "@mtosity/design-system/shadcn.css";
 
 @plugin "tailwindcss-animate";
 @plugin "@tailwindcss/typography";
 
-/*
-  Bridge: map shadcn's semantic tokens onto the @mtosity/design-system palette
-  (--bg / --fg / --accent / --muted / --border-light …). Those source vars flip
-  automatically under [data-theme="dark"] (provided by the package), so every
-  shadcn component re-skins for free in both themes.
-
-  Semantic choices for the brutalist look:
-  - primary  = lime accent (prominent buttons / active states)
-  - accent   = subtle surface (shadcn uses it for hover states)
-  - borders  = the soft border, not the near-black/cream hard border
-*/
+/* shadcn accordion animations */
 @theme {
-  --color-background: var(--bg);
-  --color-foreground: var(--fg);
-
-  --color-card: var(--bg-secondary);
-  --color-card-foreground: var(--fg);
-
-  --color-popover: var(--bg-secondary);
-  --color-popover-foreground: var(--fg);
-
-  --color-primary: var(--accent);
-  --color-primary-foreground: var(--accent-fg);
-
-  --color-secondary: var(--bg-secondary);
-  --color-secondary-foreground: var(--fg);
-
-  --color-muted: var(--bg-secondary);
-  --color-muted-foreground: var(--muted);
-
-  --color-accent: var(--bg-secondary);
-  --color-accent-foreground: var(--fg);
-
-  --color-destructive: var(--danger);
-  --color-destructive-foreground: #ffffff;
-
-  --color-border: var(--border-light);
-  --color-input: var(--border-light);
-  --color-ring: var(--accent);
-
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-
-  --color-sidebar: var(--bg-secondary);
-  --color-sidebar-foreground: var(--fg);
-  --color-sidebar-primary: var(--accent);
-  --color-sidebar-primary-foreground: var(--accent-fg);
-  --color-sidebar-accent: var(--bg);
-  --color-sidebar-accent-foreground: var(--fg);
-  --color-sidebar-border: var(--border-light);
-  --color-sidebar-ring: var(--accent);
-
-  /* Brutalist: square corners */
-  --radius-lg: 0px;
-  --radius-md: 0px;
-  --radius-sm: 0px;
-
-  /* Inter is the brand sans (provided via next/font as --font-inter) */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
@@ -85,44 +24,6 @@
     to {
       height: 0;
     }
-  }
-}
-
-/*
-  Data-viz palette (legible on both warm-black and cream backgrounds).
-  Kept separate from the brand palette so charts stay distinguishable.
-*/
-:root {
-  --chart-1: #a3e635;
-  --chart-2: #38bdf8;
-  --chart-3: #fbbf24;
-  --chart-4: #f06a7e;
-  --chart-5: #a78bfa;
-  --radius: 0px;
-}
-
-/*
-  The package's tokens.css hard-sets --color-accent / --color-border /
-  --color-muted (with a [data-theme="dark"] override) for its OWN utilities.
-  Those names collide with shadcn's, so re-assert our mapping at matching
-  specificity for the dark theme.
-*/
-[data-theme="dark"] {
-  --color-accent: var(--bg-secondary);
-  --color-accent-foreground: var(--fg);
-  --color-border: var(--border-light);
-  --color-input: var(--border-light);
-  --color-muted: var(--bg-secondary);
-  --color-muted-foreground: var(--muted);
-}
-
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-border, currentcolor);
   }
 }
 

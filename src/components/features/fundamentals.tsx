@@ -30,12 +30,12 @@ const Row = ({
   color?: string;
 }) => (
   <div className="flex items-baseline justify-between gap-1">
-    <span className="shrink-0 text-xs text-gray-400">{label}</span>
+    <span className="shrink-0 text-xs text-muted-foreground">{label}</span>
     <div className="text-right">
       <span className={`font-mono text-sm font-medium ${color ?? "text-gray-200"}`}>
         {value}
       </span>
-      {sub && <div className="text-[10px] text-gray-500">{sub}</div>}
+      {sub && <div className="text-[10px] text-muted-foreground">{sub}</div>}
     </div>
   </div>
 );

@@ -509,17 +509,17 @@ function StockSearchPopover({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className="flex h-full min-h-[120px] w-[180px] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 transition-all hover:border-purple-400/60 hover:bg-white/5">
-          <Plus className="h-6 w-6 text-gray-400" />
-          <span className="text-xs text-gray-400">Add Stock</span>
+        <button className="flex h-full min-h-[120px] w-[180px] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border transition-all hover:border-primary/60 hover:bg-accent">
+          <Plus className="h-6 w-6 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Add Stock</span>
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[300px] border-white/10 bg-background p-0 text-white"
+        className="w-[300px] border-border bg-background p-0 text-foreground"
         align="start"
       >
         <Command
-          className="bg-background text-white"
+          className="bg-background text-foreground"
           shouldFilter={
             !!isReady && !!stocks?.length && !!debouncedSearch?.length
           }
@@ -535,8 +535,8 @@ function StockSearchPopover({
         >
           <CommandInput
             placeholder="Search stocks..."
-            className="h-9 text-white placeholder:text-white/50"
-            containerClassName="border-white/10"
+            className="h-9 text-foreground placeholder:text-foreground/50"
+            containerClassName="border-border"
             value={search}
             onValueChange={setSearch}
           />
@@ -545,7 +545,7 @@ function StockSearchPopover({
             {isLoading ? (
               <CommandLoading>
                 <div className="flex justify-center py-6">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-purple-400 border-t-transparent" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
               </CommandLoading>
             ) : (
@@ -555,7 +555,7 @@ function StockSearchPopover({
                     key={stock.value}
                     value={stock.value}
                     keywords={[stock.value, stock.label]}
-                    className="text-white hover:bg-white/10 aria-selected:bg-white/10"
+                    className="text-foreground hover:bg-accent aria-selected:bg-foreground/10"
                     onSelect={(val) => {
                       onSelect(val.toUpperCase());
                       setOpen(false);
@@ -578,13 +578,13 @@ function StockSearchPopover({
 
 function StockHeaderSkeleton() {
   return (
-    <div className="flex w-[180px] animate-pulse flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-4">
-      <div className="h-10 w-10 rounded-lg bg-white/10" />
-      <div className="h-4 w-12 rounded bg-white/10" />
-      <div className="h-3 w-20 rounded bg-white/10" />
-      <div className="h-3 w-24 rounded bg-white/10" />
-      <div className="h-3 w-14 rounded bg-white/10" />
-      <div className="h-3 w-20 rounded bg-white/10" />
+    <div className="flex w-[180px] animate-pulse flex-col items-center gap-2 rounded-xl border border-border bg-foreground/5 px-3 py-4">
+      <div className="h-10 w-10 rounded-lg bg-foreground/10" />
+      <div className="h-4 w-12 rounded bg-foreground/10" />
+      <div className="h-3 w-20 rounded bg-foreground/10" />
+      <div className="h-3 w-24 rounded bg-foreground/10" />
+      <div className="h-3 w-14 rounded bg-foreground/10" />
+      <div className="h-3 w-20 rounded bg-foreground/10" />
     </div>
   );
 }
@@ -594,7 +594,7 @@ function StockHeaderSkeleton() {
 function MetricCellSkeleton() {
   return (
     <td className="px-3 py-2 text-center">
-      <div className="mx-auto h-5 w-16 animate-pulse rounded bg-white/10" />
+      <div className="mx-auto h-5 w-16 animate-pulse rounded bg-foreground/10" />
     </td>
   );
 }
@@ -610,10 +610,10 @@ function StockHeader({
 }) {
   const [imgFailed, setImgFailed] = useState(false);
   return (
-    <div className="group relative flex w-[180px] flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-4 transition-all hover:border-purple-400/30">
+    <div className="group relative flex w-[180px] flex-col items-center gap-2 rounded-xl border border-border bg-foreground/5 px-3 py-4 transition-all hover:border-primary/30">
       <button
         onClick={onRemove}
-        className="absolute -right-2 -top-2 hidden rounded-full bg-red-500/90 p-1 text-white transition-all hover:bg-red-400 group-hover:block"
+        className="absolute -right-2 -top-2 hidden rounded-full bg-red-500/90 p-1 text-foreground transition-all hover:bg-red-400 group-hover:block"
       >
         <X className="h-3 w-3" />
       </button>
@@ -627,12 +627,12 @@ function StockHeader({
           onError={() => setImgFailed(true)}
         />
       ) : (
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/20 text-sm font-bold text-purple-300">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20 text-sm font-bold text-primary">
           {stock.symbol.slice(0, 2)}
         </div>
       )}
-      <span className="text-sm font-bold text-white">{stock.symbol}</span>
-      <span className="max-w-[160px] truncate text-center text-[10px] text-gray-400">
+      <span className="text-sm font-bold text-foreground">{stock.symbol}</span>
+      <span className="max-w-[160px] truncate text-center text-[10px] text-muted-foreground">
         {stock.name}
       </span>
       <div className="flex items-center gap-1">
@@ -649,10 +649,10 @@ function StockHeader({
           {stock.changesPercentage.toFixed(2)}%
         </span>
       </div>
-      <div className="flex gap-2 text-[9px] text-gray-500">
+      <div className="flex gap-2 text-[9px] text-muted-foreground">
         <span>{stock.sector}</span>
       </div>
-      <span className="font-mono text-[10px] text-gray-400">
+      <span className="font-mono text-[10px] text-muted-foreground">
         MCap: {formatLargeNumber(stock.marketCap)}
       </span>
     </div>
@@ -731,9 +731,9 @@ function SuggestedPeers({
   if (allPeers.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+    <div className="rounded-xl border border-border bg-foreground/5 p-4">
       <div className="mb-3 flex items-center gap-2">
-        <Users className="h-4 w-4 text-purple-400" />
+        <Users className="h-4 w-4 text-primary" />
         <span className="text-sm font-semibold text-gray-200">
           Suggested Competitors
         </span>
@@ -743,7 +743,7 @@ function SuggestedPeers({
           <button
             key={peer}
             onClick={() => onAdd(peer)}
-            className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-gray-300 transition-all hover:border-purple-400/40 hover:bg-purple-500/10 hover:text-white"
+            className="flex items-center gap-1.5 rounded-lg border border-border bg-foreground/5 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/10 hover:text-foreground"
           >
             <Plus className="h-3 w-3" />
             {peer}
@@ -892,22 +892,22 @@ export function StockComparison() {
 
       {/* Comparison table */}
       {totalColumns > 0 && (
-        <div className="overflow-x-auto rounded-xl border border-white/10">
+        <div className="overflow-x-auto rounded-xl border border-border">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5">
-                <th className="sticky left-0 z-10 min-w-[200px] bg-[#1a1b35] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <tr className="border-b border-border bg-foreground/5">
+                <th className="sticky left-0 z-10 min-w-[200px] bg-[#1a1b35] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Metric
                 </th>
                 {symbols.map((s) => (
                   <th
                     key={s}
-                    className="min-w-[140px] px-3 py-3 text-center text-sm font-bold text-white"
+                    className="min-w-[140px] px-3 py-3 text-center text-sm font-bold text-foreground"
                   >
                     {s}
                   </th>
                 ))}
-                <th className="min-w-[180px] px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <th className="min-w-[180px] px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Benchmark
                 </th>
               </tr>
@@ -919,7 +919,7 @@ export function StockComparison() {
                   <React.Fragment key={section.title}>
                     {/* Section header row */}
                     <tr
-                      className="cursor-pointer border-b border-white/5 bg-purple-500/5 transition-colors hover:bg-purple-500/10"
+                      className="cursor-pointer border-b border-border bg-primary/5 transition-colors hover:bg-primary/10"
                       onClick={() => toggleSection(section.title)}
                     >
                       <td
@@ -927,16 +927,16 @@ export function StockComparison() {
                         className="sticky left-0 z-10 px-4 py-2.5"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-purple-400">
+                          <span className="text-primary">
                             {section.icon}
                           </span>
-                          <span className="text-sm font-semibold text-purple-300">
+                          <span className="text-sm font-semibold text-primary">
                             {section.title}
                           </span>
                           {isCollapsed ? (
-                            <ChevronDown className="h-4 w-4 text-gray-500" />
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
                           ) : (
-                            <ChevronUp className="h-4 w-4 text-gray-500" />
+                            <ChevronUp className="h-4 w-4 text-muted-foreground" />
                           )}
                         </div>
                       </td>
@@ -979,9 +979,9 @@ export function StockComparison() {
                         return (
                           <tr
                             key={metric.key}
-                            className="border-b border-white/5 transition-colors hover:bg-white/2"
+                            className="border-b border-border transition-colors hover:bg-accent"
                           >
-                            <td className="sticky left-0 z-10 bg-background px-4 py-2 text-xs text-gray-300">
+                            <td className="sticky left-0 z-10 bg-background px-4 py-2 text-xs text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 {metric.label}
                               </div>
@@ -1000,7 +1000,7 @@ export function StockComparison() {
                                 <MetricCellSkeleton key={s} />
                               ),
                             )}
-                            <td className="px-3 py-2 text-center text-[10px] text-gray-500">
+                            <td className="px-3 py-2 text-center text-[10px] text-muted-foreground">
                               {BENCHMARKS[metric.key] ?? ""}
                             </td>
                           </tr>
@@ -1012,7 +1012,7 @@ export function StockComparison() {
 
               {/* Market Data Section */}
               <tr
-                className="cursor-pointer border-b border-white/5 bg-purple-500/5 transition-colors hover:bg-purple-500/10"
+                className="cursor-pointer border-b border-border bg-primary/5 transition-colors hover:bg-primary/10"
                 onClick={() => toggleSection("__market")}
               >
                 <td
@@ -1020,14 +1020,14 @@ export function StockComparison() {
                   className="sticky left-0 z-10 px-4 py-2.5"
                 >
                   <div className="flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-purple-400" />
-                    <span className="text-sm font-semibold text-purple-300">
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-semibold text-primary">
                       Market Data
                     </span>
                     {collapsedSections.has("__market") ? (
-                      <ChevronDown className="h-4 w-4 text-gray-500" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <ChevronUp className="h-4 w-4 text-gray-500" />
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
                     )}
                   </div>
                 </td>
@@ -1043,7 +1043,7 @@ export function StockComparison() {
                       label: "52W Range",
                       render: (s: CompareStock) =>
                         `$${s.yearLow.toFixed(0)} – $${s.yearHigh.toFixed(0)}`,
-                      className: "font-mono text-xs text-gray-300",
+                      className: "font-mono text-xs text-muted-foreground",
                     },
                     {
                       label: "50-Day Avg",
@@ -1070,19 +1070,19 @@ export function StockComparison() {
                     {
                       label: "Sector",
                       render: (s: CompareStock) => s.sector || "N/A",
-                      className: "text-xs text-gray-300",
+                      className: "text-xs text-muted-foreground",
                     },
                     {
                       label: "Industry",
                       render: (s: CompareStock) => s.industry || "N/A",
-                      className: "text-xs text-gray-300",
+                      className: "text-xs text-muted-foreground",
                     },
                   ].map((row) => (
                     <tr
                       key={row.label}
-                      className="border-b border-white/5 transition-colors hover:bg-white/2"
+                      className="border-b border-border transition-colors hover:bg-accent"
                     >
-                      <td className="sticky left-0 z-10 bg-background px-4 py-2 text-xs text-gray-300">
+                      <td className="sticky left-0 z-10 bg-background px-4 py-2 text-xs text-muted-foreground">
                         {row.label}
                       </td>
                       {symbols.map((s, i) =>
@@ -1100,7 +1100,7 @@ export function StockComparison() {
                           <MetricCellSkeleton key={s} />
                         ),
                       )}
-                      <td className="px-3 py-2 text-center text-[10px] text-gray-500" />
+                      <td className="px-3 py-2 text-center text-[10px] text-muted-foreground" />
                     </tr>
                   ))}
                 </>
@@ -1114,10 +1114,10 @@ export function StockComparison() {
       {symbols.length === 0 && (
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <BarChart3 className="mb-4 h-12 w-12 text-gray-600" />
-          <h2 className="mb-2 text-lg font-semibold text-gray-300">
+          <h2 className="mb-2 text-lg font-semibold text-muted-foreground">
             Compare Stocks Side by Side
           </h2>
-          <p className="mb-6 max-w-md text-sm text-gray-500">
+          <p className="mb-6 max-w-md text-sm text-muted-foreground">
             Add up to 6 stocks to compare their fundamentals, valuations, growth
             metrics, profitability, and more.
           </p>

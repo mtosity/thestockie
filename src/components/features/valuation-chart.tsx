@@ -24,8 +24,8 @@ const TabToggle = ({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
       className={cn(
         "px-3 py-1 transition-colors",
         tab === "valuation"
-          ? "bg-secondary text-white"
-          : "text-gray-400 hover:text-gray-200",
+          ? "bg-secondary text-foreground"
+          : "text-muted-foreground hover:text-gray-200",
       )}
     >
       Valuation
@@ -35,8 +35,8 @@ const TabToggle = ({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
       className={cn(
         "px-3 py-1 transition-colors",
         tab === "ratios"
-          ? "bg-secondary text-white"
-          : "text-gray-400 hover:text-gray-200",
+          ? "bg-secondary text-foreground"
+          : "text-muted-foreground hover:text-gray-200",
       )}
     >
       Ratios

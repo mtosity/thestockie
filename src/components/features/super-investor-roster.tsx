@@ -24,21 +24,21 @@ function InvestorCard({ inv }: { inv: Investor }) {
   return (
     <Link
       href={`/investors/${inv.slug}`}
-      className="group block rounded-lg border border-white/10 bg-black/20 p-3 transition-colors hover:bg-white/5"
+      className="group block rounded-lg border border-border bg-black/20 p-3 transition-colors hover:bg-accent"
     >
       <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10 shrink-0">
           {inv.avatar && <AvatarImage src={inv.avatar} alt={inv.name} />}
-          <AvatarFallback className="bg-purple-500/20 text-xs text-purple-200">
+          <AvatarFallback className="bg-primary/20 text-xs text-primary">
             {initials(inv.name)}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <div className="truncate font-medium text-white group-hover:underline">{inv.name}</div>
-          <div className="truncate text-xs text-gray-500">{inv.firm}</div>
+          <div className="truncate font-medium text-foreground group-hover:underline">{inv.name}</div>
+          <div className="truncate text-xs text-muted-foreground">{inv.firm}</div>
         </div>
         {inv.totalValue != null && (
-          <div className="shrink-0 text-right text-xs text-gray-400">
+          <div className="shrink-0 text-right text-xs text-muted-foreground">
             {formatMoney(inv.totalValue)}
             <div className="text-gray-600">{inv.holdingsCount} pos</div>
           </div>
@@ -57,7 +57,7 @@ function InvestorCard({ inv }: { inv: Investor }) {
 
 export function InvestorRoster({ investors }: { investors: Investor[] }) {
   return (
-    <Card className="border-white/10 bg-white/5 text-white">
+    <Card className="border-border bg-foreground/5 text-foreground">
       <CardHeader className="pb-3">
         <h3 className="text-sm font-semibold">Tracked investors ({(investors?.length ?? 0)})</h3>
       </CardHeader>

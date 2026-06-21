@@ -17,19 +17,19 @@ export const InsiderTrading = () => {
   if (isLoading) {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
+        <div className="flex items-center gap-2 border-b border-border px-4 py-2">
           <ShieldAlert className="h-4 w-4 text-orange-400" />
           <span className="text-sm font-semibold text-gray-200">Insider Trading</span>
         </div>
         <div className="flex-1 space-y-2 p-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="flex animate-pulse items-center gap-3">
-              <div className="h-6 w-6 rounded-full bg-white/10" />
+              <div className="h-6 w-6 rounded-full bg-foreground/10" />
               <div className="flex-1 space-y-1">
-                <div className="h-3 w-24 rounded bg-white/10" />
-                <div className="h-2.5 w-16 rounded bg-white/10" />
+                <div className="h-3 w-24 rounded bg-foreground/10" />
+                <div className="h-2.5 w-16 rounded bg-foreground/10" />
               </div>
-              <div className="h-3 w-14 rounded bg-white/10" />
+              <div className="h-3 w-14 rounded bg-foreground/10" />
             </div>
           ))}
         </div>
@@ -40,11 +40,11 @@ export const InsiderTrading = () => {
   if (!data?.length) {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
+        <div className="flex items-center gap-2 border-b border-border px-4 py-2">
           <ShieldAlert className="h-4 w-4 text-orange-400" />
           <span className="text-sm font-semibold text-gray-200">Insider Trading</span>
         </div>
-        <div className="flex flex-1 items-center justify-center text-sm text-gray-500">
+        <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
           No insider trading data
         </div>
       </div>
@@ -62,13 +62,13 @@ export const InsiderTrading = () => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <ShieldAlert className="h-4 w-4 text-orange-400" />
         <span className="text-sm font-semibold text-gray-200">Insider Trading</span>
       </div>
 
       {/* Summary bar */}
-      <div className="grid grid-cols-2 gap-2 border-b border-white/5 px-4 py-2">
+      <div className="grid grid-cols-2 gap-2 border-b border-border px-4 py-2">
         <div className="rounded-md bg-green-500/10 px-3 py-1.5 text-center">
           <div className="text-[10px] uppercase text-green-400">Buys (12m)</div>
           <div className="font-mono text-sm font-bold text-green-300">
@@ -97,7 +97,7 @@ export const InsiderTrading = () => {
           return (
             <div
               key={`${trade.reportingName}-${trade.transactionDate}-${idx}`}
-              className="flex items-start gap-2 border-b border-white/5 px-3 py-1.5 transition-colors hover:bg-white/5"
+              className="flex items-start gap-2 border-b border-border px-3 py-1.5 transition-colors hover:bg-accent"
             >
               <div className="mt-0.5">
                 {isBuy ? (
@@ -111,11 +111,11 @@ export const InsiderTrading = () => {
                   <span className="truncate text-xs font-medium text-gray-200">
                     {trade.reportingName}
                   </span>
-                  <span className="shrink-0 text-[10px] text-gray-500">
+                  <span className="shrink-0 text-[10px] text-muted-foreground">
                     ({trade.typeOfOwner})
                   </span>
                 </div>
-                <div className="text-[10px] text-gray-500">
+                <div className="text-[10px] text-muted-foreground">
                   {trade.transactionType} &middot;{" "}
                   {format(new Date(trade.transactionDate), "MMM d, yyyy")}
                 </div>
@@ -128,7 +128,7 @@ export const InsiderTrading = () => {
                 >
                   {value > 0 ? `${isBuy ? "+" : "-"}$${formatLargeNumber(value)}` : "Unknown"}
                 </div>
-                <div className="font-mono text-[10px] text-gray-500">
+                <div className="font-mono text-[10px] text-muted-foreground">
                   {formatLargeNumber(trade.securitiesTransacted)} @{" "}
                   {trade.price > 0 ? `$${trade.price.toFixed(2)}` : "Unknown"}
                 </div>

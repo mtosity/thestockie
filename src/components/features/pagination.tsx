@@ -58,21 +58,21 @@ export function Pagination({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-white/10 z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
       <div className="container mx-auto px-2 sm:px-4">
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between py-4">
           <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-400">
+            <div className="text-sm text-muted-foreground">
               Showing {startItem} to {endItem} of {total} results
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">Rows per page:</span>
+              <span className="text-sm text-muted-foreground">Rows per page:</span>
               <Select
                 value={limit.toString()}
                 onValueChange={(value) => onLimitChange(parseInt(value))}
               >
-                <SelectTrigger className="w-20 h-8 bg-white/10 border-white/20 text-white">
+                <SelectTrigger className="w-20 h-8 bg-foreground/10 border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -91,7 +91,7 @@ export function Pagination({
               size="sm"
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage <= 1 || isLoading}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 disabled:bg-white/5 disabled:text-gray-400 disabled:border-white/10"
+              className="bg-foreground/10 border-border text-foreground hover:bg-accent hover:border-border disabled:bg-foreground/5 disabled:text-muted-foreground disabled:border-border"
             >
               Previous
             </Button>
@@ -100,7 +100,7 @@ export function Pagination({
               {getVisiblePages().map((page, index) => (
                 <div key={index}>
                   {page === "..." ? (
-                    <span className="px-2 py-1 text-gray-400">...</span>
+                    <span className="px-2 py-1 text-muted-foreground">...</span>
                   ) : (
                     <Button
                       variant={currentPage === page ? "default" : "outline"}
@@ -109,8 +109,8 @@ export function Pagination({
                       disabled={isLoading}
                       className={
                         currentPage === page
-                          ? "bg-white text-background hover:bg-gray-200"
-                          : "bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30"
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                          : "bg-foreground/10 border-border text-foreground hover:bg-accent hover:border-border"
                       }
                     >
                       {page}
@@ -125,7 +125,7 @@ export function Pagination({
               size="sm"
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage >= totalPages || isLoading}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 disabled:bg-white/5 disabled:text-gray-400 disabled:border-white/10"
+              className="bg-foreground/10 border-border text-foreground hover:bg-accent hover:border-border disabled:bg-foreground/5 disabled:text-muted-foreground disabled:border-border"
             >
               Next
             </Button>
@@ -135,16 +135,16 @@ export function Pagination({
         {/* Mobile Layout */}
         <div className="md:hidden py-3 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-muted-foreground">
               {startItem}-{endItem} of {total}
             </div>
             <div className="flex items-center gap-1">
-              <span className="text-xs text-gray-400">Per page:</span>
+              <span className="text-xs text-muted-foreground">Per page:</span>
               <Select
                 value={limit.toString()}
                 onValueChange={(value) => onLimitChange(parseInt(value))}
               >
-                <SelectTrigger className="w-16 h-7 bg-white/10 border-white/20 text-white text-xs">
+                <SelectTrigger className="w-16 h-7 bg-foreground/10 border-border text-foreground text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -163,7 +163,7 @@ export function Pagination({
               size="sm"
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage <= 1 || isLoading}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 disabled:bg-white/5 disabled:text-gray-400 disabled:border-white/10 text-xs px-2 h-7"
+              className="bg-foreground/10 border-border text-foreground hover:bg-accent hover:border-border disabled:bg-foreground/5 disabled:text-muted-foreground disabled:border-border text-xs px-2 h-7"
             >
               Prev
             </Button>
@@ -172,7 +172,7 @@ export function Pagination({
               {getVisiblePages().slice(0, 5).map((page, index) => (
                 <div key={index}>
                   {page === "..." ? (
-                    <span className="px-1 text-gray-400 text-xs">...</span>
+                    <span className="px-1 text-muted-foreground text-xs">...</span>
                   ) : (
                     <Button
                       variant={currentPage === page ? "default" : "outline"}
@@ -181,8 +181,8 @@ export function Pagination({
                       disabled={isLoading}
                       className={
                         currentPage === page
-                          ? "bg-white text-background hover:bg-gray-200 text-xs px-2 h-7 min-w-7"
-                          : "bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 text-xs px-2 h-7 min-w-7"
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90 text-xs px-2 h-7 min-w-7"
+                          : "bg-foreground/10 border-border text-foreground hover:bg-accent hover:border-border text-xs px-2 h-7 min-w-7"
                       }
                     >
                       {page}
@@ -197,7 +197,7 @@ export function Pagination({
               size="sm"
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage >= totalPages || isLoading}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 disabled:bg-white/5 disabled:text-gray-400 disabled:border-white/10 text-xs px-2 h-7"
+              className="bg-foreground/10 border-border text-foreground hover:bg-accent hover:border-border disabled:bg-foreground/5 disabled:text-muted-foreground disabled:border-border text-xs px-2 h-7"
             >
               Next
             </Button>

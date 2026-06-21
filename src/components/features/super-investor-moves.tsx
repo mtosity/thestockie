@@ -16,7 +16,7 @@ function MoveRow({ m, kind }: { m: Move; kind: "buy" | "sell" }) {
       <div className="min-w-0">
         <Link
           href={`/investors/${m.slug}`}
-          className="text-xs text-purple-200 hover:underline"
+          className="text-xs text-primary hover:underline"
         >
           {m.investor}
         </Link>
@@ -24,14 +24,14 @@ function MoveRow({ m, kind }: { m: Move; kind: "buy" | "sell" }) {
           {m.ticker ? (
             <Link
               href={`/?symbol=${m.ticker}`}
-              className="font-semibold text-white hover:underline"
+              className="font-semibold text-foreground hover:underline"
             >
               {m.ticker}
             </Link>
           ) : (
-            <span className="font-medium text-gray-400">—</span>
+            <span className="font-medium text-muted-foreground">—</span>
           )}
-          <span className="truncate text-xs text-gray-500">{m.name}</span>
+          <span className="truncate text-xs text-muted-foreground">{m.name}</span>
         </div>
       </div>
       <div className="shrink-0 text-right">
@@ -39,12 +39,12 @@ function MoveRow({ m, kind }: { m: Move; kind: "buy" | "sell" }) {
           {formatMoney(m.value)}
         </div>
         {kind === "buy" && m.pctPortfolio > 0 && (
-          <div className="text-[11px] text-gray-500">
+          <div className="text-[11px] text-muted-foreground">
             {Math.round(m.pctPortfolio)}% of book
           </div>
         )}
         {kind === "sell" && (
-          <div className="text-[11px] text-gray-500">exited</div>
+          <div className="text-[11px] text-muted-foreground">exited</div>
         )}
       </div>
     </div>
@@ -67,7 +67,7 @@ function MoveCard({
   kind: "buy" | "sell";
 }) {
   return (
-    <Card className="border-white/10 bg-white/5 text-white">
+    <Card className="border-border bg-foreground/5 text-foreground">
       <CardHeader className="space-y-0 pb-3">
         <div
           className={`flex items-center gap-2 text-sm font-semibold ${accent}`}
@@ -77,7 +77,7 @@ function MoveCard({
       </CardHeader>
       <CardContent className="space-y-1.5">
         {(rows?.length ?? 0) === 0 ? (
-          <p className="py-6 text-center text-sm text-gray-500">{empty}</p>
+          <p className="py-6 text-center text-sm text-muted-foreground">{empty}</p>
         ) : (
           (rows ?? []).map((m, i) => (
             <MoveRow

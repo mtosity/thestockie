@@ -166,7 +166,7 @@ export function MermaidDiagram({ content }: { content: string }) {
 
   if (error) {
     return (
-      <pre className="overflow-x-auto rounded-md bg-white/10 p-3 text-sm text-red-400">
+      <pre className="overflow-x-auto rounded-md bg-foreground/10 p-3 text-sm text-red-400">
         {content}
       </pre>
     );
@@ -175,7 +175,7 @@ export function MermaidDiagram({ content }: { content: string }) {
   if (!svg) {
     return (
       <div className="my-2 flex justify-center">
-        <div className="h-24 w-full animate-pulse rounded bg-white/10" />
+        <div className="h-24 w-full animate-pulse rounded bg-foreground/10" />
       </div>
     );
   }

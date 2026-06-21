@@ -61,14 +61,14 @@ export const CompanyProfile = () => {
         {rows.map(({ label, value }) =>
           value ? (
             <div key={label} className="flex items-start justify-between gap-4 text-sm">
-              <span className="shrink-0 text-gray-400">{label}</span>
+              <span className="shrink-0 text-muted-foreground">{label}</span>
               <span className="text-right font-medium text-gray-100">{value}</span>
             </div>
           ) : null,
         )}
       </div>
       {data.description && (
-        <p className="mt-4 text-sm leading-relaxed text-gray-400">{data.description}</p>
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{data.description}</p>
       )}
     </div>
   );
