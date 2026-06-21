@@ -10,11 +10,11 @@ const STANCE_STYLES: Record<string, string> = {
 
 const CONSENSUS_MIXED = "bg-amber-500/15 text-amber-700 dark:text-amber-400 ring-amber-500/30";
 const CONSENSUS_STYLES: Record<string, string> = {
-  strong_bullish: "bg-emerald-500/20 text-emerald-200 ring-emerald-500/40",
+  strong_bullish: "bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 ring-emerald-500/40",
   bullish: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-emerald-500/25",
   mixed: CONSENSUS_MIXED,
   bearish: "bg-rose-500/10 text-rose-700 dark:text-rose-400 ring-rose-500/25",
-  strong_bearish: "bg-rose-500/20 text-rose-200 ring-rose-500/40",
+  strong_bearish: "bg-rose-500/20 text-rose-800 dark:text-rose-200 ring-rose-500/40",
 };
 
 const SENTIMENT_NEUTRAL = "bg-amber-500/15 text-amber-700 dark:text-amber-400 ring-amber-500/30";
