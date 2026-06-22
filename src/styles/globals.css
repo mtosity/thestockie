@@ -36,22 +36,6 @@
   }
 }
 
-/* Always-on card chrome, mirroring alpaca's `.strategy-card` hover state:
-   a strong border (near-white on dark, near-black on light) plus a brutalist
-   offset shadow — shown directly rather than only on hover. Both colors come
-   from the design-system `--border` token so they track the active theme. */
-.strategy-card {
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-brutal);
-  transition:
-    box-shadow 0.15s,
-    transform 0.15s;
-}
-.strategy-card-interactive:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: var(--shadow-brutal-lg);
-}
-
 * {
   animation-fill-mode: forwards;
   -webkit-animation-fill-mode: forwards;

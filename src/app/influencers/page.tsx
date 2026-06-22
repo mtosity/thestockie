@@ -28,7 +28,7 @@ function LoadingState() {
 
 function EmptyState() {
   return (
-    <Card className="strategy-card text-card-foreground">
+    <Card>
       <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
         <Inbox className="h-10 w-10 text-gray-600" />
         <h2 className="text-lg font-semibold">No influencer data yet</h2>
