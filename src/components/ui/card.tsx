@@ -9,7 +9,10 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-xl border bg-card text-card-foreground shadow-sm",
+      // Default card chrome from @mtosity/design-system: a strong
+      // theme-adaptive border (--border) + brutalist offset shadow
+      // (.shadow-brutal), shown directly.
+      "rounded-xl border border-[var(--border)] bg-card text-card-foreground shadow-brutal",
       className
     )}
     {...props}

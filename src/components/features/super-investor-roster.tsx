@@ -57,7 +57,7 @@ function InvestorCard({ inv }: { inv: Investor }) {
 
 export function InvestorRoster({ investors }: { investors: Investor[] }) {
   return (
-    <Card className="strategy-card text-card-foreground">
+    <Card>
       <CardHeader className="pb-3">
         <h3 className="text-sm font-semibold">Tracked investors ({(investors?.length ?? 0)})</h3>
       </CardHeader>

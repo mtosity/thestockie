@@ -55,7 +55,7 @@ function VideoRow({ video }: { video: Video }) {
 
 export function RecentInfluencerVideos({ videos }: { videos: Video[] }) {
   return (
-    <Card className="strategy-card text-card-foreground">
+    <Card>
       <CardHeader className="pb-3">
         <h2 className="text-sm font-semibold">Recently analyzed</h2>
       </CardHeader>

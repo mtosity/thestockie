@@ -16,12 +16,7 @@ export function BlogCard({ blog, className }: BlogCardProps) {
 
   return (
     <Link href={`/blogs/${frontmatter.slug}`} className="group block">
-      <Card
-        className={cn(
-          "strategy-card strategy-card-interactive h-full overflow-hidden text-card-foreground",
-          className
-        )}
-      >
+      <Card className={cn("h-full overflow-hidden", className)}>
         <div className="relative aspect-video overflow-hidden">
           <Image
             src={frontmatter.coverImage}

@@ -98,7 +98,7 @@ function Side({
   empty: string;
 }) {
   return (
-    <Card className="strategy-card text-card-foreground">
+    <Card>
       <CardHeader className="space-y-0 pb-3">
         <div className={`flex items-center gap-2 text-sm font-semibold ${accent}`}>
           {icon} {title}
