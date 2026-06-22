@@ -48,7 +48,7 @@ export function SuperInvestorsSection() {
           <Skeleton className="h-56 w-full rounded-xl bg-foreground/5" />
         </div>
       ) : !hasData ? (
-        <Card className="border-border bg-foreground/5 text-foreground">
+        <Card className="strategy-card text-card-foreground">
           <CardContent className="py-12 text-center text-sm text-muted-foreground">
             No 13F data yet — run the superinvestor-job.
           </CardContent>
