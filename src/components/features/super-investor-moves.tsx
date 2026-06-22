@@ -67,7 +67,7 @@ function MoveCard({
   kind: "buy" | "sell";
 }) {
   return (
-    <Card className="border-border bg-foreground/5 text-foreground">
+    <Card className="strategy-card text-card-foreground">
       <CardHeader className="space-y-0 pb-3">
         <div
           className={`flex items-center gap-2 text-sm font-semibold ${accent}`}

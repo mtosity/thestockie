@@ -53,7 +53,7 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
   ].filter(Boolean);
 
   return (
-    <Card className="border-border bg-foreground/5 text-foreground">
+    <Card className="strategy-card text-card-foreground">
       <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
         <div>
           <h2 className="text-lg font-semibold">Daily Market Digest</h2>

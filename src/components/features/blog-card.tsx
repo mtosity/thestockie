@@ -18,9 +18,7 @@ export function BlogCard({ blog, className }: BlogCardProps) {
     <Link href={`/blogs/${frontmatter.slug}`} className="group block">
       <Card
         className={cn(
-          "h-full overflow-hidden border-border bg-foreground/5 transition-all duration-300",
-          "hover:border-border hover:bg-accent hover:shadow-xl hover:shadow-primary/20",
-          "hover:-translate-y-1",
+          "strategy-card strategy-card-interactive h-full overflow-hidden text-card-foreground",
           className
         )}
       >

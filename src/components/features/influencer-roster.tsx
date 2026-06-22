@@ -61,7 +61,7 @@ export function InfluencerRoster({
   influencers: Influencer[];
 }) {
   return (
-    <Card className="border-border bg-foreground/5 text-foreground">
+    <Card className="strategy-card text-card-foreground">
       <CardHeader className="pb-3">
         <h2 className="text-sm font-semibold">Tracked creators ({(influencers?.length ?? 0)})</h2>
       </CardHeader>
