@@ -10,8 +10,7 @@ export const LIVE_DOWN = "#ef4444";
 
 /**
  * Tracks the direction of the latest price change and bumps a `tick` counter
- * every time it changes — the counter is used as a React `key` to retrigger
- * the CSS flash animation on each new quote.
+ * every time it changes — used to retrigger the flash on each new quote.
  */
 export function usePriceFlash(price?: number): { dir: FlashDir; tick: number } {
   const prevRef = useRef<number | undefined>(undefined);
@@ -92,9 +91,73 @@ export function LiveBadge() {
   );
 }
 
+/** A single odometer column: 0-9 stacked, slid to reveal the active digit. */
+function RollingDigit({ digit }: { digit: number }) {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        height: "1em",
+        lineHeight: 1,
+        overflow: "hidden",
+        verticalAlign: "bottom",
+      }}
+    >
+      <span
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          transform: `translateY(-${digit}em)`,
+          transition: "transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)",
+          willChange: "transform",
+        }}
+      >
+        {Array.from({ length: 10 }, (_, n) => (
+          <span key={n} style={{ height: "1em", lineHeight: 1 }}>
+            {n}
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+/** `$1,234.56` where each digit rolls vertically when it changes. */
+function RollingNumber({
+  value,
+  decimals = 2,
+}: {
+  value: number;
+  decimals?: number;
+}) {
+  const str = value.toFixed(decimals);
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "flex-end",
+        lineHeight: 1,
+        fontVariantNumeric: "tabular-nums",
+      }}
+    >
+      <span style={{ height: "1em", lineHeight: 1 }}>$</span>
+      {str.split("").map((ch, i) =>
+        /\d/.test(ch) ? (
+          <RollingDigit key={i} digit={Number(ch)} />
+        ) : (
+          <span key={i} style={{ height: "1em", lineHeight: 1 }}>
+            {ch}
+          </span>
+        ),
+      )}
+    </span>
+  );
+}
+
 /**
- * Header readout: large flashing price + day change. When `live` is set the
- * price flashes green/red on every tick and a LIVE badge is shown.
+ * Header readout: a rolling-digit price that flashes green/red (text color)
+ * on each tick, plus the window change. The flash is driven via the Web
+ * Animations API so it replays without remounting the rolling digits.
  */
 export function LiveQuoteHeader({
   price,
@@ -108,22 +171,31 @@ export function LiveQuoteHeader({
   live: boolean;
 }) {
   const flash = usePriceFlash(live ? price : undefined);
+  const priceRef = useRef<HTMLSpanElement>(null);
   const up = change >= 0;
+
+  useEffect(() => {
+    if (!live || flash.dir == null) return;
+    const el = priceRef.current;
+    if (!el || typeof el.animate !== "function") return;
+    const cs = getComputedStyle(el);
+    const from = (
+      flash.dir === "up"
+        ? cs.getPropertyValue("--positive")
+        : cs.getPropertyValue("--negative")
+    ).trim();
+    const to = cs.getPropertyValue("--fg").trim() || "currentColor";
+    el.animate([{ color: from }, { color: to }], {
+      duration: 800,
+      easing: "ease-out",
+    });
+  }, [flash.tick, flash.dir, live]);
 
   return (
     <div className="flex items-center gap-2 p-2">
       {live && <LiveBadge />}
-      <span
-        key={flash.tick}
-        className={`rounded px-1.5 text-lg font-bold tabular-nums ${
-          flash.dir === "up"
-            ? "flash-up"
-            : flash.dir === "down"
-              ? "flash-down"
-              : ""
-        }`}
-      >
-        ${price.toFixed(2)}
+      <span ref={priceRef} className="text-lg font-bold tabular-nums text-foreground">
+        {live ? <RollingNumber value={price} /> : `$${price.toFixed(2)}`}
       </span>
       <span
         className={`text-sm font-semibold tabular-nums ${
