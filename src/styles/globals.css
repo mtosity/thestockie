@@ -41,6 +41,33 @@
   -webkit-animation-fill-mode: forwards;
 }
 
+/* Live-quote price flash (Robinhood-style): a quick tinted pulse that fades
+   back to transparent. Retriggered via a changing React key on each tick. */
+@keyframes price-flash-up {
+  0% {
+    background-color: color-mix(in srgb, #22c55e 50%, transparent);
+    color: #16a34a;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+@keyframes price-flash-down {
+  0% {
+    background-color: color-mix(in srgb, #ef4444 50%, transparent);
+    color: #dc2626;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+.flash-up {
+  animation: price-flash-up 0.7s ease-out;
+}
+.flash-down {
+  animation: price-flash-down 0.7s ease-out;
+}
+
 .react-grid-item > .react-resizable-handle:after {
   content: "";
   position: absolute;

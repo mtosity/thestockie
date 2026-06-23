@@ -28,31 +28,12 @@ import {
   type OHLCVData,
 } from "~/lib/indicators";
 import { api } from "~/trpc/react";
-
-const PriceChange = ({ data }: { data?: { price: number }[] }) => {
-  if (!data?.length) return null;
-
-  const startPrice = data[0]?.price;
-  const endPrice = data[data.length - 1]?.price;
-
-  if (!startPrice || !endPrice) return null;
-
-  const priceDiff = endPrice - startPrice;
-  const percentChange = (priceDiff / startPrice) * 100;
-  const isPositive = priceDiff >= 0;
-
-  return (
-    <div className="flex items-center gap-2 p-2">
-      <span className="text-lg font-semibold">${endPrice.toFixed(2)}</span>
-      <span
-        className={`text-sm ${isPositive ? "text-green-500" : "text-red-500"}`}
-      >
-        {isPositive ? "+" : ""}${priceDiff.toFixed(2)} ({isPositive ? "+" : ""}
-        {percentChange.toFixed(2)}%)
-      </span>
-    </div>
-  );
-};
+import {
+  LiveQuoteHeader,
+  LivePulseDot,
+  LIVE_UP,
+  LIVE_DOWN,
+} from "~/components/features/live-quote";
 
 interface DragSelection {
   startIndex: number;
@@ -234,6 +215,15 @@ export function Chart() {
       enabled: timeFrame === "1D" && !!symbol,
     });
 
+  // Live quote — polled every few seconds for real-time price ticks.
+  const { data: liveQuoteData } = api.asset.equityQuote.useQuery(symbol ?? "", {
+    enabled: !!symbol,
+    refetchInterval: 5000,
+    refetchIntervalInBackground: false,
+  });
+  const liveQuote = liveQuoteData?.[0];
+  const livePrice = liveQuote?.price;
+
   const chartData: ChartDataPoint[] = useMemo(() => {
     if (!data?.historical) return [];
     return [...data.historical]
@@ -317,6 +307,36 @@ export function Chart() {
       )
       .slice(0, 10);
   }, [indicatorData, indicators.sr, activeChartData]);
+
+  /* ── live-quote overlay ── */
+  const isLive =
+    livePrice != null && !Number.isNaN(livePrice) && activeChartData.length > 0;
+
+  // Overlay the live price onto the last point so the line tip tracks it live.
+  const liveMergedData = useMemo(() => {
+    if (!isLive || livePrice == null) return mergedData;
+    const copy = mergedData.slice();
+    const i = copy.length - 1;
+    const last = copy[i];
+    if (last) copy[i] = { ...last, price: livePrice, close: livePrice };
+    return copy;
+  }, [mergedData, isLive, livePrice]);
+
+  const lastLivePoint = liveMergedData[liveMergedData.length - 1];
+
+  // Robinhood-style: color the whole line by the visible window's performance.
+  const windowBase = activeChartData[0]?.price;
+  const windowEnd = isLive
+    ? livePrice
+    : activeChartData[activeChartData.length - 1]?.price;
+  const windowUp =
+    windowBase == null || windowEnd == null ? true : windowEnd >= windowBase;
+  const lineColor = windowUp ? LIVE_UP : LIVE_DOWN;
+
+  // Header readout — price flashes live; change is relative to the window start.
+  const headerPrice = windowEnd ?? 0;
+  const headerChange = windowBase ? headerPrice - windowBase : 0;
+  const headerPct = windowBase ? (headerChange / windowBase) * 100 : 0;
 
   /* ── drag-select handlers (click-hold-drag-release) ── */
   const handleMouseDown = useCallback(() => {
@@ -441,8 +461,11 @@ export function Chart() {
             </button>
           ))}
         </div>
-        <PriceChange
-          data={timeFrame === "1D" ? chartData2 : activeChartData}
+        <LiveQuoteHeader
+          price={headerPrice}
+          change={headerChange}
+          changePct={headerPct}
+          live={isLive}
         />
       </div>
 
@@ -490,7 +513,7 @@ export function Chart() {
         )}
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
-            data={mergedData}
+            data={liveMergedData}
             margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -498,8 +521,8 @@ export function Chart() {
           >
             <defs>
               <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
+                <stop offset="5%" stopColor={lineColor} stopOpacity={0.5} />
+                <stop offset="95%" stopColor={lineColor} stopOpacity={0} />
               </linearGradient>
             </defs>
 
@@ -522,12 +545,30 @@ export function Chart() {
 
             <Area
               dataKey="price"
-              stroke="#82ca9d"
+              stroke={lineColor}
+              strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorPv)"
               dot={false}
               isAnimationActive={false}
             />
+
+            {/* Live pulsing dot at the leading edge of the line */}
+            {isLive && !isDragging && lastLivePoint && (
+              <ReferenceDot
+                x={lastLivePoint.date}
+                y={lastLivePoint.price}
+                ifOverflow="extendDomain"
+                isFront
+                shape={(props) => (
+                  <LivePulseDot
+                    cx={(props as { cx?: number }).cx}
+                    cy={(props as { cy?: number }).cy}
+                    color={lineColor}
+                  />
+                )}
+              />
+            )}
 
             {showVWAP && (
               <Line
