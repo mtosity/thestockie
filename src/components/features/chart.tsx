@@ -215,9 +215,9 @@ export function Chart() {
       enabled: timeFrame === "1D" && !!symbol,
     });
 
-  // Live quote — polled every few seconds for real-time price ticks.
+  // Live quote — only on the 1D view; polled every few seconds for ticks.
   const { data: liveQuoteData } = api.asset.equityQuote.useQuery(symbol ?? "", {
-    enabled: !!symbol,
+    enabled: !!symbol && timeFrame === "1D",
     refetchInterval: 5000,
     refetchIntervalInBackground: false,
   });
@@ -308,9 +308,12 @@ export function Chart() {
       .slice(0, 10);
   }, [indicatorData, indicators.sr, activeChartData]);
 
-  /* ── live-quote overlay ── */
+  /* ── live-quote overlay (1D view only) ── */
   const isLive =
-    livePrice != null && !Number.isNaN(livePrice) && activeChartData.length > 0;
+    timeFrame === "1D" &&
+    livePrice != null &&
+    !Number.isNaN(livePrice) &&
+    activeChartData.length > 0;
 
   // Overlay the live price onto the last point so the line tip tracks it live.
   const liveMergedData = useMemo(() => {
