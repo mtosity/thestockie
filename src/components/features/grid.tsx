@@ -30,6 +30,7 @@ import { ValuationChart } from "./valuation-chart";
 import { StockPeers } from "./stock-peers";
 import { InsiderTrading } from "./insider-trading";
 import { AnalystRatings } from "./analyst-ratings";
+import { DeferredMount } from "./deferred-mount";
 
 const Grid = () => {
   const { width, height } = useWindowSize();
@@ -56,11 +57,12 @@ const Grid = () => {
         isDraggable={false}
         resizeHandles={["se", "sw", "ne", "nw"]}
       >
+        {/* Priority widgets — load first (main chart, news, company profile).
+            Market indices (DOW/S&P/NASDAQ) live in the navbar and load eagerly
+            too. Everything else is deferred until it scrolls into view or the
+            browser is idle, so the critical content isn't starved on load. */}
         <div key="main-chart" className={clx}>
           <Chart />
-        </div>
-        <div key="fundamental-pillars" className={clx}>
-          <Fundamentals />
         </div>
         <div key="news" className={clx}>
           <News />
@@ -68,65 +70,103 @@ const Grid = () => {
         <div key="live-quote" className={clx}>
           <CompanyProfile />
         </div>
+
+        <div key="fundamental-pillars" className={clx}>
+          <DeferredMount>
+            <Fundamentals />
+          </DeferredMount>
+        </div>
         <div key="ai" className={clx}>
-          <GPT />
+          <DeferredMount>
+            <GPT />
+          </DeferredMount>
         </div>
 
         {/* Income Statement */}
         <div key="revenue" className={clx}>
-          <Revenue />
+          <DeferredMount>
+            <Revenue />
+          </DeferredMount>
         </div>
         <div key="ebitda" className={clx}>
-          <EBITDA />
+          <DeferredMount>
+            <EBITDA />
+          </DeferredMount>
         </div>
         <div key="net-income" className={clx}>
-          <NetIncome />
+          <DeferredMount>
+            <NetIncome />
+          </DeferredMount>
         </div>
         <div key="eps" className={clx}>
-          <EPS />
+          <DeferredMount>
+            <EPS />
+          </DeferredMount>
         </div>
         <div key="expenses" className={clx}>
-          <Expenses />
+          <DeferredMount>
+            <Expenses />
+          </DeferredMount>
         </div>
 
         {/* Balance Sheet */}
         <div key="balance-growth" className={clx}>
-          <BalanceGrowth />
+          <DeferredMount>
+            <BalanceGrowth />
+          </DeferredMount>
         </div>
         <div key="cash-debt" className={clx}>
-          <CashDebt />
+          <DeferredMount>
+            <CashDebt />
+          </DeferredMount>
         </div>
 
         {/* Cash Flow */}
         <div key="cash-growth" className={clx}>
-          <CashGrowth />
+          <DeferredMount>
+            <CashGrowth />
+          </DeferredMount>
         </div>
         <div key="dividends" className={clx}>
-          <Dividends />
+          <DeferredMount>
+            <Dividends />
+          </DeferredMount>
         </div>
 
         {/* Capital Structure */}
         <div key="shares-outstanding" className={clx}>
-          <SharesOutstanding />
+          <DeferredMount>
+            <SharesOutstanding />
+          </DeferredMount>
         </div>
 
         {/* Valuation & Ratios */}
         <div key="valuation" className={clx}>
-          <ValuationChart />
+          <DeferredMount>
+            <ValuationChart />
+          </DeferredMount>
         </div>
         <div key="margin-trends" className={clx}>
-          <MarginTrends />
+          <DeferredMount>
+            <MarginTrends />
+          </DeferredMount>
         </div>
 
         {/* Competitive & Risk Analysis */}
         <div key="stock-peers" className={clx}>
-          <StockPeers />
+          <DeferredMount>
+            <StockPeers />
+          </DeferredMount>
         </div>
         <div key="analyst-ratings" className={clx}>
-          <AnalystRatings />
+          <DeferredMount>
+            <AnalystRatings />
+          </DeferredMount>
         </div>
         <div key="insider-trading" className={clx}>
-          <InsiderTrading />
+          <DeferredMount>
+            <InsiderTrading />
+          </DeferredMount>
         </div>
       </GridLayout>
       <div className="pb-20"></div>
