@@ -241,7 +241,7 @@ export function Chart() {
 
   const chartData2: ChartDataPoint[] = useMemo(() => {
     if (!data2?.results) return [];
-    return data2.results.map((r) => ({
+    const mapped = data2.results.map((r) => ({
       date: r.date,
       price: r.close,
       open: r.open,
@@ -250,6 +250,17 @@ export function Chart() {
       close: r.close,
       volume: r.volume,
     }));
+    if (mapped.length === 0) return mapped;
+    // FMP's 1-min endpoint returns several days of intraday bars; the 1D view
+    // should show only the latest (current) trading session. Keep bars on the
+    // most recent calendar day, oldest→newest.
+    const latestDay = mapped.reduce(
+      (max, r) => (r.date.slice(0, 10) > max ? r.date.slice(0, 10) : max),
+      "",
+    );
+    return mapped
+      .filter((r) => r.date.slice(0, 10) === latestDay)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [data2]);
 
   const activeChartData: ChartDataPoint[] = useMemo(() => {
