@@ -25,6 +25,11 @@ import { api } from "~/trpc/react";
 import { format } from "date-fns";
 import Image from "next/image";
 import { useNewsSummary } from "~/hooks/use-news-summary";
+import {
+  MacroPulse,
+  MacroSection,
+  EconomicIndicatorsSection,
+} from "./macro-economic";
 
 // ── Types & Context ─────────────────────────────────────────────────
 
@@ -1485,28 +1490,51 @@ export function MacroDashboard() {
           <TimeFrameSelector value={timeFrame} onChange={setTimeFrame} />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {/* Row 1: Key indicators */}
-          <VixCard />
-          <DollarIndexCard />
-          <TreasuryCard />
+        {/* Macro pulse — synthesized regime read + headline KPIs */}
+        <MacroPulse />
 
-          {/* Row 2: Markets & Sectors */}
-          <GlobalIndicesCard />
-          <SectorPerformanceCard />
-          <div className="flex flex-col gap-4">
-            <ForexCard />
-            <CommoditiesCard />
-            <CarryRiskCard />
-            <FearGreedCard />
-          </div>
+        {/* Economy — inflation, growth, jobs, policy */}
+        <MacroSection
+          label="Inflation · Growth · Jobs"
+          hint="latest economic releases"
+        >
+          <EconomicIndicatorsSection />
+        </MacroSection>
 
-          {/* Row 3: Calendar & News */}
-          <EconomicCalendarCard />
-          <div className="md:col-span-1 xl:col-span-2">
-            <GeneralNewsCard />
+        {/* Rates & risk */}
+        <MacroSection label="Rates · Curve · Risk">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <TreasuryCard />
+            <VixCard />
+            <div className="flex flex-col gap-4">
+              <FearGreedCard />
+              <CarryRiskCard />
+            </div>
           </div>
-        </div>
+        </MacroSection>
+
+        {/* Markets, FX & commodities */}
+        <MacroSection label="Markets · FX · Commodities">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <GlobalIndicesCard />
+            <SectorPerformanceCard />
+            <div className="flex flex-col gap-4">
+              <DollarIndexCard />
+              <ForexCard />
+              <CommoditiesCard />
+            </div>
+          </div>
+        </MacroSection>
+
+        {/* Calendar & news */}
+        <MacroSection label="Calendar · News">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <EconomicCalendarCard />
+            <div className="md:col-span-1 xl:col-span-2">
+              <GeneralNewsCard />
+            </div>
+          </div>
+        </MacroSection>
       </div>
     </TimeFrameContext.Provider>
   );
