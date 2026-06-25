@@ -6,6 +6,9 @@ import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
+  // @mtosity/design-system ships TypeScript source (no build step), so Next
+  // must transpile it.
+  transpilePackages: ["@mtosity/design-system"],
   typescript: {
     ignoreBuildErrors: true,
   },

@@ -25,6 +25,7 @@ import { api } from "~/trpc/react";
 import { format } from "date-fns";
 import Image from "next/image";
 import { useNewsSummary } from "~/hooks/use-news-summary";
+import { MacroFedDataBlock } from "./macro-fed-data";
 
 // ── Types & Context ─────────────────────────────────────────────────
 
@@ -1483,6 +1484,11 @@ export function MacroDashboard() {
             Showing % change over selected period
           </span>
           <TimeFrameSelector value={timeFrame} onChange={setTimeFrame} />
+        </div>
+
+        {/* Fed & economic data — one chart with a dropdown switcher */}
+        <div className="mb-4">
+          <MacroFedDataBlock />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

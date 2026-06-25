@@ -1400,6 +1400,43 @@ export const assetsRouter = createTRPCRouter({
     return res.data;
   }),
 
+  // Curated Fed/macro economic indicators, fetched server-side in parallel and
+  // returned keyed by name. Each series is newest-first [{date, value}], ~3yr
+  // of history so the client can compute YoY and draw the full chart.
+  economicIndicators: publicProcedure.query(async () => {
+    const names = [
+      "CPI",
+      "unemploymentRate",
+      "totalNonfarmPayroll",
+      "initialClaims",
+      "realGDP",
+      "retailSales",
+      "industrialProductionTotalIndex",
+      "consumerSentiment",
+      "federalFunds",
+      "30YearFixedRateMortgageAverage",
+    ];
+    const from = getDateNDaysAgo(1100);
+    const to = getTodayDate();
+    const entries = await Promise.all(
+      names.map(async (name) => {
+        try {
+          const res = await fmp.get<{ date: string; value: number }[]>(
+            "/api/v4/economic",
+            { params: { apikey: apiKey, name, from, to } },
+          );
+          return [name, Array.isArray(res.data) ? res.data : []] as const;
+        } catch {
+          return [name, [] as { date: string; value: number }[]] as const;
+        }
+      }),
+    );
+    return Object.fromEntries(entries) as Record<
+      string,
+      { date: string; value: number }[]
+    >;
+  }),
+
   generalNews: publicProcedure.query(async () => {
     const res = await fmp.get<
       {

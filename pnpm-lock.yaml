@@ -29,8 +29,8 @@ importers:
         specifier: ^3.9.1
         version: 3.9.1(react-hook-form@7.54.0(react@19.0.0))
       '@mtosity/design-system':
-        specifier: 0.3.0
-        version: 0.3.0(framer-motion@12.40.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(next@15.5.15(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        specifier: ^0.5.0
+        version: 0.5.0(framer-motion@12.40.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(next@15.5.15(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@radix-ui/react-accordion':
         specifier: ^1.2.1
         version: 1.2.1(@types/react-dom@18.3.2)(@types/react@19.0.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -752,8 +752,8 @@ packages:
   '@mermaid-js/parser@1.0.1':
     resolution: {integrity: sha512-opmV19kN1JsK0T6HhhokHpcVkqKpF+x2pPDKKM2ThHtZAB5F4PROopk0amuVYK5qMrIA4erzpNm8gmPNJgMDxQ==}
 
-  '@mtosity/design-system@0.3.0':
-    resolution: {integrity: sha512-5O9v/cZ6WDu06VRtmRFqszULNIZQDaIHvevylnj+WyoA4XBpHs9nxRsroF/mQL8YKwqLm7vff8tw/o5HGQ15Yg==, tarball: https://npm.pkg.github.com/download/@mtosity/design-system/0.3.0/faa53e16349804f97502f3cabb015a24f06f9b67}
+  '@mtosity/design-system@0.5.0':
+    resolution: {integrity: sha512-WR9yBRi314NljSV+OYJ3xcqXKdmJe07jxDI6KdEnWOqdtc9EqnqYyDWc7RmXh7HVrsFQj8yXmVjnPXfabmFlpg==, tarball: https://npm.pkg.github.com/download/@mtosity/design-system/0.5.0/673e543aea157b197732126e4d60b9b9a0f66e3d}
     peerDependencies:
       framer-motion: ^12.0.0
       next: '>=15'
@@ -5172,7 +5172,7 @@ snapshots:
     dependencies:
       langium: 4.2.1
 
-  '@mtosity/design-system@0.3.0(framer-motion@12.40.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(next@15.5.15(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+  '@mtosity/design-system@0.5.0(framer-motion@12.40.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(next@15.5.15(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       framer-motion: 12.40.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       next: 15.5.15(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
