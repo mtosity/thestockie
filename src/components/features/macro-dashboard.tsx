@@ -1261,7 +1261,7 @@ function GeneralNewsCard() {
   }, [data]);
 
   return (
-    <CardShell title="Market News">
+    <CardShell title="Market News" className="flex h-full flex-col">
       {isLoading ? (
         <div className="flex flex-col gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -1278,13 +1278,13 @@ function GeneralNewsCard() {
           ))}
         </div>
       ) : sortedData.length > 0 ? (
-        <div>
+        <div className="flex min-h-0 flex-1 flex-col">
           <NewsSummary
             articles={sortedData}
             cacheKey="macro-news"
             context="These are today's financial market news articles. Provide a concise macro market summary highlighting the most important themes and market-moving events."
           />
-          <div className="max-h-[400px] overflow-auto">
+          <div className="min-h-0 flex-1 overflow-auto">
             <div className="flex flex-col gap-3">
               {sortedData.map((article, i) => (
                 <a
@@ -1511,21 +1511,24 @@ export function MacroDashboard() {
           <MacroLineCard title="Commodities" syms={COMMODITIES_GROUP} />
           <MacroLineCard title="Crypto" syms={CRYPTO} />
 
-          {/* Sector rotation over time */}
+          {/* Sector rotation over time (same width as Market News below) */}
           <div className="md:col-span-2 xl:col-span-2">
             <SectorRotation />
           </div>
 
-          {/* Risk gauges */}
+          {/* Bottom: left column (risk gauges + upcoming econ events) and
+              Market News spanning that column's full height and width. */}
           <div className="flex flex-col gap-4">
             <CarryRiskCard />
             <FearGreedCard />
+            <EconomicCalendarCard />
           </div>
-
-          {/* Row 3: Calendar & News */}
-          <EconomicCalendarCard />
-          <div className="md:col-span-1 xl:col-span-2">
-            <GeneralNewsCard />
+          {/* On xl, News fills the left column's height (absolute) and scrolls
+              internally; on smaller screens it flows naturally full-width. */}
+          <div className="md:col-span-2 xl:relative xl:col-span-2">
+            <div className="xl:absolute xl:inset-0">
+              <GeneralNewsCard />
+            </div>
           </div>
         </div>
       </div>

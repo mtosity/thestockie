@@ -267,6 +267,19 @@ export function SectorRotation() {
 
   const selDate = rows[pos]?.date as string | undefined;
 
+  // Evenly-spaced date markers under the slider so the timeline is readable.
+  const ticks = useMemo(() => {
+    if (rows.length < 2) return [];
+    const n = 5;
+    return Array.from({ length: n }, (_, i) => {
+      const ri = Math.round(((rows.length - 1) * i) / (n - 1));
+      return new Date(rows[ri]!.date as string).toLocaleDateString("en-US", {
+        month: "short",
+        year: "2-digit",
+      });
+    });
+  }, [rows]);
+
   // Rotation read + momentum "prediction" at the selected point in time.
   // Money flows toward relative strength (above the cross-sector average), and
   // accelerating sectors — recent (1W) pace outrunning the monthly pace — hint
@@ -398,9 +411,10 @@ export function SectorRotation() {
         aria-label="Scrub sector performance through time"
         className="mt-3 w-full accent-[var(--accent)]"
       />
-      <div className="mt-1 flex justify-between font-mono text-[0.65rem] text-muted-foreground">
-        <span>1Y ago</span>
-        <span>today</span>
+      <div className="mt-1 flex justify-between font-mono text-[0.6rem] text-muted-foreground">
+        {ticks.map((t, i) => (
+          <span key={i}>{t}</span>
+        ))}
       </div>
     </div>
   );
