@@ -2,17 +2,19 @@
 
 import { useMemo, useState } from "react";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
-  Cell,
+  LabelList,
   Line,
   LineChart,
+  ReferenceArea,
   ReferenceLine,
   ResponsiveContainer,
+  Scatter,
+  ScatterChart,
   XAxis,
   YAxis,
 } from "recharts";
+import { Select } from "@mtosity/design-system";
 import { ChartTooltip } from "~/components/ui/chart";
 import { api } from "~/trpc/react";
 
@@ -301,69 +303,309 @@ export function MacroLineCard({
   );
 }
 
-/** Sector rotation: scrub a slider through the year to watch the 11 SPDR
-    sectors' cumulative returns (and their ranking) change over time. */
+const SECTOR_SHORT: Record<string, string> = {
+  XLK: "TECH",
+  XLF: "FIN",
+  XLV: "HLTH",
+  XLY: "DISC",
+  XLP: "STPL",
+  XLE: "ENGY",
+  XLI: "INDU",
+  XLB: "MATL",
+  XLRE: "RE",
+  XLU: "UTIL",
+  XLC: "COMM",
+};
+
+type Row = Record<string, number | string>;
+const sectorColor = (i: number) => PALETTE[i % PALETTE.length]!;
+const numAt = (row: Row | undefined, sym: string): number | null => {
+  const v = row?.[sym];
+  return typeof v === "number" ? v : null;
+};
+
+/** Rank (bump) — each sector's leadership rank (1 = best) over the year;
+    crossing lines = rotation. */
+function SectorBump({ rows }: { rows: Row[] }) {
+  const data = useMemo(() => {
+    if (rows.length < 2) return [];
+    const points = 13;
+    const idxs = [
+      ...new Set(
+        Array.from({ length: points }, (_, i) =>
+          Math.round(((rows.length - 1) * i) / (points - 1)),
+        ),
+      ),
+    ];
+    return idxs.map((ri) => {
+      const row = rows[ri]!;
+      const vals = SECTOR_ETFS.map((s) => ({ sym: s.symbol, v: numAt(row, s.symbol) }))
+        .filter((x): x is { sym: string; v: number } => x.v != null)
+        .sort((a, b) => b.v - a.v);
+      const o: Row = { date: row.date as string };
+      vals.forEach((x, r) => (o[x.sym] = r + 1));
+      return o;
+    });
+  }, [rows]);
+
+  const ranking = useMemo(() => {
+    const last = data[data.length - 1];
+    if (!last) return [];
+    return SECTOR_ETFS.map((s, i) => ({ label: s.label, symbol: s.symbol, i, rank: last[s.symbol] as number }))
+      .filter((s) => s.rank != null)
+      .sort((a, b) => a.rank - b.rank);
+  }, [data]);
+
+  return (
+    <>
+      <div style={{ height: 300 }}>
+        <ResponsiveContainer>
+          <LineChart data={data} margin={{ top: 6, right: 12, bottom: 0, left: 0 }}>
+            <CartesianGrid stroke="var(--border-light)" />
+            <XAxis dataKey="date" tickFormatter={tickFmt} minTickGap={40} fontSize={11} stroke="#9ca3af" />
+            <YAxis reversed domain={[1, 11]} ticks={[1, 3, 5, 7, 9, 11]} width={24} fontSize={11} stroke="#9ca3af" />
+            <ChartTooltip
+              content={({ payload, active, label }) => {
+                if (!active || !payload?.length) return null;
+                return (
+                  <div className="rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs shadow-lg">
+                    <div className="mb-1 text-muted-foreground">
+                      {new Date(label as string).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                    </div>
+                    {[...(payload as { name: string; value: number; color: string }[])]
+                      .sort((a, b) => a.value - b.value)
+                      .map((p) => {
+                        const s = SECTOR_ETFS.find((x) => x.symbol === p.name);
+                        return (
+                          <div key={p.name} style={{ color: p.color }}>
+                            #{p.value} {s?.label ?? p.name}
+                          </div>
+                        );
+                      })}
+                  </div>
+                );
+              }}
+            />
+            {SECTOR_ETFS.map((s, i) => (
+              <Line key={s.symbol} dataKey={s.symbol} name={s.symbol} stroke={sectorColor(i)} strokeWidth={1.5} dot={{ r: 2 }} activeDot={{ r: 4 }} connectNulls isAnimationActive={false} />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+        {ranking.map((s) => (
+          <span key={s.symbol} className="flex items-center gap-1 text-xs">
+            <span className="font-mono text-muted-foreground">{s.rank}</span>
+            <span className="inline-block h-0.5 w-3" style={{ background: sectorColor(s.i) }} />
+            <span className="text-muted-foreground">{s.label}</span>
+          </span>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/** Monthly heatmap — each sector's return per calendar month. */
+function SectorHeatmap({ rows }: { rows: Row[] }) {
+  const { months, cells } = useMemo(() => {
+    const byMonth = new Map<string, Row>();
+    for (const r of rows) byMonth.set((r.date as string).slice(0, 7), r); // ascending ⇒ last row of month wins
+    const months = [...byMonth.keys()].sort();
+    const cells: Record<string, Record<string, number>> = {};
+    for (const s of SECTOR_ETFS) {
+      cells[s.symbol] = {};
+      let prev = 0;
+      for (const m of months) {
+        const cur = numAt(byMonth.get(m), s.symbol) ?? prev;
+        cells[s.symbol]![m] = cur - prev;
+        prev = cur;
+      }
+    }
+    return { months, cells };
+  }, [rows]);
+
+  const cellBg = (v: number) => {
+    const a = Math.round(Math.min(1, Math.abs(v) / 8) * 70);
+    return v >= 0
+      ? `color-mix(in srgb, #22c55e ${a}%, transparent)`
+      : `color-mix(in srgb, #ef4444 ${a}%, transparent)`;
+  };
+
+  if (!months.length) return null;
+  return (
+    <div className="overflow-x-auto" style={{ minHeight: 300 }}>
+      <table className="w-full border-separate text-[0.62rem]" style={{ borderSpacing: 2 }}>
+        <thead>
+          <tr>
+            <th className="sticky left-0 z-10 bg-background p-1 text-left" />
+            {months.map((m) => (
+              <th key={m} className="p-1 font-medium text-muted-foreground">
+                {new Date(m + "-01").toLocaleDateString("en-US", { month: "short" })}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {SECTOR_ETFS.map((s) => (
+            <tr key={s.symbol}>
+              <td className="sticky left-0 z-10 whitespace-nowrap bg-background p-1 pr-2 text-left text-muted-foreground">
+                {s.label}
+              </td>
+              {months.map((m) => {
+                const v = cells[s.symbol]![m] ?? 0;
+                return (
+                  <td key={m} className="rounded p-1 text-center tabular-nums text-foreground" style={{ background: cellBg(v) }}>
+                    {v >= 0 ? "+" : ""}
+                    {v.toFixed(0)}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** Relative Rotation Graph — relative strength (x) vs momentum (y); each sector
+    is a dot with a tail, rotating clockwise through the four quadrants. */
+function SectorRRG({ rows }: { rows: Row[] }) {
+  const { series, dom } = useMemo(() => {
+    const empty: { symbol: string; short: string; color: string; pts: { x: number; y: number }[] }[] = [];
+    if (rows.length < 30) return { series: empty, dom: 5 };
+    const bench = (i: number) => {
+      let s = 0;
+      let c = 0;
+      for (const sec of SECTOR_ETFS) {
+        const v = numAt(rows[i], sec.symbol);
+        if (v != null) (s += v), c++;
+      }
+      return c ? s / c : 0;
+    };
+    const lookback = 21;
+    const tailN = 6;
+    const tailStep = 5;
+    const lastI = rows.length - 1;
+    const series = SECTOR_ETFS.map((sec, idx) => {
+      const pts: { x: number; y: number }[] = [];
+      for (let t = tailN - 1; t >= 0; t--) {
+        const i = lastI - t * tailStep;
+        if (i < lookback) continue;
+        const rs = (numAt(rows[i], sec.symbol) ?? 0) - bench(i);
+        const rsPrev = (numAt(rows[i - lookback], sec.symbol) ?? 0) - bench(i - lookback);
+        pts.push({ x: rs, y: rs - rsPrev });
+      }
+      return { symbol: sec.symbol, short: SECTOR_SHORT[sec.symbol] ?? sec.symbol, color: sectorColor(idx), pts };
+    }).filter((s) => s.pts.length > 0);
+    // Normalize both axes to z-scores (JdK-style) so a single outlier sector
+    // doesn't compress everyone else into the centre.
+    const allX = series.flatMap((s) => s.pts.map((p) => p.x));
+    const allY = series.flatMap((s) => s.pts.map((p) => p.y));
+    const mean = (a: number[]) => a.reduce((x, y) => x + y, 0) / (a.length || 1);
+    const std = (a: number[], m: number) =>
+      Math.sqrt(a.reduce((x, y) => x + (y - m) ** 2, 0) / (a.length || 1)) || 1;
+    const mx = mean(allX);
+    const my = mean(allY);
+    const sx = std(allX, mx);
+    const sy = std(allY, my);
+    const norm = series.map((s) => ({
+      ...s,
+      pts: s.pts.map((p) => ({ x: (p.x - mx) / sx, y: (p.y - my) / sy })),
+    }));
+    const maxAbs = Math.max(
+      1.5,
+      ...norm.flatMap((s) => s.pts.map((p) => Math.max(Math.abs(p.x), Math.abs(p.y)))),
+    );
+    return { series: norm, dom: maxAbs * 1.12 };
+  }, [rows]);
+
+  if (!series.length) return null;
+  return (
+    <>
+      <div style={{ height: 320 }}>
+        <ResponsiveContainer>
+          <ScatterChart margin={{ top: 8, right: 18, bottom: 4, left: 0 }}>
+            <XAxis type="number" dataKey="x" domain={[-dom, dom]} tick={false} axisLine={false} height={1} />
+            <YAxis type="number" dataKey="y" domain={[-dom, dom]} tick={false} axisLine={false} width={1} />
+            <ReferenceArea x1={0} x2={dom} y1={0} y2={dom} fill="#22c55e" fillOpacity={0.06} />
+            <ReferenceArea x1={0} x2={dom} y1={-dom} y2={0} fill="#f59e0b" fillOpacity={0.06} />
+            <ReferenceArea x1={-dom} x2={0} y1={-dom} y2={0} fill="#ef4444" fillOpacity={0.06} />
+            <ReferenceArea x1={-dom} x2={0} y1={0} y2={dom} fill="#3b82f6" fillOpacity={0.06} />
+            <ReferenceLine x={0} stroke="var(--border)" strokeOpacity={0.6} />
+            <ReferenceLine y={0} stroke="var(--border)" strokeOpacity={0.6} />
+            {series.map((s) => (
+              <Scatter
+                key={s.symbol}
+                data={s.pts}
+                fill={s.color}
+                line={{ stroke: s.color, strokeWidth: 1, strokeOpacity: 0.5 }}
+                isAnimationActive={false}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                shape={(props: any) => {
+                  const isLast = props.index === s.pts.length - 1;
+                  return <circle cx={props.cx} cy={props.cy} r={isLast ? 5 : 2} fill={s.color} fillOpacity={isLast ? 1 : 0.4} />;
+                }}
+              >
+                <LabelList
+                  dataKey="x"
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  content={(p: any) =>
+                    p.index === s.pts.length - 1 ? (
+                      <text x={Number(p.x) + 7} y={Number(p.y) + 3} fontSize={9} fontWeight={600} fill={s.color}>
+                        {s.short}
+                      </text>
+                    ) : null
+                  }
+                />
+              </Scatter>
+            ))}
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="mt-1 grid grid-cols-2 text-[0.62rem] text-muted-foreground">
+        <span className="text-[#3b82f6]">↖ Improving</span>
+        <span className="text-right text-[#22c55e]">Leading ↗</span>
+        <span className="text-[#ef4444]">↙ Lagging</span>
+        <span className="text-right text-[#f59e0b]">Weakening ↘</span>
+      </div>
+    </>
+  );
+}
+
+const SECTOR_VIEWS = [
+  { value: "bump", label: "Rank (bump)" },
+  { value: "heatmap", label: "Monthly heatmap" },
+  { value: "rrg", label: "Relative Rotation (RRG)" },
+];
+const SECTOR_SUBTITLE: Record<string, string> = {
+  bump: "Sector rank (1 = leader) over the trailing year — crossing lines = rotation",
+  heatmap: "Each sector's return by calendar month — green up, red down",
+  rrg: "Relative strength vs momentum — sectors rotate clockwise through the quadrants",
+};
+
 export function SectorRotation() {
   const { data, isLoading } = api.asset.multiHistory.useQuery(
     SECTOR_ETFS.map((s) => s.symbol),
     REFETCH,
   );
   const { rows } = useMemo(() => normalize(data, SECTOR_ETFS), [data]);
-  const [idx, setIdx] = useState<number | null>(null);
+  const [view, setView] = useState("bump");
 
-  const pos = idx == null ? rows.length - 1 : Math.min(idx, rows.length - 1);
-
-  // bars at the selected date — carry forward the last known value per sector
-  const bars = useMemo(() => {
-    if (!rows.length) return [];
-    const last: Record<string, number> = {};
-    for (let i = 0; i <= pos; i++) {
-      for (const { symbol } of SECTOR_ETFS) {
-        const v = rows[i]![symbol];
-        if (typeof v === "number") last[symbol] = v;
-      }
-    }
-    return SECTOR_ETFS.map((s) => ({ label: s.label, value: last[s.symbol] ?? 0 })).sort(
-      (a, b) => b.value - a.value,
-    );
-  }, [rows, pos]);
-
-  const selDate = rows[pos]?.date as string | undefined;
-
-  // Evenly-spaced date markers under the slider so the timeline is readable.
-  const ticks = useMemo(() => {
-    if (rows.length < 2) return [];
-    const n = 5;
-    return Array.from({ length: n }, (_, i) => {
-      const ri = Math.round(((rows.length - 1) * i) / (n - 1));
-      return new Date(rows[ri]!.date as string).toLocaleDateString("en-US", {
-        month: "short",
-        year: "2-digit",
-      });
-    });
-  }, [rows]);
-
-  // Rotation read + momentum "prediction" at the selected point in time.
-  // Money flows toward relative strength (above the cross-sector average), and
-  // accelerating sectors — recent (1W) pace outrunning the monthly pace — hint
-  // at where leadership is heading next.
+  // Rotation read + momentum "prediction" at the latest point. Money flows
+  // toward relative strength (above the cross-sector average); accelerating
+  // sectors (recent 1W pace outrunning the monthly pace) hint at what leads next.
   const analysis = useMemo(() => {
     if (rows.length < 22) return null;
-    const at = (sym: string, i: number) => {
-      const v = rows[i]?.[sym];
-      return typeof v === "number" ? v : null;
-    };
+    const pos = rows.length - 1;
+    const at = (sym: string, i: number) => numAt(rows[i], sym);
     const sectors = SECTOR_ETFS.map((s) => {
       const cum = at(s.symbol, pos);
       const w5 = at(s.symbol, pos - 5);
       const m21 = at(s.symbol, pos - 21);
       const week = cum != null && w5 != null ? cum - w5 : null;
       const month = cum != null && m21 != null ? cum - m21 : null;
-      return {
-        label: s.label,
-        cum,
-        accel: week != null && month != null ? week - month / 4.2 : null,
-      };
+      return { label: s.label, cum, accel: week != null && month != null ? week - month / 4.2 : null };
     }).filter((x): x is { label: string; cum: number; accel: number | null } => x.cum != null);
     if (sectors.length < 3) return null;
     const avg = sectors.reduce((a, b) => a + b.cum, 0) / sectors.length;
@@ -377,44 +619,38 @@ export function SectorRotation() {
       gaining: accelled.filter((s) => s.accel > 0).slice(0, 3),
       fading: accelled.filter((s) => s.accel < 0).slice(-2).reverse(),
     };
-  }, [rows, pos]);
+  }, [rows]);
 
   return (
     <div className="rounded-xl border border-border bg-background p-4">
-      <div className="mb-1 flex items-center justify-between">
+      <div className="mb-1 flex items-start justify-between gap-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Sector Rotation
         </h2>
-        <span className="font-mono text-xs text-foreground">
-          {selDate
-            ? new Date(selDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-            : ""}
-        </span>
+        <div className="shrink-0">
+          <Select
+            className="macro-fed-select"
+            aria-label="Sector rotation view"
+            value={view}
+            onChange={setView}
+            options={SECTOR_VIEWS}
+          />
+        </div>
       </div>
-      <p className="mb-3 text-xs text-muted-foreground">
-        Cumulative return since 1Y ago — drag to scrub through time
-      </p>
-      <div style={{ height: 280 }}>
-        {isLoading || !bars.length ? (
-          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-            {isLoading ? "Loading…" : "No data"}
-          </div>
-        ) : (
-          <ResponsiveContainer>
-            <BarChart data={bars} layout="vertical" margin={{ top: 0, right: 40, bottom: 0, left: 0 }}>
-              <CartesianGrid horizontal={false} stroke="var(--border-light)" />
-              <XAxis type="number" fontSize={11} stroke="#9ca3af" tickFormatter={(v: number) => `${v.toFixed(0)}%`} />
-              <YAxis type="category" dataKey="label" width={104} fontSize={11} stroke="#9ca3af" />
-              <ReferenceLine x={0} stroke="var(--border)" strokeOpacity={0.5} />
-              <Bar dataKey="value" isAnimationActive={false} radius={[0, 2, 2, 0]} label={{ position: "right", fontSize: 10, fill: "var(--muted)", formatter: (v: number) => pct(v) }}>
-                {bars.map((b, i) => (
-                  <Cell key={i} fill={b.value >= 0 ? "#22c55e" : "#ef4444"} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        )}
-      </div>
+      <p className="mb-3 text-xs text-muted-foreground">{SECTOR_SUBTITLE[view]}</p>
+
+      {isLoading || rows.length < 2 ? (
+        <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">
+          {isLoading ? "Loading…" : "No data"}
+        </div>
+      ) : view === "heatmap" ? (
+        <SectorHeatmap rows={rows} />
+      ) : view === "rrg" ? (
+        <SectorRRG rows={rows} />
+      ) : (
+        <SectorBump rows={rows} />
+      )}
+
       {analysis && (
         <div className="mt-3 space-y-1.5 border-t border-border pt-3 text-xs">
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
@@ -433,9 +669,7 @@ export function SectorRotation() {
           </div>
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
             <span className="font-semibold text-foreground">Prediction</span>
-            <span className="text-muted-foreground">
-              momentum building in
-            </span>
+            <span className="text-muted-foreground">momentum building in</span>
             {analysis.gaining.length ? (
               analysis.gaining.map((s) => (
                 <span key={s.label} className="font-medium text-positive">
@@ -457,28 +691,12 @@ export function SectorRotation() {
             )}
           </div>
           <p className="text-[0.7rem] leading-relaxed text-muted-foreground">
-            Capital rotates from laggards into relative-strength leaders;
-            sectors whose recent (1W) pace is outrunning their monthly pace are
-            where leadership may head next.
+            Capital rotates from laggards into relative-strength leaders; sectors
+            whose recent (1W) pace is outrunning their monthly pace are where
+            leadership may head next.
           </p>
         </div>
       )}
-
-      <input
-        type="range"
-        min={0}
-        max={Math.max(0, rows.length - 1)}
-        value={pos}
-        onChange={(e) => setIdx(Number(e.target.value))}
-        disabled={!rows.length}
-        aria-label="Scrub sector performance through time"
-        className="mt-3 w-full accent-[var(--accent)]"
-      />
-      <div className="mt-1 flex justify-between font-mono text-[0.6rem] text-muted-foreground">
-        {ticks.map((t, i) => (
-          <span key={i}>{t}</span>
-        ))}
-      </div>
     </div>
   );
 }
