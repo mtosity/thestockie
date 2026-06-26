@@ -228,7 +228,7 @@ const VIX_LEVELS = [
 ] as const;
 
 function VixCard() {
-  const timeFrame = useContext(TimeFrameContext);
+  const timeFrame: MacroTimeFrame = "1Y";
   const { data, isLoading } = api.asset.equityQuote.useQuery(
     "^VIX",
     REFETCH_OPTS,
@@ -454,7 +454,7 @@ function FearGreedCard() {
 // ── US Dollar Index (DXY) ───────────────────────────────────────────
 
 function DollarIndexCard() {
-  const timeFrame = useContext(TimeFrameContext);
+  const timeFrame: MacroTimeFrame = "1Y";
   const { data, isLoading } = api.asset.equityQuote.useQuery(
     "DXUSD",
     REFETCH_OPTS,
@@ -554,80 +554,6 @@ function DollarIndexCard() {
 }
 
 // ── Carry Trade & Risk (compact) ────────────────────────────────────
-
-function CarryRiskCard() {
-  const timeFrame = useContext(TimeFrameContext);
-
-  const { data: jpy, isLoading: jpyLoading } = api.asset.forexQuote.useQuery(
-    "USDJPY",
-    REFETCH_OPTS,
-  );
-  const { data: jpyHist } = api.asset.forexHistorical.useQuery(
-    "USDJPY",
-    REFETCH_OPTS,
-  );
-  const jpyRate = jpy?.bid ?? jpy?.ask ?? 0;
-  const { changePercent: jpyChange } = useHistoricalChange(
-    jpyHist?.historical,
-    jpyRate || undefined,
-    timeFrame,
-  );
-
-  const { data: btc } = api.asset.equityQuote.useQuery("BTCUSD", REFETCH_OPTS);
-  const { data: btcHist } = api.asset.equityPriceHistoricalFMP.useQuery(
-    "BTCUSD",
-    REFETCH_OPTS,
-  );
-  const btcQuote = btc?.[0];
-  const { changePercent: btcChange } = useHistoricalChange(
-    btcHist?.historical,
-    btcQuote?.price ?? undefined,
-    timeFrame,
-  );
-
-  return (
-    <CardShell title="Carry Trade & Risk">
-      {jpyLoading ? (
-        <SkeletonRows count={3} />
-      ) : (
-        <div>
-          <div className="flex items-center justify-between border-b border-border py-2">
-            <div>
-              <span className="text-sm font-medium text-foreground">USD/JPY</span>
-              <span className="ml-2 text-xs text-muted-foreground">Yen Carry</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">
-                ¥{jpyRate.toFixed(2)}
-              </span>
-              <ChangeDisplay
-                changePercent={jpyChange}
-                className="min-w-[60px] text-right text-xs"
-              />
-            </div>
-          </div>
-          <div className="mt-2 flex items-center justify-between py-2">
-            <div>
-              <span className="text-sm font-medium text-foreground">Bitcoin</span>
-              <span className="ml-2 text-xs text-muted-foreground">Risk Sentiment</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">
-                {btcQuote?.price
-                  ? `$${formatLargeNumber(btcQuote.price)}`
-                  : "—"}
-              </span>
-              <ChangeDisplay
-                changePercent={btcChange}
-                className="min-w-[60px] text-right text-xs"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </CardShell>
-  );
-}
 
 // ── Global Market Indices ───────────────────────────────────────────
 
@@ -1474,10 +1400,7 @@ export function MacroDashboard() {
     <TimeFrameContext.Provider value={timeFrame}>
       <div className="p-4">
         {/* Sticky timeframe selector */}
-        <div className="mb-4 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            Showing % change over selected period
-          </span>
+        <div className="mb-4 flex items-center justify-end">
           <TimeFrameSelector value={timeFrame} onChange={setTimeFrame} />
         </div>
 
@@ -1506,7 +1429,6 @@ export function MacroDashboard() {
           {/* Bottom: left column (risk gauges + upcoming econ events) and
               Market News spanning that column's full height and width. */}
           <div className="flex flex-col gap-4">
-            <CarryRiskCard />
             <FearGreedCard />
             <EconomicCalendarCard />
           </div>
