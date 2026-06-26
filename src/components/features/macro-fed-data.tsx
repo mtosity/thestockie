@@ -208,7 +208,7 @@ export function MacroFedDataBlock() {
                 }}
               />
               <Area
-                type="monotone"
+                type="linear"
                 dataKey="value"
                 stroke={color}
                 strokeWidth={2}
