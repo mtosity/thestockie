@@ -267,6 +267,42 @@ export function SectorRotation() {
 
   const selDate = rows[pos]?.date as string | undefined;
 
+  // Rotation read + momentum "prediction" at the selected point in time.
+  // Money flows toward relative strength (above the cross-sector average), and
+  // accelerating sectors — recent (1W) pace outrunning the monthly pace — hint
+  // at where leadership is heading next.
+  const analysis = useMemo(() => {
+    if (rows.length < 22) return null;
+    const at = (sym: string, i: number) => {
+      const v = rows[i]?.[sym];
+      return typeof v === "number" ? v : null;
+    };
+    const sectors = SECTOR_ETFS.map((s) => {
+      const cum = at(s.symbol, pos);
+      const w5 = at(s.symbol, pos - 5);
+      const m21 = at(s.symbol, pos - 21);
+      const week = cum != null && w5 != null ? cum - w5 : null;
+      const month = cum != null && m21 != null ? cum - m21 : null;
+      return {
+        label: s.label,
+        cum,
+        accel: week != null && month != null ? week - month / 4.2 : null,
+      };
+    }).filter((x): x is { label: string; cum: number; accel: number | null } => x.cum != null);
+    if (sectors.length < 3) return null;
+    const avg = sectors.reduce((a, b) => a + b.cum, 0) / sectors.length;
+    const inflow = [...sectors].sort((a, b) => b.cum - a.cum).filter((s) => s.cum > avg).slice(0, 3);
+    const outflow = [...sectors].sort((a, b) => a.cum - b.cum).filter((s) => s.cum < avg).slice(0, 3);
+    const accelled = sectors.filter((s): s is { label: string; cum: number; accel: number } => s.accel != null);
+    accelled.sort((a, b) => b.accel - a.accel);
+    return {
+      inflow,
+      outflow,
+      gaining: accelled.filter((s) => s.accel > 0).slice(0, 3),
+      fading: accelled.filter((s) => s.accel < 0).slice(-2).reverse(),
+    };
+  }, [rows, pos]);
+
   return (
     <div className="rounded-xl border border-border bg-background p-4">
       <div className="mb-1 flex items-center justify-between">
@@ -303,6 +339,55 @@ export function SectorRotation() {
           </ResponsiveContainer>
         )}
       </div>
+      {analysis && (
+        <div className="mt-3 space-y-1.5 border-t border-border pt-3 text-xs">
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+            <span className="text-muted-foreground">Money rotating into</span>
+            {analysis.inflow.map((s) => (
+              <span key={s.label} className="font-medium text-positive">
+                {s.label}
+              </span>
+            ))}
+            <span className="text-muted-foreground">· out of</span>
+            {analysis.outflow.map((s) => (
+              <span key={s.label} className="font-medium text-negative">
+                {s.label}
+              </span>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+            <span className="font-semibold text-foreground">Prediction</span>
+            <span className="text-muted-foreground">
+              momentum building in
+            </span>
+            {analysis.gaining.length ? (
+              analysis.gaining.map((s) => (
+                <span key={s.label} className="font-medium text-positive">
+                  {s.label} ▲
+                </span>
+              ))
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            )}
+            {analysis.fading.length > 0 && (
+              <>
+                <span className="text-muted-foreground">· fading</span>
+                {analysis.fading.map((s) => (
+                  <span key={s.label} className="font-medium text-negative">
+                    {s.label} ▼
+                  </span>
+                ))}
+              </>
+            )}
+          </div>
+          <p className="text-[0.7rem] leading-relaxed text-muted-foreground">
+            Capital rotates from laggards into relative-strength leaders;
+            sectors whose recent (1W) pace is outrunning their monthly pace are
+            where leadership may head next.
+          </p>
+        </div>
+      )}
+
       <input
         type="range"
         min={0}
