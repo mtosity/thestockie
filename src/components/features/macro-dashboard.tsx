@@ -26,6 +26,14 @@ import { format } from "date-fns";
 import Image from "next/image";
 import { useNewsSummary } from "~/hooks/use-news-summary";
 import { MacroFedDataBlock } from "./macro-fed-data";
+import {
+  MacroLineCard,
+  SectorRotation,
+  INDICES,
+  FOREX,
+  COMMODITIES as COMMODITIES_GROUP,
+  CRYPTO,
+} from "./macro-charts";
 
 // ── Types & Context ─────────────────────────────────────────────────
 
@@ -1459,7 +1467,7 @@ function CommoditiesCard() {
 // ── Main Dashboard ──────────────────────────────────────────────────
 
 export function MacroDashboard() {
-  const [timeFrame, setTimeFrame] = useState<MacroTimeFrame>("1D");
+  const [timeFrame, setTimeFrame] = useState<MacroTimeFrame>("1Y");
   const mounted = useMounted();
 
   if (!mounted) {
@@ -1497,12 +1505,19 @@ export function MacroDashboard() {
           <DollarIndexCard />
           <TreasuryCard />
 
-          {/* Row 2: Markets & Sectors */}
-          <GlobalIndicesCard />
-          <SectorPerformanceCard />
+          {/* Row 2: Markets — overlaid 1Y line charts */}
+          <MacroLineCard title="Global Market Indices" syms={INDICES} />
+          <MacroLineCard title="Key Forex Rates" syms={FOREX} />
+          <MacroLineCard title="Commodities" syms={COMMODITIES_GROUP} />
+          <MacroLineCard title="Crypto" syms={CRYPTO} />
+
+          {/* Sector rotation over time */}
+          <div className="md:col-span-2 xl:col-span-2">
+            <SectorRotation />
+          </div>
+
+          {/* Risk gauges */}
           <div className="flex flex-col gap-4">
-            <ForexCard />
-            <CommoditiesCard />
             <CarryRiskCard />
             <FearGreedCard />
           </div>
