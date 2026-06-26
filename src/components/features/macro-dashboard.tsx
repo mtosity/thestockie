@@ -25,6 +25,15 @@ import { api } from "~/trpc/react";
 import { format } from "date-fns";
 import Image from "next/image";
 import { useNewsSummary } from "~/hooks/use-news-summary";
+import { MacroFedDataBlock } from "./macro-fed-data";
+import {
+  MacroLineCard,
+  SectorRotation,
+  INDICES,
+  FOREX,
+  COMMODITIES as COMMODITIES_GROUP,
+  CRYPTO,
+} from "./macro-charts";
 
 // ── Types & Context ─────────────────────────────────────────────────
 
@@ -563,8 +572,6 @@ function CarryRiskCard() {
     jpyRate || undefined,
     timeFrame,
   );
-  const distanceTo160 = 160 - jpyRate;
-  const nearWarning = jpyRate >= 155;
 
   const { data: btc } = api.asset.equityQuote.useQuery("BTCUSD", REFETCH_OPTS);
   const { data: btcHist } = api.asset.equityPriceHistoricalFMP.useQuery(
@@ -598,17 +605,6 @@ function CarryRiskCard() {
                 className="min-w-[60px] text-right text-xs"
               />
             </div>
-          </div>
-          <div
-            className={`mt-2 rounded px-2 py-1 text-[11px] font-medium ${
-              nearWarning
-                ? "bg-negative-surface text-negative"
-                : "bg-positive-surface text-positive"
-            }`}
-          >
-            {nearWarning
-              ? `⚠ ${distanceTo160.toFixed(2)} from 160 — BOJ intervention zone`
-              : `${distanceTo160.toFixed(2)} from the 160 intervention level`}
           </div>
           <div className="mt-2 flex items-center justify-between py-2">
             <div>
@@ -1252,7 +1248,7 @@ function GeneralNewsCard() {
   }, [data]);
 
   return (
-    <CardShell title="Market News">
+    <CardShell title="Market News" className="flex h-full flex-col">
       {isLoading ? (
         <div className="flex flex-col gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -1269,13 +1265,13 @@ function GeneralNewsCard() {
           ))}
         </div>
       ) : sortedData.length > 0 ? (
-        <div>
+        <div className="flex min-h-0 flex-1 flex-col">
           <NewsSummary
             articles={sortedData}
             cacheKey="macro-news"
             context="These are today's financial market news articles. Provide a concise macro market summary highlighting the most important themes and market-moving events."
           />
-          <div className="max-h-[400px] overflow-auto">
+          <div className="min-h-0 flex-1 overflow-auto">
             <div className="flex flex-col gap-3">
               {sortedData.map((article, i) => (
                 <a
@@ -1458,7 +1454,7 @@ function CommoditiesCard() {
 // ── Main Dashboard ──────────────────────────────────────────────────
 
 export function MacroDashboard() {
-  const [timeFrame, setTimeFrame] = useState<MacroTimeFrame>("1D");
+  const [timeFrame, setTimeFrame] = useState<MacroTimeFrame>("1Y");
   const mounted = useMounted();
 
   if (!mounted) {
@@ -1485,26 +1481,41 @@ export function MacroDashboard() {
           <TimeFrameSelector value={timeFrame} onChange={setTimeFrame} />
         </div>
 
+        {/* Fed & economic data — one chart with a dropdown switcher */}
+        <div className="mb-4">
+          <MacroFedDataBlock />
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {/* Row 1: Key indicators */}
           <VixCard />
           <DollarIndexCard />
           <TreasuryCard />
 
-          {/* Row 2: Markets & Sectors */}
-          <GlobalIndicesCard />
-          <SectorPerformanceCard />
-          <div className="flex flex-col gap-4">
-            <ForexCard />
-            <CommoditiesCard />
-            <CarryRiskCard />
-            <FearGreedCard />
+          {/* Row 2: Markets — overlaid 1Y line charts */}
+          <MacroLineCard title="Global Market Indices" syms={INDICES} kind="indices" />
+          <MacroLineCard title="Key Forex Rates" syms={FOREX} kind="forex" />
+          <MacroLineCard title="Commodities" syms={COMMODITIES_GROUP} kind="commodities" />
+          <MacroLineCard title="Crypto" syms={CRYPTO} kind="crypto" />
+
+          {/* Sector rotation over time (same width as Market News below) */}
+          <div className="md:col-span-2 xl:col-span-2">
+            <SectorRotation />
           </div>
 
-          {/* Row 3: Calendar & News */}
-          <EconomicCalendarCard />
-          <div className="md:col-span-1 xl:col-span-2">
-            <GeneralNewsCard />
+          {/* Bottom: left column (risk gauges + upcoming econ events) and
+              Market News spanning that column's full height and width. */}
+          <div className="flex flex-col gap-4">
+            <CarryRiskCard />
+            <FearGreedCard />
+            <EconomicCalendarCard />
+          </div>
+          {/* On xl, News fills the left column's height (absolute) and scrolls
+              internally; on smaller screens it flows naturally full-width. */}
+          <div className="md:col-span-2 xl:relative xl:col-span-2">
+            <div className="xl:absolute xl:inset-0">
+              <GeneralNewsCard />
+            </div>
           </div>
         </div>
       </div>

@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
-    "@mtosity/design-system": "0.3.0",
+    "@mtosity/design-system": "^0.5.0",
     "@radix-ui/react-accordion": "^1.2.1",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-aspect-ratio": "^1.1.0",
@@ -110,6 +110,7 @@
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.8.0",
+    "sass": "^1.101.0",
     "tailwindcss": "^4.3.1",
     "tsx": "^4.21.0",
     "typescript": "^5.7.2"

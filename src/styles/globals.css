@@ -41,6 +41,13 @@
   -webkit-animation-fill-mode: forwards;
 }
 
+/* The Fed-data Select sits at the right edge of a full-width card, so its
+   dropdown is right-aligned to keep long option labels on-screen. */
+.macro-fed-select .ds-select-menu {
+  left: auto;
+  right: 0;
+}
+
 .react-grid-item > .react-resizable-handle:after {
   content: "";
   position: absolute;

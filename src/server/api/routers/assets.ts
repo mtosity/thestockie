@@ -1400,6 +1400,73 @@ export const assetsRouter = createTRPCRouter({
     return res.data;
   }),
 
+  // Curated Fed/macro economic indicators, fetched server-side in parallel and
+  // returned keyed by name. Each series is newest-first [{date, value}], ~3yr
+  // of history so the client can compute YoY and draw the full chart.
+  economicIndicators: publicProcedure.query(async () => {
+    const names = [
+      "CPI",
+      "unemploymentRate",
+      "totalNonfarmPayroll",
+      "initialClaims",
+      "realGDP",
+      "retailSales",
+      "industrialProductionTotalIndex",
+      "consumerSentiment",
+      "federalFunds",
+      "30YearFixedRateMortgageAverage",
+    ];
+    const from = getDateNDaysAgo(1100);
+    const to = getTodayDate();
+    const entries = await Promise.all(
+      names.map(async (name) => {
+        try {
+          const res = await fmp.get<{ date: string; value: number }[]>(
+            "/api/v4/economic",
+            { params: { apikey: apiKey, name, from, to } },
+          );
+          return [name, Array.isArray(res.data) ? res.data : []] as const;
+        } catch {
+          return [name, [] as { date: string; value: number }[]] as const;
+        }
+      }),
+    );
+    return Object.fromEntries(entries) as Record<
+      string,
+      { date: string; value: number }[]
+    >;
+  }),
+
+  // ~1yr daily close history for any list of symbols (indices, forex, crypto,
+  // commodities, sector ETFs — FMP's historical-price-full covers them all).
+  // Fetched in parallel, fault-tolerant, returned keyed by symbol (newest-first).
+  multiHistory: publicProcedure
+    .input(z.array(z.string()).max(20))
+    .query(async ({ input }) => {
+      const entries = await Promise.all(
+        input.map(async (symbol) => {
+          try {
+            const res = await fmp.get<{
+              historical?: { date: string; close: number }[];
+            }>(`/api/v3/historical-price-full/${symbol}`, {
+              params: { apikey: apiKey, timeseries: 365 },
+            });
+            const hist = (res.data?.historical ?? []).map((h) => ({
+              date: h.date,
+              close: h.close,
+            }));
+            return [symbol, hist] as const;
+          } catch {
+            return [symbol, [] as { date: string; close: number }[]] as const;
+          }
+        }),
+      );
+      return Object.fromEntries(entries) as Record<
+        string,
+        { date: string; close: number }[]
+      >;
+    }),
+
   generalNews: publicProcedure.query(async () => {
     const res = await fmp.get<
       {
