@@ -115,9 +115,8 @@ export function MacroFedDataBlock() {
   );
 
   const latest = chart[chart.length - 1];
-  const first = chart[0];
-  const up = latest && first ? latest.value >= first.value : true;
-  const color = up ? "#22c55e" : "#ef4444";
+  // FRED-style: one consistent steel-blue per series (not trend-colored).
+  const color = "#5b8fc7";
   const asOf = data?.[def.key]?.[0]?.date;
 
   const tickFmt = (d: string) =>
@@ -164,7 +163,7 @@ export function MacroFedDataBlock() {
             <AreaChart data={chart} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="fedFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={color} stopOpacity={0.35} />
+                  <stop offset="5%" stopColor={color} stopOpacity={0.16} />
                   <stop offset="95%" stopColor={color} stopOpacity={0} />
                 </linearGradient>
               </defs>

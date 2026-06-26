@@ -572,8 +572,6 @@ function CarryRiskCard() {
     jpyRate || undefined,
     timeFrame,
   );
-  const distanceTo160 = 160 - jpyRate;
-  const nearWarning = jpyRate >= 155;
 
   const { data: btc } = api.asset.equityQuote.useQuery("BTCUSD", REFETCH_OPTS);
   const { data: btcHist } = api.asset.equityPriceHistoricalFMP.useQuery(
@@ -607,17 +605,6 @@ function CarryRiskCard() {
                 className="min-w-[60px] text-right text-xs"
               />
             </div>
-          </div>
-          <div
-            className={`mt-2 rounded px-2 py-1 text-[11px] font-medium ${
-              nearWarning
-                ? "bg-negative-surface text-negative"
-                : "bg-positive-surface text-positive"
-            }`}
-          >
-            {nearWarning
-              ? `⚠ ${distanceTo160.toFixed(2)} from 160 — BOJ intervention zone`
-              : `${distanceTo160.toFixed(2)} from the 160 intervention level`}
           </div>
           <div className="mt-2 flex items-center justify-between py-2">
             <div>
