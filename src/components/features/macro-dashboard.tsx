@@ -1506,10 +1506,10 @@ export function MacroDashboard() {
           <TreasuryCard />
 
           {/* Row 2: Markets — overlaid 1Y line charts */}
-          <MacroLineCard title="Global Market Indices" syms={INDICES} />
-          <MacroLineCard title="Key Forex Rates" syms={FOREX} />
-          <MacroLineCard title="Commodities" syms={COMMODITIES_GROUP} />
-          <MacroLineCard title="Crypto" syms={CRYPTO} />
+          <MacroLineCard title="Global Market Indices" syms={INDICES} kind="indices" />
+          <MacroLineCard title="Key Forex Rates" syms={FOREX} kind="forex" />
+          <MacroLineCard title="Commodities" syms={COMMODITIES_GROUP} kind="commodities" />
+          <MacroLineCard title="Crypto" syms={CRYPTO} kind="crypto" />
 
           {/* Sector rotation over time (same width as Market News below) */}
           <div className="md:col-span-2 xl:col-span-2">

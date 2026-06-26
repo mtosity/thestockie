@@ -132,14 +132,66 @@ const tickFmt = (d: string) =>
   new Date(d).toLocaleDateString("en-US", { month: "short", year: "2-digit" });
 const pct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
 
+export type MacroLineKind = "indices" | "forex" | "commodities" | "crypto";
+
+/** A short, data-driven takeaway computed from the latest 1Y % moves. */
+function insightFor(
+  kind: MacroLineKind | undefined,
+  latest: Record<string, number>,
+  syms: Sym[],
+): string {
+  const entries = syms
+    .map((s) => ({ symbol: s.symbol, label: s.label, v: latest[s.symbol] }))
+    .filter((e): e is { symbol: string; label: string; v: number } => e.v != null);
+  if (entries.length < 2) return "";
+  const sorted = [...entries].sort((a, b) => b.v - a.v);
+  const top = sorted[0]!;
+  const bot = sorted[sorted.length - 1]!;
+  const up = entries.filter((e) => e.v > 0).length;
+  const n = entries.length;
+  const f = (x: number) => `${x >= 0 ? "+" : ""}${x.toFixed(1)}%`;
+
+  if (kind === "forex") {
+    // USD-base pairs up ⇒ dollar up; USD-quote pairs up ⇒ dollar down.
+    let score = 0;
+    let c = 0;
+    for (const e of entries) {
+      if (e.symbol.startsWith("USD")) (score += e.v), c++;
+      else if (e.symbol.endsWith("USD")) (score -= e.v), c++;
+    }
+    const d = c ? score / c : 0;
+    const dir = Math.abs(d) < 1 ? "roughly flat" : d > 0 ? "broadly stronger" : "broadly weaker";
+    return `Dollar ${dir} vs majors over the past year (${f(d)} avg). Biggest mover: ${top.label} ${f(top.v)}.`;
+  }
+  if (kind === "crypto") {
+    const tone = up >= n / 2 ? "Risk-on" : "Risk-off";
+    return `${tone} — ${up}/${n} higher over 1Y. ${top.label} leads (${f(top.v)}), ${bot.label} lags (${f(bot.v)}).`;
+  }
+  if (kind === "commodities") {
+    const gold = entries.find((e) => e.symbol === "GCUSD");
+    const oil = entries.find((e) => e.symbol === "CLUSD");
+    const parts: string[] = [];
+    if (gold) parts.push(`Gold ${f(gold.v)} (${gold.v > 0 ? "haven / inflation bid" : "soft"})`);
+    if (oil) parts.push(`WTI ${f(oil.v)} (${oil.v > 0 ? "firm demand" : "weak demand"})`);
+    parts.push(`${top.label} leads, ${bot.label} lags.`);
+    return parts.join(" · ");
+  }
+  // indices
+  const breadth =
+    up === n ? "Broad global strength" : up >= n / 2 ? "Mostly higher, regionally mixed" : "Mostly lower — risk-off";
+  return `${breadth}: ${top.label} leads (${f(top.v)}), ${bot.label} lags (${f(bot.v)}); ${up}/${n} up over 1Y.`;
+}
+
 /** Overlaid normalized line chart (% change over ~1Y) for a group of symbols. */
 export function MacroLineCard({
   title,
   syms,
+  kind,
   height = 240,
 }: {
   title: string;
   syms: Sym[];
+  kind?: MacroLineKind;
   height?: number;
 }) {
   const { data, isLoading } = api.asset.multiHistory.useQuery(
@@ -162,6 +214,11 @@ export function MacroLineCard({
     }
     return out;
   }, [rows, syms]);
+
+  const comment = useMemo(
+    () => insightFor(kind, latest, syms),
+    [kind, latest, syms],
+  );
 
   return (
     <div className="rounded-xl border border-border bg-background p-4">
@@ -234,6 +291,12 @@ export function MacroLineCard({
           </span>
         ))}
       </div>
+      {comment && (
+        <p className="mt-3 border-t border-border pt-2.5 text-xs leading-relaxed text-muted-foreground">
+          <span className="font-semibold text-foreground">Takeaway · </span>
+          {comment}
+        </p>
+      )}
     </div>
   );
 }
