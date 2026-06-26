@@ -111,33 +111,6 @@ function formatLargeNumber(n: number): string {
 
 // ── TimeFrame Selector ──────────────────────────────────────────────
 
-function TimeFrameSelector({
-  value,
-  onChange,
-}: {
-  value: MacroTimeFrame;
-  onChange: (tf: MacroTimeFrame) => void;
-}) {
-  const options: MacroTimeFrame[] = ["1D", "1W", "1M", "1Y"];
-  return (
-    <div className="inline-flex rounded-lg border border-border bg-background p-0.5">
-      {options.map((tf) => (
-        <button
-          key={tf}
-          onClick={() => onChange(tf)}
-          className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
-            value === tf
-              ? "bg-foreground/10 text-foreground shadow-xs"
-              : "text-muted-foreground hover:text-muted-foreground"
-          }`}
-        >
-          {tf}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 // ── Change calculation from historical data ─────────────────────────
 
 function useHistoricalChange(
@@ -1380,7 +1353,6 @@ function CommoditiesCard() {
 // ── Main Dashboard ──────────────────────────────────────────────────
 
 export function MacroDashboard() {
-  const [timeFrame, setTimeFrame] = useState<MacroTimeFrame>("1Y");
   const mounted = useMounted();
 
   if (!mounted) {
@@ -1397,50 +1369,43 @@ export function MacroDashboard() {
   }
 
   return (
-    <TimeFrameContext.Provider value={timeFrame}>
-      <div className="p-4">
-        {/* Sticky timeframe selector */}
-        <div className="mb-4 flex items-center justify-end">
-          <TimeFrameSelector value={timeFrame} onChange={setTimeFrame} />
+    <div className="p-4">
+      {/* Fed & economic data — one chart with a dropdown switcher */}
+      <div className="mb-4">
+        <MacroFedDataBlock />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {/* Row 1: Key indicators */}
+        <VixCard />
+        <DollarIndexCard />
+        <TreasuryCard />
+
+        {/* Row 2: Markets — overlaid 1Y line charts */}
+        <MacroLineCard title="Global Market Indices" syms={INDICES} kind="indices" />
+        <MacroLineCard title="Key Forex Rates" syms={FOREX} kind="forex" />
+        <MacroLineCard title="Commodities" syms={COMMODITIES_GROUP} kind="commodities" />
+        <MacroLineCard title="Crypto" syms={CRYPTO} kind="crypto" />
+
+        {/* Sector rotation over time (same width as Market News below) */}
+        <div className="md:col-span-2 xl:col-span-2">
+          <SectorRotation />
         </div>
 
-        {/* Fed & economic data — one chart with a dropdown switcher */}
-        <div className="mb-4">
-          <MacroFedDataBlock />
+        {/* Bottom: left column (risk gauges + upcoming econ events) and
+            Market News spanning that column's full height and width. */}
+        <div className="flex flex-col gap-4">
+          <FearGreedCard />
+          <EconomicCalendarCard />
         </div>
-
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {/* Row 1: Key indicators */}
-          <VixCard />
-          <DollarIndexCard />
-          <TreasuryCard />
-
-          {/* Row 2: Markets — overlaid 1Y line charts */}
-          <MacroLineCard title="Global Market Indices" syms={INDICES} kind="indices" />
-          <MacroLineCard title="Key Forex Rates" syms={FOREX} kind="forex" />
-          <MacroLineCard title="Commodities" syms={COMMODITIES_GROUP} kind="commodities" />
-          <MacroLineCard title="Crypto" syms={CRYPTO} kind="crypto" />
-
-          {/* Sector rotation over time (same width as Market News below) */}
-          <div className="md:col-span-2 xl:col-span-2">
-            <SectorRotation />
-          </div>
-
-          {/* Bottom: left column (risk gauges + upcoming econ events) and
-              Market News spanning that column's full height and width. */}
-          <div className="flex flex-col gap-4">
-            <FearGreedCard />
-            <EconomicCalendarCard />
-          </div>
-          {/* On xl, News fills the left column's height (absolute) and scrolls
-              internally; on smaller screens it flows naturally full-width. */}
-          <div className="md:col-span-2 xl:relative xl:col-span-2">
-            <div className="xl:absolute xl:inset-0">
-              <GeneralNewsCard />
-            </div>
+        {/* On xl, News fills the left column's height (absolute) and scrolls
+            internally; on smaller screens it flows naturally full-width. */}
+        <div className="md:col-span-2 xl:relative xl:col-span-2">
+          <div className="xl:absolute xl:inset-0">
+            <GeneralNewsCard />
           </div>
         </div>
       </div>
-    </TimeFrameContext.Provider>
+    </div>
   );
 }
