@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   CartesianGrid,
+  Customized,
   LabelList,
   Line,
   LineChart,
@@ -569,6 +570,41 @@ function SectorRRG({ rows }: { rows: Row[] }) {
     return { series: norm, dom: maxAbs * 1.12 };
   }, [rows]);
 
+  // Arrowhead at each trail's head, oriented along its last segment. Drawn in a
+  // Customized layer so we can use the chart's pixel scales for direction.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderArrows = (cprops: any) => {
+    const xMap = cprops.xAxisMap ?? {};
+    const yMap = cprops.yAxisMap ?? {};
+    const xScale = xMap[Object.keys(xMap)[0] ?? ""]?.scale;
+    const yScale = yMap[Object.keys(yMap)[0] ?? ""]?.scale;
+    if (!xScale || !yScale) return null;
+    return (
+      <g>
+        {series.map((s) => {
+          const n = s.pts.length;
+          if (n < 2) return null;
+          const a = s.pts[n - 2]!;
+          const b = s.pts[n - 1]!;
+          const x2 = xScale(b.x);
+          const y2 = yScale(b.y);
+          const ang = Math.atan2(y2 - yScale(a.y), x2 - xScale(a.x));
+          const L = 9;
+          const w = 0.42;
+          const p2 = `${x2 - L * Math.cos(ang - w)},${y2 - L * Math.sin(ang - w)}`;
+          const p3 = `${x2 - L * Math.cos(ang + w)},${y2 - L * Math.sin(ang + w)}`;
+          return (
+            <polygon
+              key={s.symbol}
+              points={`${x2},${y2} ${p2} ${p3}`}
+              fill={s.color}
+            />
+          );
+        })}
+      </g>
+    );
+  };
+
   if (!series.length) return null;
   return (
     <>
@@ -588,41 +624,11 @@ function SectorRRG({ rows }: { rows: Row[] }) {
                 key={s.symbol}
                 data={s.pts}
                 fill={s.color}
-                line={{ stroke: s.color, strokeWidth: 1.5, strokeOpacity: 0.45 }}
+                line={{ stroke: s.color, strokeWidth: 1.5, strokeOpacity: 0.55 }}
                 isAnimationActive={false}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                shape={(props: any) => {
-                  // recharts doesn't pass `index` to Scatter shapes, so we read
-                  // the start/end/progress metadata off the data point itself.
-                  const pt = props.payload ?? {};
-                  const isLast = !!pt.last;
-                  const isFirst = !!pt.first;
-                  const prog = typeof pt.prog === "number" ? pt.prog : 1;
-                  // Hollow ring marks the start (oldest); the trail grows in
-                  // size + opacity toward the solid "now" dot at the end.
-                  if (isFirst && !isLast) {
-                    return (
-                      <circle
-                        cx={props.cx}
-                        cy={props.cy}
-                        r={4}
-                        fill="none"
-                        stroke={s.color}
-                        strokeWidth={2}
-                        strokeOpacity={0.9}
-                      />
-                    );
-                  }
-                  return (
-                    <circle
-                      cx={props.cx}
-                      cy={props.cy}
-                      r={isLast ? 6 : 2 + prog * 2.5}
-                      fill={s.color}
-                      fillOpacity={isLast ? 1 : 0.35 + prog * 0.55}
-                    />
-                  );
-                }}
+                // No per-point dots — just the tail line. The current position
+                // and direction are shown by an arrowhead (drawn in <Customized>).
+                shape={() => <g />}
               >
                 <LabelList
                   dataKey="x"
@@ -637,15 +643,14 @@ function SectorRRG({ rows }: { rows: Row[] }) {
                 />
               </Scatter>
             ))}
+            <Customized component={renderArrows} />
           </ScatterChart>
         </ResponsiveContainer>
       </div>
-      <div className="mt-1 flex items-center justify-center gap-1.5 text-[0.62rem] text-muted-foreground">
-        <span className="inline-block h-2 w-2 rounded-full border border-muted-foreground" />
-        <span>start</span>
-        <span className="opacity-60">→ trail →</span>
-        <span className="inline-block h-2.5 w-2.5 rounded-full bg-muted-foreground" />
-        <span>now</span>
+      <div className="mt-1 flex items-center justify-center gap-1 text-[0.62rem] text-muted-foreground">
+        <span>tail = past&nbsp;</span>
+        <span className="opacity-60">→</span>
+        <span>&nbsp;▶ arrowhead = now</span>
       </div>
       <div className="mt-1 grid grid-cols-2 text-[0.62rem] text-muted-foreground">
         <span className="text-[#3b82f6]">↖ Improving</span>
