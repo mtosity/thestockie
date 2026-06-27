@@ -554,7 +554,13 @@ function SectorRRG({ rows }: { rows: Row[] }) {
     const sy = std(allY, my);
     const norm = series.map((s) => ({
       ...s,
-      pts: s.pts.map((p) => ({ x: (p.x - mx) / sx, y: (p.y - my) / sy })),
+      pts: s.pts.map((p, k, arr) => ({
+        x: (p.x - mx) / sx,
+        y: (p.y - my) / sy,
+        first: k === 0,
+        last: k === arr.length - 1,
+        prog: arr.length > 1 ? k / (arr.length - 1) : 1,
+      })),
     }));
     const maxAbs = Math.max(
       1.5,
@@ -586,10 +592,12 @@ function SectorRRG({ rows }: { rows: Row[] }) {
                 isAnimationActive={false}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 shape={(props: any) => {
-                  const total = s.pts.length;
-                  const i = props.index as number;
-                  const isLast = i === total - 1;
-                  const isFirst = i === 0;
+                  // recharts doesn't pass `index` to Scatter shapes, so we read
+                  // the start/end/progress metadata off the data point itself.
+                  const pt = props.payload ?? {};
+                  const isLast = !!pt.last;
+                  const isFirst = !!pt.first;
+                  const prog = typeof pt.prog === "number" ? pt.prog : 1;
                   // Hollow ring marks the start (oldest); the trail grows in
                   // size + opacity toward the solid "now" dot at the end.
                   if (isFirst && !isLast) {
@@ -597,22 +605,21 @@ function SectorRRG({ rows }: { rows: Row[] }) {
                       <circle
                         cx={props.cx}
                         cy={props.cy}
-                        r={3}
+                        r={4}
                         fill="none"
                         stroke={s.color}
-                        strokeWidth={1.5}
-                        strokeOpacity={0.8}
+                        strokeWidth={2}
+                        strokeOpacity={0.9}
                       />
                     );
                   }
-                  const prog = total > 1 ? i / (total - 1) : 1;
                   return (
                     <circle
                       cx={props.cx}
                       cy={props.cy}
-                      r={isLast ? 5 : 1.5 + prog * 2.5}
+                      r={isLast ? 6 : 2 + prog * 2.5}
                       fill={s.color}
-                      fillOpacity={isLast ? 1 : 0.3 + prog * 0.6}
+                      fillOpacity={isLast ? 1 : 0.35 + prog * 0.55}
                     />
                   );
                 }}
