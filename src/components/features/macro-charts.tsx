@@ -357,6 +357,8 @@ function SectorBump({ rows }: { rows: Row[] }) {
       .sort((a, b) => a.rank - b.rank);
   }, [data]);
 
+  const [hovered, setHovered] = useState<string | null>(null);
+
   return (
     <>
       <div style={{ height: 300 }}>
@@ -387,17 +389,49 @@ function SectorBump({ rows }: { rows: Row[] }) {
                 );
               }}
             />
-            {SECTOR_ETFS.map((s, i) => (
-              <Line key={s.symbol} dataKey={s.symbol} name={s.symbol} stroke={sectorColor(i)} strokeWidth={1.5} dot={{ r: 2 }} activeDot={{ r: 4 }} connectNulls isAnimationActive={false} />
-            ))}
+            {SECTOR_ETFS.map((s, i) => {
+              const isHot = hovered === s.symbol;
+              const dimmed = hovered != null && !isHot;
+              const color = sectorColor(i);
+              return (
+                <Line
+                  key={s.symbol}
+                  dataKey={s.symbol}
+                  name={s.symbol}
+                  stroke={color}
+                  strokeWidth={isHot ? 3.25 : 1.5}
+                  strokeOpacity={dimmed ? 0.2 : 1}
+                  dot={dimmed ? false : { r: 2 }}
+                  activeDot={{ r: 4 }}
+                  connectNulls
+                  isAnimationActive={false}
+                  style={
+                    isHot
+                      ? { filter: `drop-shadow(0 0 5px ${color})` }
+                      : undefined
+                  }
+                  onMouseEnter={() => setHovered(s.symbol)}
+                  onMouseLeave={() => setHovered(null)}
+                />
+              );
+            })}
           </LineChart>
         </ResponsiveContainer>
       </div>
       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
         {ranking.map((s) => (
-          <span key={s.symbol} className="flex items-center gap-1 text-xs">
+          <span
+            key={s.symbol}
+            className="flex cursor-pointer items-center gap-1 text-xs transition-opacity"
+            style={{ opacity: hovered != null && hovered !== s.symbol ? 0.35 : 1 }}
+            onMouseEnter={() => setHovered(s.symbol)}
+            onMouseLeave={() => setHovered(null)}
+          >
             <span className="font-mono text-muted-foreground">{s.rank}</span>
-            <span className="inline-block h-0.5 w-3" style={{ background: sectorColor(s.i) }} />
+            <span
+              className="inline-block h-0.5 w-3"
+              style={{ background: sectorColor(s.i) }}
+            />
             <span className="text-muted-foreground">{s.label}</span>
           </span>
         ))}
