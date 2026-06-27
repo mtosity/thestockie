@@ -29,6 +29,10 @@ const config = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "assets.parqet.com",
+      },
     ],
   },
 };
