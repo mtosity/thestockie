@@ -1354,6 +1354,59 @@ export const assetsRouter = createTRPCRouter({
     });
   }),
 
+  // Stock heatmap data: the largest US companies as a sector-grouped,
+  // market-cap-weighted, %-change-colored tile map (Finviz-style). Merges the
+  // screener (for market cap + sector) with batch quotes (for today's change).
+  stockHeatmap: publicProcedure
+    .input(z.object({ limit: z.number().min(10).max(200).default(100) }).optional())
+    .query(async ({ input }) => {
+      const limit = input?.limit ?? 100;
+
+      // 1. Screener → market cap + sector for the largest actively-traded US names.
+      const screen = await fmp.get<FMPStockScreenerResponse>(
+        `/api/v3/stock-screener`,
+        {
+          params: {
+            marketCapMoreThan: 10_000_000_000,
+            isEtf: false,
+            isFund: false,
+            isActivelyTrading: true,
+            country: "US",
+            limit: 500,
+            apikey: apiKey,
+          },
+        },
+      );
+
+      const top = (screen.data ?? [])
+        .filter((r) => r.marketCap > 0 && r.sector)
+        .sort((a, b) => b.marketCap - a.marketCap)
+        .slice(0, limit);
+
+      if (top.length === 0) return [];
+
+      // 2. Batch quote those symbols → today's % change.
+      const symbols = top.map((r) => r.symbol).join(",");
+      const quotes = await fmp.get<
+        { symbol: string; changesPercentage: number }[]
+      >(`/api/v3/quote/${symbols}`, {
+        params: { apikey: apiKey },
+      });
+
+      const changeBySymbol = new Map(
+        (quotes.data ?? []).map((q) => [q.symbol, q.changesPercentage]),
+      );
+
+      // 3. Merge.
+      return top.map((r) => ({
+        symbol: r.symbol,
+        name: r.companyName,
+        sector: r.sector,
+        marketCap: r.marketCap,
+        change: changeBySymbol.get(r.symbol) ?? null,
+      }));
+    }),
+
   treasuryRates: publicProcedure.query(async () => {
     const res = await fmp.get<
       {

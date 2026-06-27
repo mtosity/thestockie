@@ -29,6 +29,7 @@ import { MacroFedDataBlock } from "./macro-fed-data";
 import {
   MacroLineCard,
   SectorRotation,
+  StockHeatmap,
   INDICES,
   FOREX,
   COMMODITIES as COMMODITIES_GROUP,
@@ -1386,6 +1387,11 @@ export function MacroDashboard() {
         <MacroLineCard title="Key Forex Rates" syms={FOREX} kind="forex" />
         <MacroLineCard title="Commodities" syms={COMMODITIES_GROUP} kind="commodities" />
         <MacroLineCard title="Crypto" syms={CRYPTO} kind="crypto" />
+
+        {/* Full-width market heatmap */}
+        <div className="md:col-span-2 xl:col-span-3">
+          <StockHeatmap />
+        </div>
 
         {/* Sector rotation over time (same width as Market News below) */}
         <div className="md:col-span-2 xl:col-span-2">

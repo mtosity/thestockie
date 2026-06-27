@@ -700,3 +700,132 @@ export function SectorRotation() {
     </div>
   );
 }
+
+// ── Stock Heatmap ───────────────────────────────────────────────────
+
+interface HeatmapStock {
+  symbol: string;
+  name: string;
+  sector: string;
+  marketCap: number;
+  change: number | null;
+}
+
+/** Tile background: green for gains, red for losses, intensity scaled by
+ *  magnitude (capped at ±4%). Matches the SectorHeatmap color convention. */
+function tileBg(change: number | null): string {
+  if (change == null) return "color-mix(in srgb, #64748b 18%, transparent)";
+  const a = Math.round(Math.min(1, Math.abs(change) / 4) * 78) + 8;
+  return change >= 0
+    ? `color-mix(in srgb, #22c55e ${a}%, transparent)`
+    : `color-mix(in srgb, #ef4444 ${a}%, transparent)`;
+}
+
+function fmtCap(n: number): string {
+  if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
+  if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(0)}M`;
+  return `$${n}`;
+}
+
+/** Finviz-style market map: largest US companies grouped by sector, each tile
+ *  sized (flex-grow) by market cap and colored by today's % change. */
+export function StockHeatmap() {
+  const { data, isLoading } = api.asset.stockHeatmap.useQuery(
+    { limit: 100 },
+    REFETCH,
+  );
+
+  const sectors = useMemo(() => {
+    if (!data?.length) return [];
+    const bySector = new Map<string, HeatmapStock[]>();
+    for (const s of data) {
+      const arr = bySector.get(s.sector) ?? [];
+      arr.push(s);
+      bySector.set(s.sector, arr);
+    }
+    return [...bySector.entries()]
+      .map(([sector, stocks]) => ({
+        sector,
+        stocks: [...stocks].sort((a, b) => b.marketCap - a.marketCap),
+        total: stocks.reduce((sum, s) => sum + s.marketCap, 0),
+      }))
+      .sort((a, b) => b.total - a.total);
+  }, [data]);
+
+  return (
+    <div className="rounded-xl border border-border bg-background p-4">
+      <div className="mb-1 flex items-start justify-between gap-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Market Heatmap
+        </h2>
+        <div className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
+          <span>-4%</span>
+          <span
+            className="inline-block h-2 w-16 rounded-sm"
+            style={{
+              background:
+                "linear-gradient(to right, #ef4444, color-mix(in srgb, #64748b 18%, transparent), #22c55e)",
+            }}
+          />
+          <span>+4%</span>
+        </div>
+      </div>
+      <p className="mb-3 text-xs text-muted-foreground">
+        Top 100 US companies by market cap, grouped by sector. Tile size = market
+        cap, color = today&apos;s move.
+      </p>
+
+      {isLoading ? (
+        <div className="flex h-[360px] items-center justify-center text-sm text-muted-foreground">
+          Loading…
+        </div>
+      ) : sectors.length === 0 ? (
+        <div className="flex h-[360px] items-center justify-center text-sm text-muted-foreground">
+          No data
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2" style={{ minHeight: 360 }}>
+          {sectors.map(({ sector, stocks, total }) => (
+            <div
+              key={sector}
+              className="flex min-w-[180px] flex-col"
+              style={{ flexGrow: total, flexBasis: 0 }}
+            >
+              <div className="mb-1 truncate text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
+                {sector}
+              </div>
+              <div className="flex flex-1 flex-wrap content-start gap-1">
+                {stocks.map((s) => (
+                  <div
+                    key={s.symbol}
+                    title={`${s.name} · ${fmtCap(s.marketCap)} · ${
+                      s.change == null
+                        ? "—"
+                        : (s.change >= 0 ? "+" : "") + s.change.toFixed(2) + "%"
+                    }`}
+                    className="flex min-w-[56px] flex-col items-center justify-center rounded px-1 py-1.5 text-center"
+                    style={{
+                      flexGrow: s.marketCap,
+                      flexBasis: 0,
+                      background: tileBg(s.change),
+                    }}
+                  >
+                    <span className="text-xs font-bold text-foreground">
+                      {s.symbol}
+                    </span>
+                    <span className="text-[0.6rem] tabular-nums text-foreground/80">
+                      {s.change == null
+                        ? "—"
+                        : (s.change >= 0 ? "+" : "") + s.change.toFixed(1) + "%"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
