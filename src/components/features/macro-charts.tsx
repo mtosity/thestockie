@@ -817,9 +817,31 @@ function fmtPct(change: number | null): string {
   return `${change >= 0 ? "+" : ""}${change.toFixed(2)}%`;
 }
 
+/** Black or white logo chip, chosen by the tile's luminance so the circle
+ *  contrasts with the tile (bright tiles get a black chip, dark ones white). */
+function chipBg(change: number | null): string {
+  if (change == null) return "#ffffff";
+  const a = Math.min(1, Math.abs(change) / 4) * 0.8 + 0.08;
+  const base = change >= 0 ? [34, 197, 94] : [239, 68, 68];
+  const card = [17, 17, 19];
+  const r = base[0]! * a + card[0]! * (1 - a);
+  const g = base[1]! * a + card[1]! * (1 - a);
+  const b = base[2]! * a + card[2]! * (1 - a);
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return lum > 115 ? "#000000" : "#ffffff";
+}
+
 /** Company logo for a heatmap tile (FMP image endpoint). Hides itself if the
  *  logo 404s — the symbol text below it still identifies the company. */
-function TileLogo({ symbol, size }: { symbol: string; size: number }) {
+function TileLogo({
+  symbol,
+  size,
+  bg,
+}: {
+  symbol: string;
+  size: number;
+  bg: string;
+}) {
   const [failed, setFailed] = useState(false);
   if (failed) return null;
   return (
@@ -829,7 +851,8 @@ function TileLogo({ symbol, size }: { symbol: string; size: number }) {
       width={size}
       height={size}
       unoptimized
-      className="mb-0.5 rounded-sm bg-white/90 object-contain p-px"
+      style={{ background: bg }}
+      className="mb-0.5 rounded-full object-contain p-1"
       onError={() => setFailed(true)}
     />
   );
@@ -919,7 +942,7 @@ export function StockHeatmap() {
                   height: `${rect.h}%`,
                 }}
               >
-                <span className="absolute left-1 top-0.5 rounded-sm bg-background/70 px-1 text-[0.6rem] font-semibold uppercase tracking-wide text-muted-foreground">
+                <span className="absolute left-1 top-0.5 rounded bg-background/80 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-foreground">
                   {sector}
                 </span>
               </div>
@@ -945,7 +968,13 @@ export function StockHeatmap() {
                       background: tileBg(s.change),
                     }}
                   >
-                    {showLogo && <TileLogo symbol={s.symbol} size={logoSize} />}
+                    {showLogo && (
+                      <TileLogo
+                        symbol={s.symbol}
+                        size={logoSize}
+                        bg={chipBg(s.change)}
+                      />
+                    )}
                     {showSym && (
                       <span className="px-0.5 text-[0.7rem] font-bold leading-tight text-foreground">
                         {s.symbol}
