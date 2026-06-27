@@ -1363,23 +1363,38 @@ export const assetsRouter = createTRPCRouter({
       const limit = input?.limit ?? 100;
 
       // 1. Screener → market cap + sector for the largest actively-traded US names.
-      const screen = await fmp.get<FMPStockScreenerResponse>(
-        `/api/v3/stock-screener`,
-        {
-          params: {
-            marketCapMoreThan: 10_000_000_000,
-            isEtf: false,
-            isFund: false,
-            isActivelyTrading: true,
-            country: "US",
-            limit: 500,
-            apikey: apiKey,
-          },
-        },
+      //    Query NASDAQ + NYSE separately (the screener's `exchange` param takes
+      //    a single value) and merge.
+      const PRIMARY_EXCHANGES = ["nasdaq", "nyse"] as const;
+      const screens = await Promise.all(
+        PRIMARY_EXCHANGES.map((exchange) =>
+          fmp.get<FMPStockScreenerResponse>(`/api/v3/stock-screener`, {
+            params: {
+              marketCapMoreThan: 10_000_000_000,
+              isEtf: false,
+              isFund: false,
+              isActivelyTrading: true,
+              country: "US",
+              exchange,
+              limit: 500,
+              apikey: apiKey,
+            },
+          }),
+        ),
       );
 
-      const top = (screen.data ?? [])
-        .filter((r) => r.marketCap > 0 && r.sector)
+      // Dedupe by symbol and drop foreign cross-listings (e.g. AAPL.MX, AMD.BA),
+      // which carry a "." suffix. US primary tickers don't (BRK-B uses a hyphen).
+      const seen = new Set<string>();
+      const top = screens
+        .flatMap((s) => s.data ?? [])
+        .filter((r) => {
+          if (!(r.marketCap > 0) || !r.sector) return false;
+          if (r.symbol.includes(".")) return false;
+          if (seen.has(r.symbol)) return false;
+          seen.add(r.symbol);
+          return true;
+        })
         .sort((a, b) => b.marketCap - a.marketCap)
         .slice(0, limit);
 

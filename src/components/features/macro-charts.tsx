@@ -701,7 +701,8 @@ export function SectorRotation() {
   );
 }
 
-// ── Stock Heatmap ───────────────────────────────────────────────────
+
+// ── Stock Heatmap (squarified treemap) ──────────────────────────────
 
 interface HeatmapStock {
   symbol: string;
@@ -711,11 +712,93 @@ interface HeatmapStock {
   change: number | null;
 }
 
+interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** Squarified treemap (Bruls et al.). Lays weighted items into the given rect
+ *  so tile aspect ratios stay close to 1. Coordinates are in the same units as
+ *  the input rect (we use a 0–100 percentage space for responsive rendering). */
+function squarify<T extends { value: number }>(
+  data: T[],
+  X: number,
+  Y: number,
+  W: number,
+  H: number,
+): (T & Rect)[] {
+  const out: (T & Rect)[] = [];
+  const items = data.filter((d) => d.value > 0).sort((a, b) => b.value - a.value);
+  const total = items.reduce((s, d) => s + d.value, 0);
+  if (total <= 0 || W <= 0 || H <= 0) return out;
+
+  const scale = (W * H) / total;
+  const vals = items.map((d) => ({ d, area: d.value * scale }));
+
+  let rx = X,
+    ry = Y,
+    rw = W,
+    rh = H;
+  let row: { d: T; area: number }[] = [];
+
+  const worst = (r: typeof row, side: number) => {
+    const sum = r.reduce((s, q) => s + q.area, 0);
+    const mx = Math.max(...r.map((q) => q.area));
+    const mn = Math.min(...r.map((q) => q.area));
+    const s2 = sum * sum;
+    const l2 = side * side;
+    return Math.max((l2 * mx) / s2, s2 / (l2 * mn));
+  };
+
+  const layout = (r: typeof row, vertical: boolean) => {
+    const sum = r.reduce((s, q) => s + q.area, 0);
+    if (vertical) {
+      const colW = sum / rh;
+      let oy = ry;
+      for (const q of r) {
+        const cellH = q.area / colW;
+        out.push({ ...q.d, x: rx, y: oy, w: colW, h: cellH });
+        oy += cellH;
+      }
+      rx += colW;
+      rw -= colW;
+    } else {
+      const rowH = sum / rw;
+      let ox = rx;
+      for (const q of r) {
+        const cellW = q.area / rowH;
+        out.push({ ...q.d, x: ox, y: ry, w: cellW, h: rowH });
+        ox += cellW;
+      }
+      ry += rowH;
+      rh -= rowH;
+    }
+  };
+
+  let i = 0;
+  while (i < vals.length) {
+    const vertical = rw >= rh;
+    const side = vertical ? rh : rw;
+    const next = [...row, vals[i]!];
+    if (row.length === 0 || worst(row, side) >= worst(next, side)) {
+      row = next;
+      i++;
+    } else {
+      layout(row, vertical);
+      row = [];
+    }
+  }
+  if (row.length) layout(row, rw >= rh);
+  return out;
+}
+
 /** Tile background: green for gains, red for losses, intensity scaled by
  *  magnitude (capped at ±4%). Matches the SectorHeatmap color convention. */
 function tileBg(change: number | null): string {
-  if (change == null) return "color-mix(in srgb, #64748b 18%, transparent)";
-  const a = Math.round(Math.min(1, Math.abs(change) / 4) * 78) + 8;
+  if (change == null) return "color-mix(in srgb, #64748b 20%, transparent)";
+  const a = Math.round(Math.min(1, Math.abs(change) / 4) * 80) + 8;
   return change >= 0
     ? `color-mix(in srgb, #22c55e ${a}%, transparent)`
     : `color-mix(in srgb, #ef4444 ${a}%, transparent)`;
@@ -728,15 +811,22 @@ function fmtCap(n: number): string {
   return `$${n}`;
 }
 
-/** Finviz-style market map: largest US companies grouped by sector, each tile
- *  sized (flex-grow) by market cap and colored by today's % change. */
+function fmtPct(change: number | null): string {
+  if (change == null) return "—";
+  return `${change >= 0 ? "+" : ""}${change.toFixed(2)}%`;
+}
+
+/** Finviz-style market map: largest US companies as a squarified treemap,
+ *  grouped by sector, tiles sized by market cap and colored by today's move. */
 export function StockHeatmap() {
   const { data, isLoading } = api.asset.stockHeatmap.useQuery(
     { limit: 100 },
     REFETCH,
   );
 
-  const sectors = useMemo(() => {
+  // Two-level treemap: partition the canvas among sectors (by total market
+  // cap), then squarify each sector's stocks within its rect.
+  const tiles = useMemo(() => {
     if (!data?.length) return [];
     const bySector = new Map<string, HeatmapStock[]>();
     for (const s of data) {
@@ -744,13 +834,24 @@ export function StockHeatmap() {
       arr.push(s);
       bySector.set(s.sector, arr);
     }
-    return [...bySector.entries()]
-      .map(([sector, stocks]) => ({
-        sector,
-        stocks: [...stocks].sort((a, b) => b.marketCap - a.marketCap),
-        total: stocks.reduce((sum, s) => sum + s.marketCap, 0),
-      }))
-      .sort((a, b) => b.total - a.total);
+    const sectors = [...bySector.entries()].map(([sector, stocks]) => ({
+      sector,
+      stocks,
+      value: stocks.reduce((sum, s) => sum + s.marketCap, 0),
+    }));
+
+    const sectorRects = squarify(sectors, 0, 0, 100, 100);
+    return sectorRects.map((sr) => ({
+      sector: sr.sector,
+      rect: { x: sr.x, y: sr.y, w: sr.w, h: sr.h },
+      stocks: squarify(
+        sr.stocks.map((s) => ({ ...s, value: s.marketCap })),
+        sr.x,
+        sr.y,
+        sr.w,
+        sr.h,
+      ),
+    }));
   }, [data]);
 
   return (
@@ -765,7 +866,7 @@ export function StockHeatmap() {
             className="inline-block h-2 w-16 rounded-sm"
             style={{
               background:
-                "linear-gradient(to right, #ef4444, color-mix(in srgb, #64748b 18%, transparent), #22c55e)",
+                "linear-gradient(to right, #ef4444, color-mix(in srgb, #64748b 20%, transparent), #22c55e)",
             }}
           />
           <span>+4%</span>
@@ -777,51 +878,65 @@ export function StockHeatmap() {
       </p>
 
       {isLoading ? (
-        <div className="flex h-[360px] items-center justify-center text-sm text-muted-foreground">
+        <div className="flex h-[480px] items-center justify-center text-sm text-muted-foreground">
           Loading…
         </div>
-      ) : sectors.length === 0 ? (
-        <div className="flex h-[360px] items-center justify-center text-sm text-muted-foreground">
+      ) : tiles.length === 0 ? (
+        <div className="flex h-[480px] items-center justify-center text-sm text-muted-foreground">
           No data
         </div>
       ) : (
-        <div className="flex flex-wrap gap-2" style={{ minHeight: 360 }}>
-          {sectors.map(({ sector, stocks, total }) => (
-            <div
-              key={sector}
-              className="flex min-w-[180px] flex-col"
-              style={{ flexGrow: total, flexBasis: 0 }}
-            >
-              <div className="mb-1 truncate text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
-                {sector}
+        <div className="relative h-[480px] w-full overflow-hidden rounded-lg">
+          {tiles.map(({ sector, rect, stocks }) => (
+            <div key={sector}>
+              {/* sector outline + label */}
+              <div
+                className="pointer-events-none absolute z-10"
+                style={{
+                  left: `${rect.x}%`,
+                  top: `${rect.y}%`,
+                  width: `${rect.w}%`,
+                  height: `${rect.h}%`,
+                }}
+              >
+                <span className="absolute left-1 top-0.5 rounded-sm bg-background/70 px-1 text-[0.6rem] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {sector}
+                </span>
               </div>
-              <div className="flex flex-1 flex-wrap content-start gap-1">
-                {stocks.map((s) => (
+              {/* stock tiles */}
+              {stocks.map((s) => {
+                const showSym = s.w >= 3 && s.h >= 4;
+                const showPct = s.w >= 4.5 && s.h >= 7;
+                return (
                   <div
                     key={s.symbol}
-                    title={`${s.name} · ${fmtCap(s.marketCap)} · ${
-                      s.change == null
-                        ? "—"
-                        : (s.change >= 0 ? "+" : "") + s.change.toFixed(2) + "%"
-                    }`}
-                    className="flex min-w-[56px] flex-col items-center justify-center rounded px-1 py-1.5 text-center"
+                    title={`${s.symbol} · ${s.name} · ${fmtCap(
+                      s.marketCap,
+                    )} · ${fmtPct(s.change)}`}
+                    className="absolute flex flex-col items-center justify-center overflow-hidden border border-background/60 text-center"
                     style={{
-                      flexGrow: s.marketCap,
-                      flexBasis: 0,
+                      left: `${s.x}%`,
+                      top: `${s.y}%`,
+                      width: `${s.w}%`,
+                      height: `${s.h}%`,
                       background: tileBg(s.change),
                     }}
                   >
-                    <span className="text-xs font-bold text-foreground">
-                      {s.symbol}
-                    </span>
-                    <span className="text-[0.6rem] tabular-nums text-foreground/80">
-                      {s.change == null
-                        ? "—"
-                        : (s.change >= 0 ? "+" : "") + s.change.toFixed(1) + "%"}
-                    </span>
+                    {showSym && (
+                      <span className="px-0.5 text-[0.7rem] font-bold leading-tight text-foreground">
+                        {s.symbol}
+                      </span>
+                    )}
+                    {showPct && (
+                      <span className="text-[0.6rem] tabular-nums leading-tight text-foreground/80">
+                        {s.change == null
+                          ? "—"
+                          : `${s.change >= 0 ? "+" : ""}${s.change.toFixed(1)}%`}
+                      </span>
+                    )}
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           ))}
         </div>
