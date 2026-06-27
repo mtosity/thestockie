@@ -14,6 +14,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import Image from "next/image";
 import { Select } from "@mtosity/design-system";
 import { ChartTooltip } from "~/components/ui/chart";
 import { api } from "~/trpc/react";
@@ -816,6 +817,24 @@ function fmtPct(change: number | null): string {
   return `${change >= 0 ? "+" : ""}${change.toFixed(2)}%`;
 }
 
+/** Company logo for a heatmap tile (FMP image endpoint). Hides itself if the
+ *  logo 404s — the symbol text below it still identifies the company. */
+function TileLogo({ symbol, size }: { symbol: string; size: number }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return (
+    <Image
+      src={`https://financialmodelingprep.com/image-stock/${symbol}.png`}
+      alt={symbol}
+      width={size}
+      height={size}
+      unoptimized
+      className="mb-0.5 rounded-sm bg-white/90 object-contain p-px"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 /** Finviz/TradingView-style market map: largest US companies as a squarified
  *  treemap, grouped by sector, tiles sized by market cap and colored by today's
  *  move. Fills the height of its column (the 3 stacked charts on the left). */
@@ -908,6 +927,9 @@ export function StockHeatmap() {
               {stocks.map((s) => {
                 const showSym = s.w >= 3 && s.h >= 4;
                 const showPct = s.w >= 4.5 && s.h >= 7;
+                const showLogo = s.w >= 4 && s.h >= 7;
+                const logoSize =
+                  s.w >= 11 && s.h >= 13 ? 40 : s.w >= 7 && s.h >= 9 ? 28 : 18;
                 return (
                   <div
                     key={s.symbol}
@@ -923,6 +945,7 @@ export function StockHeatmap() {
                       background: tileBg(s.change),
                     }}
                   >
+                    {showLogo && <TileLogo symbol={s.symbol} size={logoSize} />}
                     {showSym && (
                       <span className="px-0.5 text-[0.7rem] font-bold leading-tight text-foreground">
                         {s.symbol}
