@@ -399,7 +399,7 @@ function SectorBump({ rows }: { rows: Row[] }) {
                   dataKey={s.symbol}
                   name={s.symbol}
                   stroke={color}
-                  strokeWidth={isHot ? 3.25 : 1.5}
+                  strokeWidth={isHot ? 4 : 2.5}
                   strokeOpacity={dimmed ? 0.2 : 1}
                   dot={dimmed ? false : { r: 2 }}
                   activeDot={{ r: 4 }}
