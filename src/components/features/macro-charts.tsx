@@ -379,9 +379,17 @@ function SectorBump({ rows }: { rows: Row[] }) {
                       .sort((a, b) => a.value - b.value)
                       .map((p) => {
                         const s = SECTOR_ETFS.find((x) => x.symbol === p.name);
+                        const isHot = hovered === p.name;
                         return (
-                          <div key={p.name} style={{ color: p.color }}>
-                            #{p.value} {s?.label ?? p.name}
+                          <div
+                            key={p.name}
+                            className={isHot ? "font-bold" : ""}
+                            style={{
+                              color: p.color,
+                              opacity: hovered != null && !isHot ? 0.45 : 1,
+                            }}
+                          >
+                            {isHot ? "▶ " : ""}#{p.value} {s?.label ?? p.name}
                           </div>
                         );
                       })}
