@@ -702,97 +702,7 @@ export function SectorRotation() {
 }
 
 
-// ── Stock Heatmap (squarified treemap) ──────────────────────────────
-
-interface HeatmapStock {
-  symbol: string;
-  name: string;
-  sector: string;
-  marketCap: number;
-  change: number | null;
-}
-
-interface Rect {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-/** Squarified treemap (Bruls et al.). Lays weighted items into the given rect
- *  so tile aspect ratios stay close to 1. Coordinates are in the same units as
- *  the input rect (we use a 0–100 percentage space for responsive rendering). */
-function squarify<T extends { value: number }>(
-  data: T[],
-  X: number,
-  Y: number,
-  W: number,
-  H: number,
-): (T & Rect)[] {
-  const out: (T & Rect)[] = [];
-  const items = data.filter((d) => d.value > 0).sort((a, b) => b.value - a.value);
-  const total = items.reduce((s, d) => s + d.value, 0);
-  if (total <= 0 || W <= 0 || H <= 0) return out;
-
-  const scale = (W * H) / total;
-  const vals = items.map((d) => ({ d, area: d.value * scale }));
-
-  let rx = X,
-    ry = Y,
-    rw = W,
-    rh = H;
-  let row: { d: T; area: number }[] = [];
-
-  const worst = (r: typeof row, side: number) => {
-    const sum = r.reduce((s, q) => s + q.area, 0);
-    const mx = Math.max(...r.map((q) => q.area));
-    const mn = Math.min(...r.map((q) => q.area));
-    const s2 = sum * sum;
-    const l2 = side * side;
-    return Math.max((l2 * mx) / s2, s2 / (l2 * mn));
-  };
-
-  const layout = (r: typeof row, vertical: boolean) => {
-    const sum = r.reduce((s, q) => s + q.area, 0);
-    if (vertical) {
-      const colW = sum / rh;
-      let oy = ry;
-      for (const q of r) {
-        const cellH = q.area / colW;
-        out.push({ ...q.d, x: rx, y: oy, w: colW, h: cellH });
-        oy += cellH;
-      }
-      rx += colW;
-      rw -= colW;
-    } else {
-      const rowH = sum / rw;
-      let ox = rx;
-      for (const q of r) {
-        const cellW = q.area / rowH;
-        out.push({ ...q.d, x: ox, y: ry, w: cellW, h: rowH });
-        ox += cellW;
-      }
-      ry += rowH;
-      rh -= rowH;
-    }
-  };
-
-  let i = 0;
-  while (i < vals.length) {
-    const vertical = rw >= rh;
-    const side = vertical ? rh : rw;
-    const next = [...row, vals[i]!];
-    if (row.length === 0 || worst(row, side) >= worst(next, side)) {
-      row = next;
-      i++;
-    } else {
-      layout(row, vertical);
-      row = [];
-    }
-  }
-  if (row.length) layout(row, rw >= rh);
-  return out;
-}
+// ── Stock Heatmap (sector-ranked square grid) ───────────────────────
 
 /** Tile background: green for gains, red for losses, intensity scaled by
  *  magnitude (capped at ±4%). Matches the SectorHeatmap color convention. */
@@ -816,46 +726,22 @@ function fmtPct(change: number | null): string {
   return `${change >= 0 ? "+" : ""}${change.toFixed(2)}%`;
 }
 
-/** Finviz-style market map: largest US companies as a squarified treemap,
- *  grouped by sector, tiles sized by market cap and colored by today's move. */
+/** Market heatmap as a square grid of equal square tiles, one per company,
+ *  ordered by market cap (largest first), colored by today's % change.
+ *  At xl the grid is 10 columns × 10 rows for the top 100 → a clean square. */
 export function StockHeatmap() {
   const { data, isLoading } = api.asset.stockHeatmap.useQuery(
     { limit: 100 },
     REFETCH,
   );
 
-  // Two-level treemap: partition the canvas among sectors (by total market
-  // cap), then squarify each sector's stocks within its rect.
-  const tiles = useMemo(() => {
+  const stocks = useMemo(() => {
     if (!data?.length) return [];
-    const bySector = new Map<string, HeatmapStock[]>();
-    for (const s of data) {
-      const arr = bySector.get(s.sector) ?? [];
-      arr.push(s);
-      bySector.set(s.sector, arr);
-    }
-    const sectors = [...bySector.entries()].map(([sector, stocks]) => ({
-      sector,
-      stocks,
-      value: stocks.reduce((sum, s) => sum + s.marketCap, 0),
-    }));
-
-    const sectorRects = squarify(sectors, 0, 0, 100, 100);
-    return sectorRects.map((sr) => ({
-      sector: sr.sector,
-      rect: { x: sr.x, y: sr.y, w: sr.w, h: sr.h },
-      stocks: squarify(
-        sr.stocks.map((s) => ({ ...s, value: s.marketCap })),
-        sr.x,
-        sr.y,
-        sr.w,
-        sr.h,
-      ),
-    }));
+    return [...data].sort((a, b) => b.marketCap - a.marketCap);
   }, [data]);
 
   return (
-    <div className="rounded-xl border border-border bg-background p-4">
+    <div className="flex flex-col rounded-xl border border-border bg-background p-4">
       <div className="mb-1 flex items-start justify-between gap-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Market Heatmap
@@ -873,70 +759,37 @@ export function StockHeatmap() {
         </div>
       </div>
       <p className="mb-3 text-xs text-muted-foreground">
-        Top 100 US companies by market cap, grouped by sector. Tile size = market
-        cap, color = today&apos;s move.
+        Top 100 US companies by market cap, ordered largest first, colored by
+        today&apos;s move.
       </p>
 
       {isLoading ? (
-        <div className="flex h-[480px] items-center justify-center text-sm text-muted-foreground">
+        <div className="flex aspect-square items-center justify-center text-sm text-muted-foreground">
           Loading…
         </div>
-      ) : tiles.length === 0 ? (
-        <div className="flex h-[480px] items-center justify-center text-sm text-muted-foreground">
+      ) : stocks.length === 0 ? (
+        <div className="flex aspect-square items-center justify-center text-sm text-muted-foreground">
           No data
         </div>
       ) : (
-        <div className="relative h-[480px] w-full overflow-hidden rounded-lg">
-          {tiles.map(({ sector, rect, stocks }) => (
-            <div key={sector}>
-              {/* sector outline + label */}
-              <div
-                className="pointer-events-none absolute z-10"
-                style={{
-                  left: `${rect.x}%`,
-                  top: `${rect.y}%`,
-                  width: `${rect.w}%`,
-                  height: `${rect.h}%`,
-                }}
-              >
-                <span className="absolute left-1 top-0.5 rounded-sm bg-background/70 px-1 text-[0.6rem] font-semibold uppercase tracking-wide text-muted-foreground">
-                  {sector}
-                </span>
-              </div>
-              {/* stock tiles */}
-              {stocks.map((s) => {
-                const showSym = s.w >= 3 && s.h >= 4;
-                const showPct = s.w >= 4.5 && s.h >= 7;
-                return (
-                  <div
-                    key={s.symbol}
-                    title={`${s.symbol} · ${s.name} · ${fmtCap(
-                      s.marketCap,
-                    )} · ${fmtPct(s.change)}`}
-                    className="absolute flex flex-col items-center justify-center overflow-hidden border border-background/60 text-center"
-                    style={{
-                      left: `${s.x}%`,
-                      top: `${s.y}%`,
-                      width: `${s.w}%`,
-                      height: `${s.h}%`,
-                      background: tileBg(s.change),
-                    }}
-                  >
-                    {showSym && (
-                      <span className="px-0.5 text-[0.7rem] font-bold leading-tight text-foreground">
-                        {s.symbol}
-                      </span>
-                    )}
-                    {showPct && (
-                      <span className="text-[0.6rem] tabular-nums leading-tight text-foreground/80">
-                        {s.change == null
-                          ? "—"
-                          : `${s.change >= 0 ? "+" : ""}${s.change.toFixed(1)}%`}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
+        <div className="grid grid-cols-6 gap-1 sm:grid-cols-8 xl:grid-cols-10">
+          {stocks.map((s) => (
+            <div
+              key={s.symbol}
+              title={`${s.symbol} · ${s.name} · ${s.sector} · ${fmtCap(
+                s.marketCap,
+              )} · ${fmtPct(s.change)}`}
+              className="flex aspect-square flex-col items-center justify-center overflow-hidden rounded-sm px-0.5 text-center"
+              style={{ background: tileBg(s.change) }}
+            >
+              <span className="w-full truncate text-[0.7rem] font-bold leading-tight text-foreground">
+                {s.symbol}
+              </span>
+              <span className="text-[0.6rem] tabular-nums leading-tight text-foreground/80">
+                {s.change == null
+                  ? "—"
+                  : `${s.change >= 0 ? "+" : ""}${s.change.toFixed(1)}%`}
+              </span>
             </div>
           ))}
         </div>

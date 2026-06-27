@@ -1382,15 +1382,19 @@ export function MacroDashboard() {
         <DollarIndexCard />
         <TreasuryCard />
 
-        {/* Full-width market heatmap — market-at-a-glance */}
-        <div className="md:col-span-2 xl:col-span-3">
-          <StockHeatmap />
+        {/* Markets row: 1/3 stacked line charts | 2/3 square market heatmap */}
+        <div className="grid items-start gap-4 md:col-span-2 xl:col-span-3 xl:grid-cols-3">
+          <div className="flex flex-col gap-4">
+            <MacroLineCard title="Global Market Indices" syms={INDICES} kind="indices" />
+            <MacroLineCard title="Key Forex Rates" syms={FOREX} kind="forex" />
+            <MacroLineCard title="Commodities" syms={COMMODITIES_GROUP} kind="commodities" />
+          </div>
+          <div className="xl:col-span-2">
+            <StockHeatmap />
+          </div>
         </div>
 
-        {/* Row: Markets — overlaid 1Y line charts */}
-        <MacroLineCard title="Global Market Indices" syms={INDICES} kind="indices" />
-        <MacroLineCard title="Key Forex Rates" syms={FOREX} kind="forex" />
-        <MacroLineCard title="Commodities" syms={COMMODITIES_GROUP} kind="commodities" />
+        {/* Crypto + sector rotation */}
         <MacroLineCard title="Crypto" syms={CRYPTO} kind="crypto" />
 
         {/* Sector rotation over time (same width as Market News below) */}
