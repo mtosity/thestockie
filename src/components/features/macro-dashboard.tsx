@@ -1383,7 +1383,7 @@ export function MacroDashboard() {
         <TreasuryCard />
 
         {/* Markets row: 1/3 stacked line charts | 2/3 square market heatmap */}
-        <div className="grid items-start gap-4 md:col-span-2 xl:col-span-3 xl:grid-cols-3">
+        <div className="grid gap-4 md:col-span-2 xl:col-span-3 xl:grid-cols-3">
           <div className="flex flex-col gap-4">
             <MacroLineCard title="Global Market Indices" syms={INDICES} kind="indices" />
             <MacroLineCard title="Key Forex Rates" syms={FOREX} kind="forex" />
