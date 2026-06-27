@@ -582,12 +582,39 @@ function SectorRRG({ rows }: { rows: Row[] }) {
                 key={s.symbol}
                 data={s.pts}
                 fill={s.color}
-                line={{ stroke: s.color, strokeWidth: 1, strokeOpacity: 0.5 }}
+                line={{ stroke: s.color, strokeWidth: 1.5, strokeOpacity: 0.45 }}
                 isAnimationActive={false}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 shape={(props: any) => {
-                  const isLast = props.index === s.pts.length - 1;
-                  return <circle cx={props.cx} cy={props.cy} r={isLast ? 5 : 2} fill={s.color} fillOpacity={isLast ? 1 : 0.4} />;
+                  const total = s.pts.length;
+                  const i = props.index as number;
+                  const isLast = i === total - 1;
+                  const isFirst = i === 0;
+                  // Hollow ring marks the start (oldest); the trail grows in
+                  // size + opacity toward the solid "now" dot at the end.
+                  if (isFirst && !isLast) {
+                    return (
+                      <circle
+                        cx={props.cx}
+                        cy={props.cy}
+                        r={3}
+                        fill="none"
+                        stroke={s.color}
+                        strokeWidth={1.5}
+                        strokeOpacity={0.8}
+                      />
+                    );
+                  }
+                  const prog = total > 1 ? i / (total - 1) : 1;
+                  return (
+                    <circle
+                      cx={props.cx}
+                      cy={props.cy}
+                      r={isLast ? 5 : 1.5 + prog * 2.5}
+                      fill={s.color}
+                      fillOpacity={isLast ? 1 : 0.3 + prog * 0.6}
+                    />
+                  );
                 }}
               >
                 <LabelList
@@ -605,6 +632,13 @@ function SectorRRG({ rows }: { rows: Row[] }) {
             ))}
           </ScatterChart>
         </ResponsiveContainer>
+      </div>
+      <div className="mt-1 flex items-center justify-center gap-1.5 text-[0.62rem] text-muted-foreground">
+        <span className="inline-block h-2 w-2 rounded-full border border-muted-foreground" />
+        <span>start</span>
+        <span className="opacity-60">→ trail →</span>
+        <span className="inline-block h-2.5 w-2.5 rounded-full bg-muted-foreground" />
+        <span>now</span>
       </div>
       <div className="mt-1 grid grid-cols-2 text-[0.62rem] text-muted-foreground">
         <span className="text-[#3b82f6]">↖ Improving</span>
