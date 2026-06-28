@@ -110,10 +110,10 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
             {actions.map((a, i) => (
               <div
                 key={i}
-                className="flex items-start gap-2 rounded-md bg-muted px-3 py-2 text-sm"
+                className="flex flex-col gap-1.5 rounded-md bg-muted px-3 py-2 text-sm"
               >
                 {a.action && (
-                  <Pill className="mt-0.5 shrink-0 bg-primary/15 text-foreground ring-primary/30">
+                  <Pill className="self-start bg-primary/15 text-foreground ring-primary/30">
                     {a.action}
                   </Pill>
                 )}
