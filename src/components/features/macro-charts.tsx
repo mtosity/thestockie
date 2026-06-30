@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   CartesianGrid,
+  Customized,
   LabelList,
   Line,
   LineChart,
@@ -14,6 +15,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import Image from "next/image";
 import { Select } from "@mtosity/design-system";
 import { ChartTooltip } from "~/components/ui/chart";
 import { api } from "~/trpc/react";
@@ -356,6 +358,8 @@ function SectorBump({ rows }: { rows: Row[] }) {
       .sort((a, b) => a.rank - b.rank);
   }, [data]);
 
+  const [hovered, setHovered] = useState<string | null>(null);
+
   return (
     <>
       <div style={{ height: 300 }}>
@@ -376,9 +380,17 @@ function SectorBump({ rows }: { rows: Row[] }) {
                       .sort((a, b) => a.value - b.value)
                       .map((p) => {
                         const s = SECTOR_ETFS.find((x) => x.symbol === p.name);
+                        const isHot = hovered === p.name;
                         return (
-                          <div key={p.name} style={{ color: p.color }}>
-                            #{p.value} {s?.label ?? p.name}
+                          <div
+                            key={p.name}
+                            className={isHot ? "font-bold" : ""}
+                            style={{
+                              color: p.color,
+                              opacity: hovered != null && !isHot ? 0.45 : 1,
+                            }}
+                          >
+                            {isHot ? "▶ " : ""}#{p.value} {s?.label ?? p.name}
                           </div>
                         );
                       })}
@@ -386,17 +398,49 @@ function SectorBump({ rows }: { rows: Row[] }) {
                 );
               }}
             />
-            {SECTOR_ETFS.map((s, i) => (
-              <Line key={s.symbol} dataKey={s.symbol} name={s.symbol} stroke={sectorColor(i)} strokeWidth={1.5} dot={{ r: 2 }} activeDot={{ r: 4 }} connectNulls isAnimationActive={false} />
-            ))}
+            {SECTOR_ETFS.map((s, i) => {
+              const isHot = hovered === s.symbol;
+              const dimmed = hovered != null && !isHot;
+              const color = sectorColor(i);
+              return (
+                <Line
+                  key={s.symbol}
+                  dataKey={s.symbol}
+                  name={s.symbol}
+                  stroke={color}
+                  strokeWidth={isHot ? 4 : 2.5}
+                  strokeOpacity={dimmed ? 0.2 : 1}
+                  dot={dimmed ? false : { r: 2 }}
+                  activeDot={{ r: 4 }}
+                  connectNulls
+                  isAnimationActive={false}
+                  style={
+                    isHot
+                      ? { filter: `drop-shadow(0 0 5px ${color})` }
+                      : undefined
+                  }
+                  onMouseEnter={() => setHovered(s.symbol)}
+                  onMouseLeave={() => setHovered(null)}
+                />
+              );
+            })}
           </LineChart>
         </ResponsiveContainer>
       </div>
       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
         {ranking.map((s) => (
-          <span key={s.symbol} className="flex items-center gap-1 text-xs">
+          <span
+            key={s.symbol}
+            className="flex cursor-pointer items-center gap-1 text-xs transition-opacity"
+            style={{ opacity: hovered != null && hovered !== s.symbol ? 0.35 : 1 }}
+            onMouseEnter={() => setHovered(s.symbol)}
+            onMouseLeave={() => setHovered(null)}
+          >
             <span className="font-mono text-muted-foreground">{s.rank}</span>
-            <span className="inline-block h-0.5 w-3" style={{ background: sectorColor(s.i) }} />
+            <span
+              className="inline-block h-0.5 w-3"
+              style={{ background: sectorColor(s.i) }}
+            />
             <span className="text-muted-foreground">{s.label}</span>
           </span>
         ))}
@@ -511,7 +555,13 @@ function SectorRRG({ rows }: { rows: Row[] }) {
     const sy = std(allY, my);
     const norm = series.map((s) => ({
       ...s,
-      pts: s.pts.map((p) => ({ x: (p.x - mx) / sx, y: (p.y - my) / sy })),
+      pts: s.pts.map((p, k, arr) => ({
+        x: (p.x - mx) / sx,
+        y: (p.y - my) / sy,
+        first: k === 0,
+        last: k === arr.length - 1,
+        prog: arr.length > 1 ? k / (arr.length - 1) : 1,
+      })),
     }));
     const maxAbs = Math.max(
       1.5,
@@ -519,6 +569,41 @@ function SectorRRG({ rows }: { rows: Row[] }) {
     );
     return { series: norm, dom: maxAbs * 1.12 };
   }, [rows]);
+
+  // Arrowhead at each trail's head, oriented along its last segment. Drawn in a
+  // Customized layer so we can use the chart's pixel scales for direction.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderArrows = (cprops: any) => {
+    const xMap = cprops.xAxisMap ?? {};
+    const yMap = cprops.yAxisMap ?? {};
+    const xScale = xMap[Object.keys(xMap)[0] ?? ""]?.scale;
+    const yScale = yMap[Object.keys(yMap)[0] ?? ""]?.scale;
+    if (!xScale || !yScale) return null;
+    return (
+      <g>
+        {series.map((s) => {
+          const n = s.pts.length;
+          if (n < 2) return null;
+          const a = s.pts[n - 2]!;
+          const b = s.pts[n - 1]!;
+          const x2 = xScale(b.x);
+          const y2 = yScale(b.y);
+          const ang = Math.atan2(y2 - yScale(a.y), x2 - xScale(a.x));
+          const L = 9;
+          const w = 0.42;
+          const p2 = `${x2 - L * Math.cos(ang - w)},${y2 - L * Math.sin(ang - w)}`;
+          const p3 = `${x2 - L * Math.cos(ang + w)},${y2 - L * Math.sin(ang + w)}`;
+          return (
+            <polygon
+              key={s.symbol}
+              points={`${x2},${y2} ${p2} ${p3}`}
+              fill={s.color}
+            />
+          );
+        })}
+      </g>
+    );
+  };
 
   if (!series.length) return null;
   return (
@@ -539,13 +624,11 @@ function SectorRRG({ rows }: { rows: Row[] }) {
                 key={s.symbol}
                 data={s.pts}
                 fill={s.color}
-                line={{ stroke: s.color, strokeWidth: 1, strokeOpacity: 0.5 }}
+                line={{ stroke: s.color, strokeWidth: 1.5, strokeOpacity: 0.55 }}
                 isAnimationActive={false}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                shape={(props: any) => {
-                  const isLast = props.index === s.pts.length - 1;
-                  return <circle cx={props.cx} cy={props.cy} r={isLast ? 5 : 2} fill={s.color} fillOpacity={isLast ? 1 : 0.4} />;
-                }}
+                // No per-point dots — just the tail line. The current position
+                // and direction are shown by an arrowhead (drawn in <Customized>).
+                shape={() => <g />}
               >
                 <LabelList
                   dataKey="x"
@@ -560,8 +643,14 @@ function SectorRRG({ rows }: { rows: Row[] }) {
                 />
               </Scatter>
             ))}
+            <Customized component={renderArrows} />
           </ScatterChart>
         </ResponsiveContainer>
+      </div>
+      <div className="mt-1 flex items-center justify-center gap-1 text-[0.62rem] text-muted-foreground">
+        <span>tail = past&nbsp;</span>
+        <span className="opacity-60">→</span>
+        <span>&nbsp;▶ arrowhead = now</span>
       </div>
       <div className="mt-1 grid grid-cols-2 text-[0.62rem] text-muted-foreground">
         <span className="text-[#3b82f6]">↖ Improving</span>
@@ -695,6 +784,276 @@ export function SectorRotation() {
             whose recent (1W) pace is outrunning their monthly pace are where
             leadership may head next.
           </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// ── Stock Heatmap (squarified treemap) ──────────────────────────────
+
+interface HeatmapStock {
+  symbol: string;
+  name: string;
+  sector: string;
+  marketCap: number;
+  change: number | null;
+}
+
+interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** Squarified treemap (Bruls et al.). Lays weighted items into the given rect
+ *  so tile aspect ratios stay close to 1. Coordinates are in the same units as
+ *  the input rect (we use a 0–100 percentage space for responsive rendering). */
+function squarify<T extends { value: number }>(
+  data: T[],
+  X: number,
+  Y: number,
+  W: number,
+  H: number,
+): (T & Rect)[] {
+  const out: (T & Rect)[] = [];
+  const items = data.filter((d) => d.value > 0).sort((a, b) => b.value - a.value);
+  const total = items.reduce((s, d) => s + d.value, 0);
+  if (total <= 0 || W <= 0 || H <= 0) return out;
+
+  const scale = (W * H) / total;
+  const vals = items.map((d) => ({ d, area: d.value * scale }));
+
+  let rx = X,
+    ry = Y,
+    rw = W,
+    rh = H;
+  let row: { d: T; area: number }[] = [];
+
+  const worst = (r: typeof row, side: number) => {
+    const sum = r.reduce((s, q) => s + q.area, 0);
+    const mx = Math.max(...r.map((q) => q.area));
+    const mn = Math.min(...r.map((q) => q.area));
+    const s2 = sum * sum;
+    const l2 = side * side;
+    return Math.max((l2 * mx) / s2, s2 / (l2 * mn));
+  };
+
+  const layout = (r: typeof row, vertical: boolean) => {
+    const sum = r.reduce((s, q) => s + q.area, 0);
+    if (vertical) {
+      const colW = sum / rh;
+      let oy = ry;
+      for (const q of r) {
+        const cellH = q.area / colW;
+        out.push({ ...q.d, x: rx, y: oy, w: colW, h: cellH });
+        oy += cellH;
+      }
+      rx += colW;
+      rw -= colW;
+    } else {
+      const rowH = sum / rw;
+      let ox = rx;
+      for (const q of r) {
+        const cellW = q.area / rowH;
+        out.push({ ...q.d, x: ox, y: ry, w: cellW, h: rowH });
+        ox += cellW;
+      }
+      ry += rowH;
+      rh -= rowH;
+    }
+  };
+
+  let i = 0;
+  while (i < vals.length) {
+    const vertical = rw >= rh;
+    const side = vertical ? rh : rw;
+    const next = [...row, vals[i]!];
+    if (row.length === 0 || worst(row, side) >= worst(next, side)) {
+      row = next;
+      i++;
+    } else {
+      layout(row, vertical);
+      row = [];
+    }
+  }
+  if (row.length) layout(row, rw >= rh);
+  return out;
+}
+
+/** Tile background: green for gains, red for losses, intensity scaled by
+ *  magnitude (capped at ±4%). Matches the SectorHeatmap color convention. */
+function tileBg(change: number | null): string {
+  if (change == null) return "color-mix(in srgb, #64748b 20%, transparent)";
+  const a = Math.round(Math.min(1, Math.abs(change) / 4) * 80) + 8;
+  return change >= 0
+    ? `color-mix(in srgb, #22c55e ${a}%, transparent)`
+    : `color-mix(in srgb, #ef4444 ${a}%, transparent)`;
+}
+
+function fmtCap(n: number): string {
+  if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
+  if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(0)}M`;
+  return `$${n}`;
+}
+
+function fmtPct(change: number | null): string {
+  if (change == null) return "—";
+  return `${change >= 0 ? "+" : ""}${change.toFixed(2)}%`;
+}
+
+/** Company logo for a heatmap tile. Uses Parqet's free by-ticker logo service
+ *  (crisp brand badges with their own backgrounds). Hides itself if the logo
+ *  is missing — the symbol text below still identifies the company. */
+function TileLogo({ symbol, size }: { symbol: string; size: number }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return (
+    <Image
+      src={`https://assets.parqet.com/logos/symbol/${symbol}?format=png&size=128`}
+      alt={symbol}
+      width={size}
+      height={size}
+      unoptimized
+      className="mb-0.5 rounded-md object-contain ring-1 ring-black/20"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+/** Finviz/TradingView-style market map: largest US companies as a squarified
+ *  treemap, grouped by sector, tiles sized by market cap and colored by today's
+ *  move. Fills the height of its column (the 3 stacked charts on the left). */
+export function StockHeatmap() {
+  const { data, isLoading } = api.asset.stockHeatmap.useQuery(
+    { limit: 100 },
+    REFETCH,
+  );
+
+  // Two-level treemap: partition the canvas among sectors (by total market
+  // cap), then squarify each sector's stocks within its rect.
+  const tiles = useMemo(() => {
+    if (!data?.length) return [];
+    const bySector = new Map<string, HeatmapStock[]>();
+    for (const s of data) {
+      const arr = bySector.get(s.sector) ?? [];
+      arr.push(s);
+      bySector.set(s.sector, arr);
+    }
+    const sectors = [...bySector.entries()].map(([sector, stocks]) => ({
+      sector,
+      stocks,
+      value: stocks.reduce((sum, s) => sum + s.marketCap, 0),
+    }));
+
+    const sectorRects = squarify(sectors, 0, 0, 100, 100);
+    return sectorRects.map((sr) => ({
+      sector: sr.sector,
+      rect: { x: sr.x, y: sr.y, w: sr.w, h: sr.h },
+      stocks: squarify(
+        sr.stocks.map((s) => ({ ...s, value: s.marketCap })),
+        sr.x,
+        sr.y,
+        sr.w,
+        sr.h,
+      ),
+    }));
+  }, [data]);
+
+  return (
+    <div className="flex h-full flex-col rounded-xl border border-border bg-background p-4">
+      <div className="mb-1 flex items-start justify-between gap-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Market Heatmap
+        </h2>
+        <div className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
+          <span>-4%</span>
+          <span
+            className="inline-block h-2 w-16 rounded-sm"
+            style={{
+              background:
+                "linear-gradient(to right, #ef4444, color-mix(in srgb, #64748b 20%, transparent), #22c55e)",
+            }}
+          />
+          <span>+4%</span>
+        </div>
+      </div>
+      <p className="mb-3 text-xs text-muted-foreground">
+        Top 100 US companies by market cap, grouped by sector. Tile size = market
+        cap, color = today&apos;s move.
+      </p>
+
+      {isLoading ? (
+        <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+          Loading…
+        </div>
+      ) : tiles.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+          No data
+        </div>
+      ) : (
+        <div className="relative min-h-[480px] w-full flex-1 overflow-hidden rounded-lg">
+          {tiles.map(({ sector, rect, stocks }) => (
+            <div key={sector}>
+              {/* sector outline + label */}
+              <div
+                className="pointer-events-none absolute z-10"
+                style={{
+                  left: `${rect.x}%`,
+                  top: `${rect.y}%`,
+                  width: `${rect.w}%`,
+                  height: `${rect.h}%`,
+                }}
+              >
+                <span className="absolute left-1 top-0.5 rounded bg-background/80 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-foreground">
+                  {sector}
+                </span>
+              </div>
+              {/* stock tiles */}
+              {stocks.map((s) => {
+                const showSym = s.w >= 3 && s.h >= 4;
+                const showPct = s.w >= 4.5 && s.h >= 7;
+                const showLogo = s.w >= 4 && s.h >= 7;
+                const logoSize =
+                  s.w >= 11 && s.h >= 13 ? 40 : s.w >= 7 && s.h >= 9 ? 28 : 18;
+                return (
+                  <div
+                    key={s.symbol}
+                    title={`${s.symbol} · ${s.name} · ${fmtCap(
+                      s.marketCap,
+                    )} · ${fmtPct(s.change)}`}
+                    className="absolute flex flex-col items-center justify-center overflow-hidden border border-background/60 text-center"
+                    style={{
+                      left: `${s.x}%`,
+                      top: `${s.y}%`,
+                      width: `${s.w}%`,
+                      height: `${s.h}%`,
+                      background: tileBg(s.change),
+                    }}
+                  >
+                    {showLogo && (
+                      <TileLogo symbol={s.symbol} size={logoSize} />
+                    )}
+                    {showSym && (
+                      <span className="px-0.5 text-[0.7rem] font-bold leading-tight text-foreground">
+                        {s.symbol}
+                      </span>
+                    )}
+                    {showPct && (
+                      <span className="text-[0.6rem] tabular-nums leading-tight text-foreground/80">
+                        {s.change == null
+                          ? "—"
+                          : `${s.change >= 0 ? "+" : ""}${s.change.toFixed(1)}%`}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -29,6 +29,7 @@ import { MacroFedDataBlock } from "./macro-fed-data";
 import {
   MacroLineCard,
   SectorRotation,
+  StockHeatmap,
   INDICES,
   FOREX,
   COMMODITIES as COMMODITIES_GROUP,
@@ -110,33 +111,6 @@ function formatLargeNumber(n: number): string {
 }
 
 // ── TimeFrame Selector ──────────────────────────────────────────────
-
-function TimeFrameSelector({
-  value,
-  onChange,
-}: {
-  value: MacroTimeFrame;
-  onChange: (tf: MacroTimeFrame) => void;
-}) {
-  const options: MacroTimeFrame[] = ["1D", "1W", "1M", "1Y"];
-  return (
-    <div className="inline-flex rounded-lg border border-border bg-background p-0.5">
-      {options.map((tf) => (
-        <button
-          key={tf}
-          onClick={() => onChange(tf)}
-          className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
-            value === tf
-              ? "bg-foreground/10 text-foreground shadow-xs"
-              : "text-muted-foreground hover:text-muted-foreground"
-          }`}
-        >
-          {tf}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 // ── Change calculation from historical data ─────────────────────────
 
@@ -228,7 +202,7 @@ const VIX_LEVELS = [
 ] as const;
 
 function VixCard() {
-  const timeFrame = useContext(TimeFrameContext);
+  const timeFrame: MacroTimeFrame = "1Y";
   const { data, isLoading } = api.asset.equityQuote.useQuery(
     "^VIX",
     REFETCH_OPTS,
@@ -454,7 +428,7 @@ function FearGreedCard() {
 // ── US Dollar Index (DXY) ───────────────────────────────────────────
 
 function DollarIndexCard() {
-  const timeFrame = useContext(TimeFrameContext);
+  const timeFrame: MacroTimeFrame = "1Y";
   const { data, isLoading } = api.asset.equityQuote.useQuery(
     "DXUSD",
     REFETCH_OPTS,
@@ -554,80 +528,6 @@ function DollarIndexCard() {
 }
 
 // ── Carry Trade & Risk (compact) ────────────────────────────────────
-
-function CarryRiskCard() {
-  const timeFrame = useContext(TimeFrameContext);
-
-  const { data: jpy, isLoading: jpyLoading } = api.asset.forexQuote.useQuery(
-    "USDJPY",
-    REFETCH_OPTS,
-  );
-  const { data: jpyHist } = api.asset.forexHistorical.useQuery(
-    "USDJPY",
-    REFETCH_OPTS,
-  );
-  const jpyRate = jpy?.bid ?? jpy?.ask ?? 0;
-  const { changePercent: jpyChange } = useHistoricalChange(
-    jpyHist?.historical,
-    jpyRate || undefined,
-    timeFrame,
-  );
-
-  const { data: btc } = api.asset.equityQuote.useQuery("BTCUSD", REFETCH_OPTS);
-  const { data: btcHist } = api.asset.equityPriceHistoricalFMP.useQuery(
-    "BTCUSD",
-    REFETCH_OPTS,
-  );
-  const btcQuote = btc?.[0];
-  const { changePercent: btcChange } = useHistoricalChange(
-    btcHist?.historical,
-    btcQuote?.price ?? undefined,
-    timeFrame,
-  );
-
-  return (
-    <CardShell title="Carry Trade & Risk">
-      {jpyLoading ? (
-        <SkeletonRows count={3} />
-      ) : (
-        <div>
-          <div className="flex items-center justify-between border-b border-border py-2">
-            <div>
-              <span className="text-sm font-medium text-foreground">USD/JPY</span>
-              <span className="ml-2 text-xs text-muted-foreground">Yen Carry</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">
-                ¥{jpyRate.toFixed(2)}
-              </span>
-              <ChangeDisplay
-                changePercent={jpyChange}
-                className="min-w-[60px] text-right text-xs"
-              />
-            </div>
-          </div>
-          <div className="mt-2 flex items-center justify-between py-2">
-            <div>
-              <span className="text-sm font-medium text-foreground">Bitcoin</span>
-              <span className="ml-2 text-xs text-muted-foreground">Risk Sentiment</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">
-                {btcQuote?.price
-                  ? `$${formatLargeNumber(btcQuote.price)}`
-                  : "—"}
-              </span>
-              <ChangeDisplay
-                changePercent={btcChange}
-                className="min-w-[60px] text-right text-xs"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </CardShell>
-  );
-}
 
 // ── Global Market Indices ───────────────────────────────────────────
 
@@ -1454,7 +1354,6 @@ function CommoditiesCard() {
 // ── Main Dashboard ──────────────────────────────────────────────────
 
 export function MacroDashboard() {
-  const [timeFrame, setTimeFrame] = useState<MacroTimeFrame>("1Y");
   const mounted = useMounted();
 
   if (!mounted) {
@@ -1471,54 +1370,52 @@ export function MacroDashboard() {
   }
 
   return (
-    <TimeFrameContext.Provider value={timeFrame}>
-      <div className="p-4">
-        {/* Sticky timeframe selector */}
-        <div className="mb-4 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            Showing % change over selected period
-          </span>
-          <TimeFrameSelector value={timeFrame} onChange={setTimeFrame} />
-        </div>
+    <div className="p-4">
+      {/* Fed & economic data — one chart with a dropdown switcher */}
+      <div className="mb-4">
+        <MacroFedDataBlock />
+      </div>
 
-        {/* Fed & economic data — one chart with a dropdown switcher */}
-        <div className="mb-4">
-          <MacroFedDataBlock />
-        </div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {/* Row 1: Key indicators */}
+        <VixCard />
+        <DollarIndexCard />
+        <TreasuryCard />
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {/* Row 1: Key indicators */}
-          <VixCard />
-          <DollarIndexCard />
-          <TreasuryCard />
-
-          {/* Row 2: Markets — overlaid 1Y line charts */}
-          <MacroLineCard title="Global Market Indices" syms={INDICES} kind="indices" />
-          <MacroLineCard title="Key Forex Rates" syms={FOREX} kind="forex" />
-          <MacroLineCard title="Commodities" syms={COMMODITIES_GROUP} kind="commodities" />
-          <MacroLineCard title="Crypto" syms={CRYPTO} kind="crypto" />
-
-          {/* Sector rotation over time (same width as Market News below) */}
-          <div className="md:col-span-2 xl:col-span-2">
-            <SectorRotation />
-          </div>
-
-          {/* Bottom: left column (risk gauges + upcoming econ events) and
-              Market News spanning that column's full height and width. */}
+        {/* Markets row: 1/3 stacked line charts | 2/3 square market heatmap */}
+        <div className="grid gap-4 md:col-span-2 xl:col-span-3 xl:grid-cols-3">
           <div className="flex flex-col gap-4">
-            <CarryRiskCard />
-            <FearGreedCard />
-            <EconomicCalendarCard />
+            <MacroLineCard title="Global Market Indices" syms={INDICES} kind="indices" />
+            <MacroLineCard title="Key Forex Rates" syms={FOREX} kind="forex" />
+            <MacroLineCard title="Commodities" syms={COMMODITIES_GROUP} kind="commodities" />
           </div>
-          {/* On xl, News fills the left column's height (absolute) and scrolls
-              internally; on smaller screens it flows naturally full-width. */}
-          <div className="md:col-span-2 xl:relative xl:col-span-2">
-            <div className="xl:absolute xl:inset-0">
-              <GeneralNewsCard />
-            </div>
+          <div className="xl:col-span-2">
+            <StockHeatmap />
+          </div>
+        </div>
+
+        {/* Crypto + sector rotation */}
+        <MacroLineCard title="Crypto" syms={CRYPTO} kind="crypto" />
+
+        {/* Sector rotation over time (same width as Market News below) */}
+        <div className="md:col-span-2 xl:col-span-2">
+          <SectorRotation />
+        </div>
+
+        {/* Bottom: left column (risk gauges + upcoming econ events) and
+            Market News spanning that column's full height and width. */}
+        <div className="flex flex-col gap-4">
+          <FearGreedCard />
+          <EconomicCalendarCard />
+        </div>
+        {/* On xl, News fills the left column's height (absolute) and scrolls
+            internally; on smaller screens it flows naturally full-width. */}
+        <div className="md:col-span-2 xl:relative xl:col-span-2">
+          <div className="xl:absolute xl:inset-0">
+            <GeneralNewsCard />
           </div>
         </div>
       </div>
-    </TimeFrameContext.Provider>
+    </div>
   );
 }
