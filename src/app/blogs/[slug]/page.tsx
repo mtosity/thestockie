@@ -4,7 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Calendar, Clock } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
-import { getAllBlogSlugs, getBlogBySlug } from "~/lib/blog";
+import { getAllBlogs, getAllBlogSlugs, getBlogBySlug } from "~/lib/blog";
 import { formatBlogDate } from "~/lib/blog.shared";
 import { BlogContent } from "~/components/features/blog-content";
 
@@ -30,11 +30,15 @@ export async function generateMetadata({
   }
 
   const url = `https://thestockie.com/blogs/${slug}`;
+  const keywords = [
+    ...(blog.frontmatter.seoKeywords || []),
+    ...(blog.frontmatter.tags || []),
+  ];
 
   return {
     title: `${blog.frontmatter.title} | The Stockie Blog`,
     description: blog.frontmatter.excerpt,
-    keywords: blog.frontmatter.tags?.join(", "),
+    keywords: keywords.join(", "),
     alternates: {
       canonical: url,
     },
@@ -45,6 +49,7 @@ export async function generateMetadata({
       url,
       siteName: "The Stockie",
       publishedTime: blog.frontmatter.publishedAt,
+      modifiedTime: blog.frontmatter.updatedAt || blog.frontmatter.publishedAt,
       authors: ["The Stockie"],
       tags: blog.frontmatter.tags,
       images: [
@@ -75,16 +80,17 @@ export default async function BlogPage({ params }: BlogPageProps) {
   }
 
   const { frontmatter, content, readingTime } = blog;
+  const url = `https://thestockie.com/blogs/${slug}`;
 
-  // JSON-LD structured data for SEO
-  const jsonLd = {
+  // JSON-LD: Article schema with proper dateModified
+  const articleLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: frontmatter.title,
     description: frontmatter.excerpt,
     image: frontmatter.coverImage,
     datePublished: frontmatter.publishedAt,
-    dateModified: frontmatter.publishedAt,
+    dateModified: frontmatter.updatedAt || frontmatter.publishedAt,
     author: {
       "@type": "Organization",
       name: "The Stockie",
@@ -97,17 +103,84 @@ export default async function BlogPage({ params }: BlogPageProps) {
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://thestockie.com/blogs/${slug}`,
+      "@id": url,
     },
-    keywords: frontmatter.tags?.join(", "),
+    keywords: [
+      ...(frontmatter.seoKeywords || []),
+      ...(frontmatter.tags || []),
+    ].join(", "),
   };
+
+  // JSON-LD: BreadcrumbList schema
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://thestockie.com",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Blog",
+        item: "https://thestockie.com/blogs",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: frontmatter.title,
+        item: url,
+      },
+    ],
+  };
+
+  // JSON-LD: FAQ schema (if faq field exists in frontmatter)
+  const faqLd = frontmatter.faq
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: frontmatter.faq.map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: item.answer,
+          },
+        })),
+      }
+    : null;
+
+  // Related posts: find posts that share at least one tag, exclude current
+  const allBlogs = getAllBlogs();
+  const relatedPosts = allBlogs
+    .filter(
+      (b) =>
+        b.frontmatter.slug !== slug &&
+        b.frontmatter.tags?.some((tag) => frontmatter.tags?.includes(tag)),
+    )
+    .slice(0, 3);
 
   return (
     <>
+      {/* JSON-LD structured data */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      {faqLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+        />
+      )}
+
       <main className="min-h-screen bg-background text-foreground">
         {/* Hero Image */}
         <div className="relative h-64 w-full md:h-80 lg:h-96">
@@ -147,7 +220,9 @@ export default async function BlogPage({ params }: BlogPageProps) {
             </h1>
 
             {/* Excerpt */}
-            <p className="mt-6 text-lg text-muted-foreground">{frontmatter.excerpt}</p>
+            <p className="mt-6 text-lg text-muted-foreground">
+              {frontmatter.excerpt}
+            </p>
 
             {/* Meta */}
             <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
@@ -157,6 +232,14 @@ export default async function BlogPage({ params }: BlogPageProps) {
                   {formatBlogDate(frontmatter.publishedAt)}
                 </time>
               </div>
+              {frontmatter.updatedAt &&
+                frontmatter.updatedAt !== frontmatter.publishedAt && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <span>
+                      Updated: {formatBlogDate(frontmatter.updatedAt)}
+                    </span>
+                  </div>
+                )}
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 <span>{readingTime}</span>
@@ -172,7 +255,49 @@ export default async function BlogPage({ params }: BlogPageProps) {
           </div>
         </article>
 
-        {/* Related Posts / CTA */}
+        {/* Related Posts (internal linking for SEO) */}
+        {relatedPosts.length > 0 && (
+          <section className="border-t border-border px-4 py-12 md:px-8">
+            <div className="mx-auto max-w-4xl">
+              <h2 className="mb-6 text-2xl font-bold">Related Articles</h2>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {relatedPosts.map((post) => (
+                  <Link
+                    key={post.frontmatter.slug}
+                    href={`/blogs/${post.frontmatter.slug}`}
+                    className="group rounded-lg border border-border p-4 transition-colors hover:border-primary/50 hover:bg-accent"
+                  >
+                    <div className="mb-2 flex flex-wrap gap-1">
+                      {post.frontmatter.tags?.slice(0, 2).map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded bg-primary/20 px-2 py-0.5 text-xs font-semibold text-foreground"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <h3 className="font-semibold text-foreground group-hover:text-primary">
+                      {post.frontmatter.title}
+                    </h3>
+                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                      {post.frontmatter.excerpt}
+                    </p>
+                    <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>
+                        {formatBlogDate(post.frontmatter.publishedAt)}
+                      </span>
+                      <span>·</span>
+                      <span>{post.readingTime}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* CTA */}
         <section className="border-t border-border px-4 py-12 md:px-8">
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="text-2xl font-bold">Continue Learning</h2>
@@ -187,7 +312,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
             </Link>
           </div>
         </section>
-
       </main>
     </>
   );

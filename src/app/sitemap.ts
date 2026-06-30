@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAllBlogSlugs } from "~/lib/blog";
+import { getAllBlogs } from "~/lib/blog";
 import { convex } from "~/server/api/trpc";
 import { api } from "../../convex/_generated/api";
 
@@ -8,11 +8,13 @@ const BASE_URL = "https://thestockie.com";
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const blogSlugs = getAllBlogSlugs();
+  const blogs = getAllBlogs();
 
-  const blogUrls = blogSlugs.map((slug) => ({
-    url: `${BASE_URL}/blogs/${slug}`,
-    lastModified: new Date(),
+  const blogUrls = blogs.map((blog) => ({
+    url: `${BASE_URL}/blogs/${blog.frontmatter.slug}`,
+    lastModified: new Date(
+      blog.frontmatter.updatedAt || blog.frontmatter.publishedAt,
+    ),
     changeFrequency: "monthly" as const,
     priority: 0.8,
   }));
