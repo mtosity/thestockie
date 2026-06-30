@@ -7,6 +7,9 @@ export interface BlogFrontmatter {
   coverImage: string;
   tags: string[];
   publishedAt: string;
+  updatedAt?: string;
+  seoKeywords?: string[];
+  faq?: { question: string; answer: string }[];
 }
 
 export interface Blog {
