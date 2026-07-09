@@ -43,4 +43,14 @@ export const influencerRouter = createTRPCRouter({
   latestRun: publicProcedure.query(async ({ ctx }) => {
     return (await ctx.convex.query(api.influencerReads.latestRun, {})) ?? null;
   }),
+
+  summary: publicProcedure
+    .input(z.object({ channelId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return (
+        (await ctx.convex.query(api.influencerReads.influencerSummary, {
+          channelId: input.channelId,
+        })) ?? null
+      );
+    }),
 });
