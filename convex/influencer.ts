@@ -293,10 +293,10 @@ export const aggregateSentiment = mutation({
 
       const weight = m.stance === "bullish" ? 1 : m.stance === "bearish" ? -1 : 0;
       const conv = m.conviction === "high" ? 3 : m.conviction === "medium" ? 2 : 1;
-      bySymbol[m.symbol].netScore += weight * conv;
+      bySymbol[m.symbol]!.netScore += weight * conv;
     }
 
-    const endDate = new Date(now).toISOString().split("T")[0];
+    const endDate = new Date(now).toISOString().split("T")[0]!;
 
     // Clear old sentiment
     const old = await ctx.db.query("dailySentiment").collect();
@@ -614,6 +614,6 @@ export const latestRun = query({
       .withIndex("by_startedAt")
       .collect();
     if (runs.length === 0) return null;
-    return runs.sort((a, b) => b.startedAt - a.startedAt)[0];
+    return runs.sort((a, b) => (b.startedAt ?? 0) - (a.startedAt ?? 0))[0];
   },
 });

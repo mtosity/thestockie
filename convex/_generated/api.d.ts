@@ -15,7 +15,6 @@ import type * as influencerReads from "../influencerReads.js";
 import type * as investors from "../investors.js";
 import type * as maintenance from "../maintenance.js";
 import type * as posts from "../posts.js";
-import type * as superInvestor from "../superInvestor.js";
 import type * as superInvestorReads from "../superInvestorReads.js";
 
 import type {
@@ -32,7 +31,6 @@ declare const fullApi: ApiFromModules<{
   investors: typeof investors;
   maintenance: typeof maintenance;
   posts: typeof posts;
-  superInvestor: typeof superInvestor;
   superInvestorReads: typeof superInvestorReads;
 }>;
 
