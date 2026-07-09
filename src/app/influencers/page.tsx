@@ -61,7 +61,11 @@ export default function InfluencersPage() {
 
   const hasData =
     !!digestQ.data ||
-    (sentimentQ.data?.total ?? 0) > 0 ||
+    (sentimentQ.data
+      ? sentimentQ.data.bullish.length +
+        sentimentQ.data.bearish.length +
+        sentimentQ.data.mixed.length
+      : 0) > 0 ||
     (influencersQ.data?.length ?? 0) > 0 ||
     (videosQ.data?.length ?? 0) > 0;
 

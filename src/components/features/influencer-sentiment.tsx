@@ -61,7 +61,7 @@ function SymbolRow({ row, rank }: { row: Row; rank: number }) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-foreground">{row.symbol}</span>
-          <ConsensusBadge consensus={row.consensus} />
+          <ConsensusBadge consensus={row.consensus ?? "mixed"} />
         </div>
         {row.companyName && (
           <p className="truncate text-xs text-muted-foreground">{row.companyName}</p>
@@ -69,22 +69,22 @@ function SymbolRow({ row, rank }: { row: Row; rank: number }) {
       </div>
       <div className="shrink-0 text-right text-sm">
         <CreatorCount
-          count={row.bullishCount}
+          count={row.bullishCount ?? 0}
           arrow="↑"
           color="text-positive"
           names={row.bullishCreators ?? []}
         />{" "}
         <CreatorCount
-          count={row.bearishCount}
+          count={row.bearishCount ?? 0}
           arrow="↓"
           color="text-negative"
           names={row.bearishCreators ?? []}
         />
-        {row.neutralCount > 0 && (
+        {(row.neutralCount ?? 0) > 0 && (
           <>
             {" "}
             <CreatorCount
-              count={row.neutralCount}
+              count={row.neutralCount ?? 0}
               arrow="·"
               color="text-slate-400"
               names={row.neutralCreators ?? []}

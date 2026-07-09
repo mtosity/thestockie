@@ -1,6 +1,6 @@
 import { internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 /**
  * One-off cleanup of test/junk seed records (ciks like 999/1234/5678 created
@@ -264,7 +264,7 @@ export const dedupeVideoStockMentions = internalMutation({
 export const reaggregateSentiment = internalMutation({
   args: { windowDays: v.optional(v.number()) },
   handler: async (ctx, { windowDays }) => {
-    await ctx.runMutation(internal.influencer.aggregateSentiment, {
+    await ctx.runMutation(api.influencer.aggregateSentiment, {
       windowDays: windowDays ?? 30,
     });
     const count = (await ctx.db.query("dailySentiment").collect()).length;
@@ -332,7 +332,7 @@ export const deactivateInfluencer = internalMutation({
     }
 
     // Re-run aggregation to update sentiment
-    await ctx.runMutation(internal.influencer.aggregateSentiment, {
+    await ctx.runMutation(api.influencer.aggregateSentiment, {
       windowDays: 30,
     });
 

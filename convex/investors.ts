@@ -303,7 +303,7 @@ export const investorPortfolio = query({
         .withIndex("by_cik", (q) => q.eq("cik", cik))
         .collect();
       if (filings.length === 0) return null;
-      targetPeriod = filings.sort((a, b) => b.filingDate - a.filingDate)[0].period;
+      targetPeriod = filings.sort((a, b) => b.filingDate - a.filingDate)[0]!.period;
     }
 
     const positions = await ctx.db
@@ -332,11 +332,11 @@ export const consensusRanking = query({
       .collect();
 
     const mostHeld = consensus
-      .filter((c) => c.totalInvestors >= 2)
-      .sort((a, b) => b.totalInvestors - a.totalInvestors);
+      .filter((c) => (c.totalInvestors ?? 0) >= 2)
+      .sort((a, b) => (b.totalInvestors ?? 0) - (a.totalInvestors ?? 0));
 
     const biggestBets = consensus
-      .sort((a, b) => b.totalValue - a.totalValue)
+      .sort((a, b) => (b.totalValue ?? 0) - (a.totalValue ?? 0))
       .slice(0, 20);
 
     return { mostHeld, biggestBets };

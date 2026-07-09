@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Youtube } from "lucide-react";
 import { type RouterOutputs } from "~/trpc/react";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
@@ -19,17 +20,14 @@ function initials(name: string): string {
 }
 
 function channelUrl(inf: Influencer): string {
-  if (inf.youtubeUrl) return inf.youtubeUrl;
   if (inf.handle) return `https://www.youtube.com/${inf.handle}`;
   return `https://www.youtube.com/channel/${inf.channelId}`;
 }
 
 function Row({ inf }: { inf: Influencer }) {
   return (
-    <a
-      href={channelUrl(inf)}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href={`/influencers/${inf.channelId}`}
       className="group flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-accent"
     >
       <Avatar className="h-9 w-9 shrink-0">
@@ -43,7 +41,16 @@ function Row({ inf }: { inf: Influencer }) {
           <span className="truncate font-medium text-foreground group-hover:underline">
             {inf.name}
           </span>
-          <Youtube className="h-3.5 w-3.5 shrink-0 text-negative" />
+          <a
+            href={channelUrl(inf)}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Open ${inf.name} on YouTube`}
+            onClick={(e) => e.stopPropagation()}
+            className="shrink-0 rounded p-0.5 hover:bg-foreground/10"
+          >
+            <Youtube className="h-3.5 w-3.5 text-negative" />
+          </a>
         </div>
         {inf.handle && <p className="truncate text-xs text-muted-foreground">{inf.handle}</p>}
       </div>
@@ -51,7 +58,7 @@ function Row({ inf }: { inf: Influencer }) {
         <div>{inf.videoCount} videos</div>
         <div className="text-gray-600">{formatRelative(inf.lastPublishedAt)}</div>
       </div>
-    </a>
+    </Link>
   );
 }
 

@@ -71,7 +71,7 @@ export function InfluencerDigest({ digest }: { digest: Digest }) {
 
         {(digest.keyThemes?.length ?? 0) > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            {digest.keyThemes.map((theme, i) => (
+            {(digest.keyThemes ?? []).map((theme, i) => (
               <Pill
                 key={i}
                 className="bg-primary/15 text-foreground ring-primary/30"
