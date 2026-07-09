@@ -82,7 +82,11 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
         <StockResponseModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          stock={selectedStock}
+          stock={
+            selectedStock?.supabaseId
+              ? { ...selectedStock, supabaseId: selectedStock.supabaseId }
+              : null
+          }
         />
       </>
     );
@@ -170,7 +174,9 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleSelectStock(stock.supabaseId)}
+                      onClick={() =>
+                        stock.supabaseId && handleSelectStock(stock.supabaseId)
+                      }
                       className="border-border bg-foreground/10 text-foreground hover:border-border hover:bg-accent"
                     >
                       <ArrowRight className="h-4 w-4" />
@@ -186,7 +192,11 @@ export function ScreenerTable({ stocks, isLoading }: ScreenerTableProps) {
       <StockResponseModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        stock={selectedStock}
+        stock={
+          selectedStock?.supabaseId
+            ? { ...selectedStock, supabaseId: selectedStock.supabaseId }
+            : null
+        }
       />
     </>
   );
