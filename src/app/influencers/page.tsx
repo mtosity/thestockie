@@ -1,30 +1,23 @@
-"use client";
-
 import { Radar, RefreshCw, Inbox } from "lucide-react";
-import { api } from "~/trpc/react";
-import { Skeleton } from "~/components/ui/skeleton";
 import { Card, CardContent } from "~/components/ui/card";
 import { InfluencerDigest } from "~/components/features/influencer-digest";
 import { SentimentLeaderboard } from "~/components/features/influencer-sentiment";
 import { InfluencerRoster } from "~/components/features/influencer-roster";
 import { RecentInfluencerVideos } from "~/components/features/influencer-videos";
 import { SuperInvestorsSection } from "~/components/features/super-investor-section";
-import { formatRelative } from "~/components/features/influencer-shared";
+import {
+  InfluencerSeoSummary,
+  formatAsOf,
+} from "~/components/features/influencer-seo";
+import {
+  getInfluencerPageData,
+  getSuperInvestorPageData,
+  lastUpdatedAt,
+} from "./_data";
 
-function LoadingState() {
-  return (
-    <div className="grid gap-4 lg:grid-cols-3">
-      <div className="space-y-4 lg:col-span-2">
-        <Skeleton className="h-72 w-full rounded-xl bg-foreground/5" />
-        <Skeleton className="h-64 w-full rounded-xl bg-foreground/5" />
-      </div>
-      <div className="space-y-4">
-        <Skeleton className="h-48 w-full rounded-xl bg-foreground/5" />
-        <Skeleton className="h-64 w-full rounded-xl bg-foreground/5" />
-      </div>
-    </div>
-  );
-}
+// Rendered on the server so the digest, leaderboard, roster and 13F tables all
+// ship in the initial HTML. See ./_data.ts for why.
+export const revalidate = 3600;
 
 function EmptyState() {
   return (
@@ -44,30 +37,17 @@ function EmptyState() {
   );
 }
 
-export default function InfluencersPage() {
-  const digestQ = api.influencer.latestDigest.useQuery();
-  const sentimentQ = api.influencer.sentiment.useQuery({ limit: 12 });
-  const influencersQ = api.influencer.influencers.useQuery();
-  const videosQ = api.influencer.recentVideos.useQuery({ limit: 12 });
-  const runQ = api.influencer.latestRun.useQuery();
+export default async function InfluencersPage() {
+  const [{ digest, sentiment, influencers, videos, run }, superInvestors] =
+    await Promise.all([getInfluencerPageData(), getSuperInvestorPageData()]);
 
-  const loading =
-    digestQ.isLoading ||
-    sentimentQ.isLoading ||
-    influencersQ.isLoading ||
-    videosQ.isLoading;
+  const updatedAt = lastUpdatedAt(run, videos);
 
-  const lastUpdated = runQ.data?.runAt ?? null;
-
+  const sentimentCount = sentiment
+    ? sentiment.bullish.length + sentiment.bearish.length + sentiment.mixed.length
+    : 0;
   const hasData =
-    !!digestQ.data ||
-    (sentimentQ.data
-      ? sentimentQ.data.bullish.length +
-        sentimentQ.data.bearish.length +
-        sentimentQ.data.mixed.length
-      : 0) > 0 ||
-    (influencersQ.data?.length ?? 0) > 0 ||
-    (videosQ.data?.length ?? 0) > 0;
+    !!digest || sentimentCount > 0 || influencers.length > 0 || videos.length > 0;
 
   return (
     <div className="min-h-screen bg-background pb-20 text-foreground">
@@ -79,39 +59,51 @@ export default function InfluencersPage() {
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               What YouTube stock creators are buying, selling, and saying —
-              aggregated daily.
+              aggregated daily from {influencers.length || "tracked"} channels
+              and cross-checked against SEC 13F filings from legendary fund
+              managers.
             </p>
           </div>
-          {lastUpdated && (
+          {updatedAt && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <RefreshCw className="h-3.5 w-3.5" /> Updated{" "}
-              {formatRelative(lastUpdated)}
+              <time dateTime={new Date(updatedAt).toISOString()}>
+                {formatAsOf(updatedAt)}
+              </time>
             </div>
           )}
         </header>
 
-        {loading ? (
-          <LoadingState />
-        ) : !hasData ? (
+        {!hasData ? (
           <EmptyState />
         ) : (
           <div className="grid gap-4 lg:grid-cols-3">
             <div className="space-y-4 lg:col-span-2">
-              {digestQ.data && <InfluencerDigest digest={digestQ.data} />}
-              {sentimentQ.data && (
-                <SentimentLeaderboard sentiment={sentimentQ.data} />
-              )}
+              {digest && <InfluencerDigest digest={digest} />}
+              {sentiment && <SentimentLeaderboard sentiment={sentiment} />}
             </div>
             <div className="space-y-4">
-              {influencersQ.data && (
-                <InfluencerRoster influencers={influencersQ.data} />
-              )}
-              {videosQ.data && <RecentInfluencerVideos videos={videosQ.data} />}
+              <InfluencerRoster influencers={influencers} />
+              <RecentInfluencerVideos videos={videos} />
             </div>
           </div>
         )}
 
-        <SuperInvestorsSection />
+        <SuperInvestorsSection
+          consensus={superInvestors.consensus}
+          moves={superInvestors.moves}
+          investors={superInvestors.investors}
+        />
+
+        <InfluencerSeoSummary
+          sentiment={sentiment}
+          creators={influencers}
+          videoCount={videos.length}
+          updatedAt={updatedAt}
+          digestSummary={digest?.marketSentiment ?? null}
+          consensusBought={superInvestors.consensus?.bought ?? []}
+          period={superInvestors.consensus?.period ?? null}
+        />
       </div>
     </div>
   );

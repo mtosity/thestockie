@@ -13,6 +13,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { cn } from "~/lib/utils";
@@ -185,8 +186,47 @@ function MobileMoreMenu({ pathname }: { pathname: string }) {
   );
 }
 
+const AUTH_BUTTON_CLASSES =
+  "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors";
+
+/**
+ * The session is no longer server-rendered (see the root layout), so there is a
+ * brief window where we don't yet know if the visitor is signed in. Render a
+ * same-sized neutral placeholder rather than guessing, so signed-in users never
+ * see "Sign in" flash before it corrects itself.
+ */
+function AuthButton() {
+  const { data: session, status } = useSession();
+
+  if (status === "loading") {
+    return (
+      <div
+        aria-hidden
+        className={cn(AUTH_BUTTON_CLASSES, "animate-pulse bg-foreground/10")}
+      >
+        <span className="h-4 w-4" />
+        <span className="hidden w-12 lg:inline" />
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={session ? "/api/auth/signout" : "/api/auth/signin"}
+      className={cn(
+        AUTH_BUTTON_CLASSES,
+        "bg-primary text-primary-foreground hover:bg-primary/90",
+      )}
+    >
+      {session ? <LogOut className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
+      <span className="hidden lg:inline">
+        {session ? "Sign out" : "Sign in"}
+      </span>
+    </Link>
+  );
+}
+
 export function Navbar() {
-  const { data: session } = useSession();
   const pathname = usePathname();
 
   return (
@@ -203,7 +243,13 @@ export function Navbar() {
         {/* Center: Search on home, page title elsewhere */}
         {pathname === "/" ? (
           <div className="w-full max-w-xs shrink-0 md:max-w-[240px] lg:max-w-xs">
-            <Search />
+            {/* Search reads the `symbol` search param; the boundary lets the
+                rest of the page prerender statically around it. */}
+            <Suspense
+              fallback={<div className="h-9 w-full rounded-md bg-foreground/5" />}
+            >
+              <Search />
+            </Suspense>
           </div>
         ) : (
           <h1 className="shrink-0 text-base font-semibold text-foreground">
@@ -225,19 +271,7 @@ export function Navbar() {
           <ThemeToggle />
 
           {/* Auth button */}
-          <Link
-            href={session ? "/api/auth/signout" : "/api/auth/signin"}
-            className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            {session ? (
-              <LogOut className="h-4 w-4" />
-            ) : (
-              <LogIn className="h-4 w-4" />
-            )}
-            <span className="hidden lg:inline">
-              {session ? "Sign out" : "Sign in"}
-            </span>
-          </Link>
+          <AuthButton />
         </div>
       </div>
 

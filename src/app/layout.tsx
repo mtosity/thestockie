@@ -9,7 +9,7 @@ import { ConvexClientProvider } from "~/components/ConvexClientProvider";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "~/components/theme-provider";
 import { Navbar } from "~/components/features/navbar";
-import { auth } from "~/server/auth";
+import { SITE_URL } from "~/lib/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   title: "thestockie - @mtosity",
   description: "Advanced stock analysis tool with AI-powered insights",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
-  metadataBase: new URL("https://thestockie.com"),
+  metadataBase: new URL(SITE_URL),
   openGraph: {
     title: "thestockie - @mtosity",
     description: "Advanced stock analysis tool with AI-powered insights",
@@ -56,11 +56,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+/**
+ * Deliberately free of dynamic APIs.
+ *
+ * This layout used to `await auth()`, which reads cookies and therefore opted
+ * every route in the app out of static/ISR rendering — Vercel answered every
+ * request with `Cache-Control: private, no-store`, so even fully cacheable
+ * pages paid a cold server render on every crawl. The session is now resolved
+ * in the browser by SessionProvider; the navbar is its only consumer.
+ */
+export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const session = await auth();
-
   return (
     <html
       lang="en"
@@ -71,12 +78,16 @@ export default async function RootLayout({
         <ThemeProvider>
           <ConvexClientProvider>
             <TRPCReactProvider>
-              <SessionProvider session={session}>
+              <SessionProvider>
                 <Navbar />
                 {children}
                 <footer>
                   <div className="flex h-16 items-center justify-center gap-8 border-t border-border bg-card text-foreground">
-                  <p className="text-sm">&copy;{new Date().getFullYear()}</p>
+                  {/* Baked at build time now that routes prerender, so let the
+                      client correct it after a year rolls over. */}
+                  <p className="text-sm" suppressHydrationWarning>
+                    &copy;{new Date().getFullYear()}
+                  </p>
                   <a
                     href="https://mtosity.com"
                     target="_blank"

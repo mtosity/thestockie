@@ -73,6 +73,16 @@ export function formatNet(net: number): string {
   return net > 0 ? `+${net}` : `${net}`;
 }
 
+// Fixed locale + timezone: these timestamps are now rendered on the server and
+// hydrated on the client, so `toLocaleDateString()` defaults would disagree
+// between the two whenever the visitor is not in UTC.
+const ABSOLUTE_DATE = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  timeZone: "UTC",
+});
+
 export function formatRelative(ms: number | null | undefined): string {
   if (!ms) return "—";
   const diff = Date.now() - ms;
@@ -81,5 +91,5 @@ export function formatRelative(ms: number | null | undefined): string {
   const days = Math.floor(diff / day);
   if (days < 7) return `${days}d ago`;
   if (days < 30) return `${Math.floor(days / 7)}w ago`;
-  return new Date(ms).toLocaleDateString();
+  return ABSOLUTE_DATE.format(new Date(ms));
 }

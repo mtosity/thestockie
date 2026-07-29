@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
 import { getAllBlogs } from "~/lib/blog";
 import { convex } from "~/server/api/trpc";
+import { SITE_URL } from "~/lib/site";
 import { api } from "../../convex/_generated/api";
 
-const BASE_URL = "https://thestockie.com";
+const BASE_URL = SITE_URL;
 
 export const revalidate = 3600;
 
@@ -30,6 +31,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   } catch {
     // skip investor URLs if Convex is unreachable at build time
+  }
+
+  // Creator detail pages are only linked from the influencer roster, so without
+  // them here a crawler that skips that widget never discovers them.
+  let creatorUrls: MetadataRoute.Sitemap = [];
+  try {
+    const creators = await convex.query(api.influencerReads.influencers, {});
+    creatorUrls = creators.map((c) => ({
+      url: `${BASE_URL}/influencers/${c.channelId}`,
+      lastModified: c.lastPublishedAt ? new Date(c.lastPublishedAt) : new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.7,
+    }));
+  } catch {
+    // skip creator URLs if Convex is unreachable at build time
   }
 
   return [
@@ -63,6 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.9,
     },
+    ...creatorUrls,
     ...investorUrls,
     ...blogUrls,
   ];
