@@ -5,7 +5,7 @@ import { InvestorDetail } from "~/components/features/investor-detail";
 
 export const revalidate = 3600; // refresh metadata/JSON-LD hourly
 
-const BASE_URL = "https://thestockie.com";
+const BASE_URL = "https://www.thestockie.com";
 
 type Params = { params: Promise<{ slug: string }> };
 

@@ -29,7 +29,7 @@ export async function generateMetadata({
     };
   }
 
-  const url = `https://thestockie.com/blogs/${slug}`;
+  const url = `https://www.thestockie.com/blogs/${slug}`;
   const keywords = [
     ...(blog.frontmatter.seoKeywords || []),
     ...(blog.frontmatter.tags || []),
@@ -80,7 +80,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
   }
 
   const { frontmatter, content, readingTime } = blog;
-  const url = `https://thestockie.com/blogs/${slug}`;
+  const url = `https://www.thestockie.com/blogs/${slug}`;
 
   // JSON-LD: Article schema with proper dateModified
   const articleLd = {
@@ -94,12 +94,12 @@ export default async function BlogPage({ params }: BlogPageProps) {
     author: {
       "@type": "Organization",
       name: "The Stockie",
-      url: "https://thestockie.com",
+      url: "https://www.thestockie.com",
     },
     publisher: {
       "@type": "Organization",
       name: "The Stockie",
-      url: "https://thestockie.com",
+      url: "https://www.thestockie.com",
     },
     mainEntityOfPage: {
       "@type": "WebPage",
@@ -120,13 +120,13 @@ export default async function BlogPage({ params }: BlogPageProps) {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://thestockie.com",
+        item: "https://www.thestockie.com",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Blog",
-        item: "https://thestockie.com/blogs",
+        item: "https://www.thestockie.com/blogs",
       },
       {
         "@type": "ListItem",

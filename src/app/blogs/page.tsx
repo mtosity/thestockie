@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   keywords:
     "investing, stocks, crypto, analysis, financial education, market trends",
   alternates: {
-    canonical: "https://thestockie.com/blogs",
+    canonical: "https://www.thestockie.com/blogs",
   },
   openGraph: {
     title: "The Stockie Blog - Investment Insights & Analysis",
     description:
       "Investment insights, guides, and analysis to help you make smarter decisions.",
-    url: "https://thestockie.com/blogs",
+    url: "https://www.thestockie.com/blogs",
     siteName: "The Stockie",
     type: "website",
     images: [

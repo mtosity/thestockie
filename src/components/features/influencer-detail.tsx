@@ -3,10 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Youtube } from "lucide-react";
-import { api, type RouterOutputs } from "~/trpc/react";
+import { type RouterOutputs } from "~/trpc/react";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Skeleton } from "~/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -108,12 +107,12 @@ function TakeCard({ take }: { take: Summary["takes"][number] }) {
 
 const BUYS_PREVIEW = 15;
 
-export function InfluencerDetail({ channelId }: { channelId: string }) {
+/**
+ * `data` is fetched on the server so the creator's takes, buys and market view
+ * are in the initial HTML — only the "show all buys" toggle needs the client.
+ */
+export function InfluencerDetail({ data }: { data: Summary | null }) {
   const [showAllBuys, setShowAllBuys] = useState(false);
-  const { data, isLoading } = api.influencer.summary.useQuery(
-    { channelId },
-    { enabled: !!channelId },
-  );
   const visibleBuys = showAllBuys
     ? (data?.buys ?? [])
     : (data?.buys ?? []).slice(0, BUYS_PREVIEW);
@@ -133,9 +132,7 @@ export function InfluencerDetail({ channelId }: { channelId: string }) {
           <ArrowLeft className="h-4 w-4" /> Back to Influencer Radar
         </Link>
 
-        {isLoading ? (
-          <Skeleton className="h-96 w-full rounded-xl bg-foreground/5" />
-        ) : !data ? (
+        {!data ? (
           <p className="py-16 text-center text-muted-foreground">
             Creator not found.
           </p>
@@ -187,6 +184,39 @@ export function InfluencerDetail({ channelId }: { channelId: string }) {
                 </div>
               </CardHeader>
             </Card>
+
+            {/* Standalone, quotable lede — answer engines lift a paragraph,
+                not a stat block. */}
+            <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+              This page tracks every stock {data.influencer.name} has discussed
+              on YouTube, extracted from AI transcription of their{" "}
+              {data.stats.videoCount} most recent videos covering{" "}
+              {data.stats.symbolsCovered} tickers.
+              {bullish.length > 0 && (
+                <>
+                  {" "}
+                  They are currently bullish on{" "}
+                  {bullish
+                    .slice(0, 6)
+                    .map((t) => t.symbol)
+                    .join(", ")}
+                  {bullish.length > 6 ? " and others" : ""}.
+                </>
+              )}
+              {bearish.length > 0 && (
+                <>
+                  {" "}
+                  Bearish on{" "}
+                  {bearish
+                    .slice(0, 6)
+                    .map((t) => t.symbol)
+                    .join(", ")}
+                  .
+                </>
+              )}{" "}
+              Each take below includes their stated reasoning and, where given,
+              a price target.
+            </p>
 
             {/* ── Market view ────────────────────────────── */}
             <Card className="mb-4 border-border bg-foreground/5 text-foreground">
