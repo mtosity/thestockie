@@ -8,7 +8,6 @@ import {
   ArrowLeftRight,
   Globe,
   Radar,
-  Landmark,
   LogIn,
   LogOut,
   MoreHorizontal,
@@ -36,7 +35,6 @@ const primaryLinks = [
 
 const secondaryLinks = [
   { href: "/influencers", icon: Radar, label: "Influencers" },
-  { href: "/politicians", icon: Landmark, label: "Politicians" },
   { href: "/earnings", icon: CalendarDays, label: "Earnings" },
   { href: "/compare", icon: ArrowLeftRight, label: "Compare" },
   { href: "/blogs", icon: BookOpen, label: "Blog" },
@@ -52,7 +50,6 @@ const PAGE_TITLES: Record<string, string> = {
   "/earnings": "Earnings Calendar",
   "/compare": "Stock Comparison",
   "/macro": "Macro Overview",
-  "/politicians": "Politician Trading",
 };
 
 function getPageTitle(pathname: string): string | null {
