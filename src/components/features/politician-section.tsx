@@ -47,9 +47,9 @@ export function PoliticianSection() {
       </p>
 
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid min-w-0 gap-4 md:grid-cols-2">
           {[0, 1].map((i) => (
-            <Card key={i}>
+            <Card key={i} className="overflow-hidden">
               <CardContent className="space-y-2 p-4 pt-4 sm:p-6 sm:pt-4">
                 <div className="h-4 w-28 animate-pulse rounded bg-foreground/10 sm:w-32" />
                 {[1, 2, 3, 4].map((j) => (
@@ -67,13 +67,13 @@ export function PoliticianSection() {
           ))}
         </div>
       ) : isError ? (
-        <Card>
+        <Card className="overflow-hidden">
           <CardContent className="p-4 pt-4 text-center text-sm text-muted-foreground sm:p-6 sm:pt-6">
             Unable to load politician trading data right now.
           </CardContent>
         </Card>
       ) : !hasData ? (
-        <Card>
+        <Card className="overflow-hidden">
           <CardContent className="p-4 pt-4 text-center text-sm text-muted-foreground sm:p-6 sm:pt-6">
             No politician trading data available right now.
           </CardContent>

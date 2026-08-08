@@ -71,15 +71,17 @@ function SymbolRow({ row, rank }: { row: PoliticianConsensusRow; rank: number })
   return (
     <div className="flex items-center gap-2 rounded-md bg-muted px-2.5 py-2 sm:gap-3 sm:px-3">
       <span className="w-4 shrink-0 text-right text-xs text-muted-foreground">{rank}</span>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 overflow-hidden">
         <div className="flex items-center gap-1.5 sm:gap-2">
           <Link
             href={`/?symbol=${row.ticker}`}
-            className="font-semibold text-foreground hover:underline"
+            className="shrink-0 font-semibold text-foreground hover:underline"
           >
             {row.ticker}
           </Link>
-          <InvestorConsensusBadge consensus={row.consensus} />
+          <span className="overflow-hidden">
+            <InvestorConsensusBadge consensus={row.consensus} />
+          </span>
         </div>
         {row.name && <p className="truncate text-xs text-muted-foreground">{row.name}</p>}
       </div>
@@ -105,7 +107,7 @@ function Side({
   empty: string;
 }) {
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader className="space-y-0 p-4 pb-3 sm:p-6">
         <div className={`flex items-center gap-2 text-sm font-semibold ${accent}`}>
           {icon} {title}
@@ -125,7 +127,7 @@ function Side({
 export function PoliticianConsensus({ consensus }: { consensus: PoliticianConsensus }) {
   return (
     <TooltipProvider delayDuration={100}>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid min-w-0 gap-4 md:grid-cols-2">
         <Side
           title="Most bought by politicians"
           icon={<ShoppingCart className="h-4 w-4" />}
