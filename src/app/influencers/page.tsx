@@ -5,6 +5,7 @@ import { SentimentLeaderboard } from "~/components/features/influencer-sentiment
 import { InfluencerRoster } from "~/components/features/influencer-roster";
 import { RecentInfluencerVideos } from "~/components/features/influencer-videos";
 import { SuperInvestorsSection } from "~/components/features/super-investor-section";
+import { PoliticianSection } from "~/components/features/politician-section";
 import {
   InfluencerSeoSummary,
   formatAsOf,
@@ -94,6 +95,8 @@ export default async function InfluencersPage() {
           moves={superInvestors.moves}
           investors={superInvestors.investors}
         />
+
+        <PoliticianSection />
 
         <InfluencerSeoSummary
           sentiment={sentiment}
