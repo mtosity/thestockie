@@ -89,36 +89,29 @@ function normalizeTrade(
   };
 }
 
-/** Fetch trades from both Senate + House endpoints. */
+/** Fetch recent trades from both Senate + House using the /stable/ endpoints. */
 async function fetchAllPoliticianTrades(
-  symbol?: string,
   pages = 3,
 ): Promise<PoliticianTrade[]> {
-  const params: Record<string, string | number> = {
-    apikey: process.env.FMP_API_KEY!,
-    page: 0,
-  };
-  if (symbol) params.symbol = symbol;
-
   const results: PoliticianTrade[] = [];
 
   // Fetch multiple pages in parallel for each chamber
   const pagePromises: Promise<PoliticianTrade[]>[] = [];
   for (let p = 0; p < pages; p++) {
-    const pageParams = { ...params, page: p };
+    const params = { apikey: process.env.FMP_API_KEY!, page: p };
 
-    // Senate trades
+    // Senate trades (latest, no symbol required)
     pagePromises.push(
       fmp
-        .get<FMPPoliticianTradeResponse>("/api/v4/senate-trading", { params: pageParams })
+        .get<FMPPoliticianTradeResponse>("/stable/senate-latest", { params })
         .then((res) => (res.data ?? []).map((t) => normalizeTrade(t, "senate")))
         .catch(() => [] as PoliticianTrade[]),
     );
 
-    // House trades
+    // House trades (latest, no symbol required)
     pagePromises.push(
       fmp
-        .get<FMPPoliticianTradeResponse>("/api/v4/house-trading", { params: pageParams })
+        .get<FMPPoliticianTradeResponse>("/stable/house-latest", { params })
         .then((res) => (res.data ?? []).map((t) => normalizeTrade(t, "house")))
         .catch(() => [] as PoliticianTrade[]),
     );
@@ -128,6 +121,45 @@ async function fetchAllPoliticianTrades(
   for (const page of allPages) results.push(...page);
 
   // Deduplicate by symbol + politicianId + transactionDate + type
+  const seen = new Set<string>();
+  return results.filter((t) => {
+    const key = `${t.symbol}-${t.politicianId}-${t.transactionDate}-${t.tradeType}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+/** Fetch trades for a specific symbol using the /api/v4/ endpoints (symbol required). */
+async function fetchTradesBySymbol(
+  symbol: string,
+  pages = 5,
+): Promise<PoliticianTrade[]> {
+  const results: PoliticianTrade[] = [];
+
+  const pagePromises: Promise<PoliticianTrade[]>[] = [];
+  for (let p = 0; p < pages; p++) {
+    const params = { apikey: process.env.FMP_API_KEY!, symbol, page: p };
+
+    pagePromises.push(
+      fmp
+        .get<FMPPoliticianTradeResponse>("/api/v4/senate-trading", { params })
+        .then((res) => (res.data ?? []).map((t) => normalizeTrade(t, "senate")))
+        .catch(() => [] as PoliticianTrade[]),
+    );
+
+    pagePromises.push(
+      fmp
+        .get<FMPPoliticianTradeResponse>("/api/v4/house-trading", { params })
+        .then((res) => (res.data ?? []).map((t) => normalizeTrade(t, "house")))
+        .catch(() => [] as PoliticianTrade[]),
+    );
+  }
+
+  const allPages = await Promise.all(pagePromises);
+  for (const page of allPages) results.push(...page);
+
+  // Deduplicate
   const seen = new Set<string>();
   return results.filter((t) => {
     const key = `${t.symbol}-${t.politicianId}-${t.transactionDate}-${t.tradeType}`;
@@ -220,23 +252,19 @@ function buildConsensus(
 export const politicianRouter = createTRPCRouter({
   /**
    * Recent trades from both Senate + House.
-   * Fetches the latest N pages from FMP and returns normalised trades.
+   * Fetches the latest N pages from FMP /stable/ endpoints and returns normalised trades.
    */
   recentTrades: publicProcedure
     .input(
       z
         .object({
-          symbol: z.string().optional(),
           limit: z.number().min(1).max(100).optional(),
           pages: z.number().min(1).max(10).optional(),
         })
         .optional(),
     )
     .query(async ({ input }) => {
-      const trades = await fetchAllPoliticianTrades(
-        input?.symbol,
-        input?.pages ?? 3,
-      );
+      const trades = await fetchAllPoliticianTrades(input?.pages ?? 3);
       // Sort by disclosure date descending
       trades.sort(
         (a, b) =>
@@ -253,17 +281,13 @@ export const politicianRouter = createTRPCRouter({
     .input(
       z
         .object({
-          symbol: z.string().optional(),
           limit: z.number().min(1).max(50).optional(),
           pages: z.number().min(1).max(10).optional(),
         })
         .optional(),
     )
     .query(async ({ input }) => {
-      const trades = await fetchAllPoliticianTrades(
-        input?.symbol,
-        input?.pages ?? 5,
-      );
+      const trades = await fetchAllPoliticianTrades(input?.pages ?? 5);
       return buildConsensus(trades, input?.limit ?? 12);
     }),
 
@@ -278,7 +302,7 @@ export const politicianRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input }) => {
-      const trades = await fetchAllPoliticianTrades(input.symbol, 5);
+      const trades = await fetchTradesBySymbol(input.symbol, 5);
       trades.sort(
         (a, b) =>
           new Date(b.disclosureDate).getTime() - new Date(a.disclosureDate).getTime(),
