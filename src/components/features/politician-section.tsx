@@ -33,12 +33,12 @@ export function PoliticianSection() {
       aria-labelledby="politician-trading-heading"
     >
       <div className="mb-1 flex items-center gap-2">
-        <Landmark className="h-6 w-6 text-warning" />
-        <h2 id="politician-trading-heading" className="text-2xl font-bold">
+        <Landmark className="h-5 w-5 shrink-0 text-warning sm:h-6 sm:w-6" />
+        <h2 id="politician-trading-heading" className="text-xl font-bold sm:text-2xl">
           Politician Trading
         </h2>
       </div>
-      <p className="mb-4 max-w-3xl text-sm text-muted-foreground">
+      <p className="mb-4 max-w-3xl text-xs text-muted-foreground sm:text-sm">
         Which stocks are US Senators and Representatives buying and selling? Data sourced
         from public STOCK Act disclosures via FMP&apos;s Congressional Trading APIs.
         <span className="text-muted-foreground">
@@ -50,14 +50,14 @@ export function PoliticianSection() {
         <div className="grid gap-4 md:grid-cols-2">
           {[0, 1].map((i) => (
             <Card key={i}>
-              <CardContent className="space-y-2 py-4">
-                <div className="h-4 w-32 animate-pulse rounded bg-foreground/10" />
+              <CardContent className="space-y-2 p-4 pt-4 sm:p-6 sm:pt-4">
+                <div className="h-4 w-28 animate-pulse rounded bg-foreground/10 sm:w-32" />
                 {[1, 2, 3, 4].map((j) => (
-                  <div key={j} className="flex items-center gap-3 rounded-md bg-muted px-3 py-2">
+                  <div key={j} className="flex items-center gap-2 rounded-md bg-muted px-2.5 py-2 sm:gap-3 sm:px-3">
                     <div className="h-3 w-3 animate-pulse rounded bg-foreground/10" />
                     <div className="flex-1 space-y-1">
-                      <div className="h-3 w-20 animate-pulse rounded bg-foreground/10" />
-                      <div className="h-2 w-32 animate-pulse rounded bg-foreground/10" />
+                      <div className="h-3 w-16 animate-pulse rounded bg-foreground/10 sm:w-20" />
+                      <div className="h-2 w-24 animate-pulse rounded bg-foreground/10 sm:w-32" />
                     </div>
                     <div className="h-3 w-10 animate-pulse rounded bg-foreground/10" />
                   </div>
@@ -68,13 +68,13 @@ export function PoliticianSection() {
         </div>
       ) : isError ? (
         <Card>
-          <CardContent className="py-12 text-center text-sm text-muted-foreground">
+          <CardContent className="p-4 pt-4 text-center text-sm text-muted-foreground sm:p-6 sm:pt-6">
             Unable to load politician trading data right now.
           </CardContent>
         </Card>
       ) : !hasData ? (
         <Card>
-          <CardContent className="py-12 text-center text-sm text-muted-foreground">
+          <CardContent className="p-4 pt-4 text-center text-sm text-muted-foreground sm:p-6 sm:pt-6">
             No politician trading data available right now.
           </CardContent>
         </Card>

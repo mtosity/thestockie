@@ -56,7 +56,7 @@ function CountBadge({
           {arrow}
         </span>
       </TooltipTrigger>
-      <TooltipContent side="left" className="max-w-[260px]">
+      <TooltipContent side="left" className="max-w-[220px] sm:max-w-[260px]">
         <ul className="space-y-0.5 text-xs leading-snug">
           {names.map((n) => (
             <li key={n}>{n}</li>
@@ -69,10 +69,10 @@ function CountBadge({
 
 function SymbolRow({ row, rank }: { row: PoliticianConsensusRow; rank: number }) {
   return (
-    <div className="flex items-center gap-3 rounded-md bg-muted px-3 py-2">
+    <div className="flex items-center gap-2 rounded-md bg-muted px-2.5 py-2 sm:gap-3 sm:px-3">
       <span className="w-4 shrink-0 text-right text-xs text-muted-foreground">{rank}</span>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <Link
             href={`/?symbol=${row.ticker}`}
             className="font-semibold text-foreground hover:underline"
@@ -83,7 +83,7 @@ function SymbolRow({ row, rank }: { row: PoliticianConsensusRow; rank: number })
         </div>
         {row.name && <p className="truncate text-xs text-muted-foreground">{row.name}</p>}
       </div>
-      <div className="shrink-0 text-right text-sm">
+      <div className="shrink-0 text-right text-xs sm:text-sm">
         <CountBadge count={row.buyers} arrow="↑" color="text-positive" names={row.buyerNames} />{" "}
         <CountBadge count={row.sellers} arrow="↓" color="text-negative" names={row.sellerNames} />
       </div>
@@ -106,12 +106,12 @@ function Side({
 }) {
   return (
     <Card>
-      <CardHeader className="space-y-0 pb-3">
+      <CardHeader className="space-y-0 p-4 pb-3 sm:p-6">
         <div className={`flex items-center gap-2 text-sm font-semibold ${accent}`}>
           {icon} {title}
         </div>
       </CardHeader>
-      <CardContent className="space-y-1.5">
+      <CardContent className="space-y-1.5 p-4 pt-0 sm:p-6 sm:pt-0">
         {(rows?.length ?? 0) === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">{empty}</p>
         ) : (
