@@ -93,9 +93,21 @@ export const consensus = query({
     const theP = period ?? (await latestPeriod(ctx));
     if (!theP) return { period: null, bought: [], sold: [] };
 
-    const positions = (
-      await ctx.db.query("investorPositions").withIndex("by_cik_period").collect()
-    ).filter((p) => p.period === theP);
+    // Fetch positions per-CIK to stay under Convex's 32K document read limit.
+    const investorList = await ctx.db
+      .query("superInvestors")
+      .withIndex("by_active", (q) => q.eq("active", true))
+      .collect();
+    let positions: Array<Doc<"investorPositions">> = [];
+    for (const inv of investorList) {
+      const ps = await ctx.db
+        .query("investorPositions")
+        .withIndex("by_cik_period", (q) =>
+          q.eq("cik", inv.cik).eq("period", theP)
+        )
+        .collect();
+      positions = positions.concat(ps);
+    }
     const namer = await investorNamer(ctx);
 
     // Aggregate by ticker, counting DISTINCT investors (by cik) — not position
@@ -143,7 +155,7 @@ export const consensus = query({
       sellerNames: names(a.sellers),
       consensus: consensusLabel(a.buyers.size, a.sellers.size),
     }));
-    const n = limit ?? 12;
+    const n = limit ?? 15;
     type R = (typeof rows)[number];
     const pick = (mine: (r: R) => number, theirs: (r: R) => number) => {
       const ranked = rows
@@ -154,8 +166,10 @@ export const consensus = query({
             mine(b) - theirs(b) - (mine(a) - theirs(a)) ||
             b.holders - a.holders,
         );
+      // Always cap at n: prefer strong-consensus items, fill from the rest.
       const strong = ranked.filter((r) => mine(r) > 2);
-      return strong.length >= n ? strong : ranked.slice(0, n);
+      const fill = ranked.filter((r) => mine(r) <= 2);
+      return [...strong, ...fill].slice(0, n);
     };
 
     return {
@@ -179,9 +193,21 @@ export const notableMoves = query({
     const theP = period ?? (await latestPeriod(ctx));
     if (!theP) return { period: null, newBuys: [], exits: [], adds: [], trims: [] };
 
-    const positions = (
-      await ctx.db.query("investorPositions").withIndex("by_cik_period").collect()
-    ).filter((p) => p.period === theP);
+    // Fetch positions per-CIK to stay under Convex's 32K document read limit.
+    const investorList2 = await ctx.db
+      .query("superInvestors")
+      .withIndex("by_active", (q) => q.eq("active", true))
+      .collect();
+    let positions: Array<Doc<"investorPositions">> = [];
+    for (const inv of investorList2) {
+      const ps = await ctx.db
+        .query("investorPositions")
+        .withIndex("by_cik_period", (q) =>
+          q.eq("cik", inv.cik).eq("period", theP)
+        )
+        .collect();
+      positions = positions.concat(ps);
+    }
     const namer = await investorNamer(ctx);
     const n = limit ?? 8;
 
