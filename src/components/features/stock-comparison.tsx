@@ -959,18 +959,47 @@ export function StockComparison() {
                           metric.better !== "neutral" &&
                           validValues.length > 1
                         ) {
-                          const sorted = [...validValues].sort((a, b) => a - b);
-                          const best =
-                            metric.better === "higher"
-                              ? sorted[sorted.length - 1]
-                              : sorted[0];
-                          const worst =
-                            metric.better === "higher"
-                              ? sorted[0]
-                              : sorted[sorted.length - 1];
-                          bestIdx = values.findIndex((v) => v === best);
-                          worstIdx = values.findIndex((v) => v === worst);
-                          if (best === worst) {
+                          // For "lower is better" valuation metrics (PE, P/S,
+                          // P/B, EV/EBITDA, Price/FCF, D/E), a negative value
+                          // means the company is losing money or has negative
+                          // equity, not that it's "cheap". Exclude negatives
+                          // from best; flag them as worst instead.
+                          const positiveValues =
+                            metric.better === "lower"
+                              ? validValues.filter((v) => v > 0)
+                              : validValues;
+
+                          if (positiveValues.length > 0) {
+                            const sorted = [...positiveValues].sort(
+                              (a, b) => a - b,
+                            );
+                            const best =
+                              metric.better === "higher"
+                                ? sorted[sorted.length - 1]
+                                : sorted[0];
+                            bestIdx = values.findIndex((v) => v === best);
+                          }
+
+                          // Worst: for "lower is better", any negative value is
+                          // the worst. For "higher is better", the lowest value
+                          // (which could be negative) is the worst.
+                          const hasNegatives = validValues.some((v) => v < 0);
+                          if (hasNegatives && metric.better === "lower") {
+                            // Pick the most negative as worst
+                            const worstVal = Math.min(...validValues);
+                            worstIdx = values.findIndex((v) => v === worstVal);
+                          } else {
+                            const sortedAll = [...validValues].sort(
+                              (a, b) => a - b,
+                            );
+                            const worst =
+                              metric.better === "higher"
+                                ? sortedAll[0]
+                                : sortedAll[sortedAll.length - 1];
+                            worstIdx = values.findIndex((v) => v === worst);
+                          }
+
+                          if (bestIdx === worstIdx) {
                             bestIdx = -1;
                             worstIdx = -1;
                           }
@@ -1094,7 +1123,7 @@ export function StockComparison() {
                               row.className,
                             )}
                           >
-                            {row.render(stockQueries[i]!.data!)}
+                            {row.render(stockQueries[i].data)}
                           </td>
                         ) : (
                           <MetricCellSkeleton key={s} />
