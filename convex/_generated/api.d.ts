@@ -14,9 +14,11 @@ import type * as influencer from "../influencer.js";
 import type * as influencerReads from "../influencerReads.js";
 import type * as investors from "../investors.js";
 import type * as lib_serverAuth from "../lib/serverAuth.js";
+import type * as lib_superInvestorCompute from "../lib/superInvestorCompute.js";
 import type * as maintenance from "../maintenance.js";
 import type * as posts from "../posts.js";
 import type * as superInvestorReads from "../superInvestorReads.js";
+import type * as superInvestorSnapshot from "../superInvestorSnapshot.js";
 
 import type {
   ApiFromModules,
@@ -31,9 +33,11 @@ declare const fullApi: ApiFromModules<{
   influencerReads: typeof influencerReads;
   investors: typeof investors;
   "lib/serverAuth": typeof lib_serverAuth;
+  "lib/superInvestorCompute": typeof lib_superInvestorCompute;
   maintenance: typeof maintenance;
   posts: typeof posts;
   superInvestorReads: typeof superInvestorReads;
+  superInvestorSnapshot: typeof superInvestorSnapshot;
 }>;
 
 /**
