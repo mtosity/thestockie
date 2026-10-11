@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
@@ -7,7 +7,7 @@ import { v } from "convex/values";
 
 // ── Seed / manage investors ─────────────────────────────────────────────────
 
-export const seedInvestor = mutation({
+export const seedInvestor = internalMutation({
   args: {
     name: v.string(),
     firm: v.optional(v.string()),
@@ -87,7 +87,7 @@ export const cusipLookup = query({
   },
 });
 
-export const cusipSave = mutation({
+export const cusipSave = internalMutation({
   args: {
     entries: v.array(
       v.object({
@@ -121,7 +121,7 @@ export const cusipSave = mutation({
 
 // ── Save filing ─────────────────────────────────────────────────────────────
 
-export const saveFiling = mutation({
+export const saveFiling = internalMutation({
   args: {
     cik: v.string(),
     period: v.string(),
@@ -215,30 +215,38 @@ export const saveFiling = mutation({
 
 // ── Aggregate consensus ─────────────────────────────────────────────────────
 
-export const aggregateConsensus = mutation({
+export const aggregateConsensus = internalMutation({
   args: {
     period: v.string(),
   },
   handler: async (ctx, { period }) => {
-    const positions = await ctx.db
-      .query("investorPositions")
-      .collect();
-    const periodPositions = positions.filter((p) => p.period === period);
-
-    // Group by ticker
-    const byTicker: Record<string, any[]> = {};
-    for (const p of periodPositions) {
-      const t = p.ticker || p.cusip;
-      if (!byTicker[t]) byTicker[t] = [];
-      byTicker[t].push(p);
-    }
-
-    // Clear old consensus for this period
+    // Clear old consensus for this period first
     const old = await ctx.db
       .query("investorConsensus")
       .withIndex("by_period", (q) => q.eq("period", period))
       .collect();
     for (const o of old) await ctx.db.delete(o._id);
+
+    // Fetch positions per-CIK to stay under Convex's 32K document read limit.
+    const byTicker: Record<string, any[]> = {};
+    const investors = await ctx.db
+      .query("superInvestors")
+      .withIndex("by_active", (q) => q.eq("active", true))
+      .collect();
+
+    for (const inv of investors) {
+      const positions = await ctx.db
+        .query("investorPositions")
+        .withIndex("by_cik_period", (q) =>
+          q.eq("cik", inv.cik).eq("period", period)
+        )
+        .collect();
+      for (const p of positions) {
+        const t = p.ticker || p.cusip;
+        if (!byTicker[t]) byTicker[t] = [];
+        byTicker[t].push(p);
+      }
+    }
 
     // Build consensus
     for (const [ticker, ps] of Object.entries(byTicker)) {

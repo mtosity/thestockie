@@ -13,6 +13,7 @@ import type * as http from "../http.js";
 import type * as influencer from "../influencer.js";
 import type * as influencerReads from "../influencerReads.js";
 import type * as investors from "../investors.js";
+import type * as lib_serverAuth from "../lib/serverAuth.js";
 import type * as maintenance from "../maintenance.js";
 import type * as posts from "../posts.js";
 import type * as superInvestorReads from "../superInvestorReads.js";
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   influencer: typeof influencer;
   influencerReads: typeof influencerReads;
   investors: typeof investors;
+  "lib/serverAuth": typeof lib_serverAuth;
   maintenance: typeof maintenance;
   posts: typeof posts;
   superInvestorReads: typeof superInvestorReads;
