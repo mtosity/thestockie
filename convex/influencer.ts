@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
@@ -7,7 +7,7 @@ import { v } from "convex/values";
 
 // ── Seed / manage influencers ───────────────────────────────────────────────
 
-export const seedInfluencers = mutation({
+export const seedInfluencers = internalMutation({
   args: {
     influencers: v.array(
       v.object({
@@ -56,7 +56,7 @@ export const getActiveInfluencers = query({
 
 // ── Video discovery ─────────────────────────────────────────────────────────
 
-export const discoverVideo = mutation({
+export const discoverVideo = internalMutation({
   args: {
     channelId: v.string(),
     videoId: v.string(),
@@ -83,7 +83,7 @@ export const discoverVideo = mutation({
   },
 });
 
-export const setVideoStatus = mutation({
+export const setVideoStatus = internalMutation({
   args: {
     videoId: v.string(),
     status: v.union(
@@ -105,7 +105,7 @@ export const setVideoStatus = mutation({
   },
 });
 
-export const setVideoError = mutation({
+export const setVideoError = internalMutation({
   args: {
     videoId: v.string(),
     error: v.string(),
@@ -122,7 +122,7 @@ export const setVideoError = mutation({
 
 // ── Save video result ───────────────────────────────────────────────────────
 
-export const saveVideoResult = mutation({
+export const saveVideoResult = internalMutation({
   args: {
     videoId: v.string(),
     transcript: v.optional(v.string()),
@@ -225,7 +225,7 @@ export const saveVideoResult = mutation({
 
 // ── Aggregation ───────────────────────────────────────────────────────────────
 
-export const aggregateSentiment = mutation({
+export const aggregateSentiment = internalMutation({
   args: {
     date: v.optional(v.string()),
     windowDays: v.number(),
@@ -386,7 +386,7 @@ export const aggregateSentiment = mutation({
 
 // ── Save digest ──────────────────────────────────────────────────────────────
 
-export const saveDigest = mutation({
+export const saveDigest = internalMutation({
   args: {
     date: v.string(),
     marketSentiment: v.string(),
@@ -452,7 +452,7 @@ export const saveDigest = mutation({
 
 // ── Purge old data ──────────────────────────────────────────────────────────
 
-export const purgeOld = mutation({
+export const purgeOld = internalMutation({
   args: {
     olderThanDays: v.number(),
   },
@@ -511,7 +511,7 @@ export const purgeOld = mutation({
 
 // ── Job run tracking ─────────────────────────────────────────────────────────
 
-export const startJobRun = mutation({
+export const startJobRun = internalMutation({
   args: {
     mode: v.string(),
     startedAt: v.optional(v.number()),
@@ -526,7 +526,7 @@ export const startJobRun = mutation({
   },
 });
 
-export const endJobRun = mutation({
+export const endJobRun = internalMutation({
   args: {
     runId: v.string(),
     status: v.union(v.literal("success"), v.literal("failed")),

@@ -14,6 +14,14 @@ if (!convexUrl) {
   );
 }
 
+const convexServerSecret = process.env.CONVEX_SERVER_SECRET;
+if (!convexServerSecret) {
+  throw new Error(
+    "CONVEX_SERVER_SECRET is not set. It must match the CONVEX_SERVER_SECRET " +
+      "env var on the Convex deployment (npx convex env set CONVEX_SERVER_SECRET ...)."
+  );
+}
+
 const convexClient = new ConvexHttpClient(convexUrl);
 
 /**
@@ -59,7 +67,7 @@ export const authConfig = {
       clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET,
     }),
   ],
-  adapter: createConvexAdapter(convexClient),
+  adapter: createConvexAdapter(convexClient, convexServerSecret),
   callbacks: {
     session: ({ session, user }) => ({
       ...session,

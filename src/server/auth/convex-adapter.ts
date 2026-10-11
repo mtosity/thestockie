@@ -10,11 +10,15 @@ import { type Id } from "../../../convex/_generated/dataModel";
  * Designed to work with the schema in convex/schema.ts.
  */
 
-function createConvexAdapter(client: ConvexHttpClient): Adapter {
+function createConvexAdapter(
+  client: ConvexHttpClient,
+  serverSecret: string,
+): Adapter {
   return {
     // ── User ──────────────────────────────────────────────────────────
     async createUser(user) {
       const id = await client.mutation(api.auth.createUser, {
+        serverSecret,
         email: user.email,
         name: user.name ?? undefined,
         image: user.image ?? undefined,
@@ -27,6 +31,7 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
 
     async getUser(id) {
       const user = await client.query(api.auth.getUser, {
+        serverSecret,
         id: id as Id<"users">,
       });
       if (!user) return null;
@@ -40,7 +45,7 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
     },
 
     async getUserByEmail(email) {
-      const user = await client.query(api.auth.getUserByEmail, { email });
+      const user = await client.query(api.auth.getUserByEmail, { serverSecret, email });
       if (!user) return null;
       return {
         id: user._id,
@@ -53,6 +58,7 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
 
     async getUserByAccount({ provider, providerAccountId }) {
       const user = await client.query(api.auth.getUserByAccount, {
+        serverSecret,
         provider,
         providerAccountId,
       });
@@ -68,6 +74,7 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
 
     async updateUser(user) {
       await client.mutation(api.auth.updateUser, {
+        serverSecret,
         id: user.id as Id<"users">,
         name: user.name ?? undefined,
         image: user.image ?? undefined,
@@ -81,6 +88,7 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
 
     async deleteUser(userId) {
       await client.mutation(api.auth.deleteUser, {
+        serverSecret,
         id: userId as Id<"users">,
       });
     },
@@ -88,6 +96,7 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
     // ── Account ──────────────────────────────────────────────────────
     async linkAccount(account) {
       await client.mutation(api.auth.linkAccount, {
+        serverSecret,
         userId: account.userId as Id<"users">,
         type: account.type,
         provider: account.provider,
@@ -108,6 +117,7 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
 
     async unlinkAccount({ provider, providerAccountId }) {
       await client.mutation(api.auth.unlinkAccount, {
+        serverSecret,
         provider,
         providerAccountId,
       });
@@ -116,6 +126,7 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
     // ── Session ──────────────────────────────────────────────────────
     async createSession({ sessionToken, userId, expires }) {
       await client.mutation(api.auth.createSession, {
+        serverSecret,
         sessionToken,
         userId: userId as Id<"users">,
         expires: expires.getTime(),
@@ -125,6 +136,7 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
 
     async getSessionAndUser(sessionToken) {
       const result = await client.query(api.auth.getSessionAndUser, {
+        serverSecret,
         sessionToken,
       });
       if (!result) return null;
@@ -148,6 +160,7 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
 
     async updateSession({ sessionToken, expires, userId }) {
       await client.mutation(api.auth.updateSession, {
+        serverSecret,
         sessionToken,
         expires: expires ? expires.getTime() : undefined,
         userId: userId ? (userId as Id<"users">) : undefined,
@@ -157,12 +170,13 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
     },
 
     async deleteSession(sessionToken) {
-      await client.mutation(api.auth.deleteSession, { sessionToken });
+      await client.mutation(api.auth.deleteSession, { serverSecret, sessionToken });
     },
 
     // ── Verification Token ───────────────────────────────────────────
     async createVerificationToken({ identifier, token, expires }) {
       await client.mutation(api.auth.createVerificationToken, {
+        serverSecret,
         identifier,
         token,
         expires: expires.getTime(),
@@ -172,6 +186,7 @@ function createConvexAdapter(client: ConvexHttpClient): Adapter {
 
     async useVerificationToken({ identifier, token }) {
       const vt = await client.mutation(api.auth.useVerificationToken, {
+        serverSecret,
         identifier,
         token,
       });

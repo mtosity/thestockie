@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { serverMutation, serverQuery } from "./lib/serverAuth";
 import { v } from "convex/values";
 import { type Id } from "./_generated/dataModel";
 
@@ -9,7 +9,7 @@ import { type Id } from "./_generated/dataModel";
 
 // ── User ────────────────────────────────────────────────────────────────────
 
-export const createUser = mutation({
+export const createUser = serverMutation({
   args: {
     email: v.string(),
     name: v.optional(v.string()),
@@ -21,14 +21,14 @@ export const createUser = mutation({
   },
 });
 
-export const getUser = query({
+export const getUser = serverQuery({
   args: { id: v.id("users") },
   handler: async (ctx, { id }) => {
     return await ctx.db.get(id);
   },
 });
 
-export const getUserByEmail = query({
+export const getUserByEmail = serverQuery({
   args: { email: v.string() },
   handler: async (ctx, { email }) => {
     return await ctx.db
@@ -38,7 +38,7 @@ export const getUserByEmail = query({
   },
 });
 
-export const getUserByAccount = query({
+export const getUserByAccount = serverQuery({
   args: {
     provider: v.string(),
     providerAccountId: v.string(),
@@ -55,7 +55,7 @@ export const getUserByAccount = query({
   },
 });
 
-export const updateUser = mutation({
+export const updateUser = serverMutation({
   args: {
     id: v.id("users"),
     email: v.optional(v.string()),
@@ -68,7 +68,7 @@ export const updateUser = mutation({
   },
 });
 
-export const deleteUser = mutation({
+export const deleteUser = serverMutation({
   args: { id: v.id("users") },
   handler: async (ctx, { id }) => {
     // Delete associated accounts and sessions first
@@ -92,7 +92,7 @@ export const deleteUser = mutation({
 
 // ── Account ─────────────────────────────────────────────────────────────────
 
-export const linkAccount = mutation({
+export const linkAccount = serverMutation({
   args: {
     userId: v.id("users"),
     type: v.string(),
@@ -123,7 +123,7 @@ export const linkAccount = mutation({
   },
 });
 
-export const unlinkAccount = mutation({
+export const unlinkAccount = serverMutation({
   args: {
     provider: v.string(),
     providerAccountId: v.string(),
@@ -143,7 +143,7 @@ export const unlinkAccount = mutation({
 
 // ── Session ──────────────────────────────────────────────────────────────────
 
-export const createSession = mutation({
+export const createSession = serverMutation({
   args: {
     sessionToken: v.string(),
     userId: v.id("users"),
@@ -154,7 +154,7 @@ export const createSession = mutation({
   },
 });
 
-export const getSessionAndUser = query({
+export const getSessionAndUser = serverQuery({
   args: { sessionToken: v.string() },
   handler: async (ctx, { sessionToken }) => {
     const session = await ctx.db
@@ -168,7 +168,7 @@ export const getSessionAndUser = query({
   },
 });
 
-export const updateSession = mutation({
+export const updateSession = serverMutation({
   args: {
     sessionToken: v.string(),
     expires: v.optional(v.number()),
@@ -187,7 +187,7 @@ export const updateSession = mutation({
   },
 });
 
-export const deleteSession = mutation({
+export const deleteSession = serverMutation({
   args: { sessionToken: v.string() },
   handler: async (ctx, { sessionToken }) => {
     const session = await ctx.db
@@ -202,7 +202,7 @@ export const deleteSession = mutation({
 
 // ── Verification Token ───────────────────────────────────────────────────────
 
-export const createVerificationToken = mutation({
+export const createVerificationToken = serverMutation({
   args: {
     identifier: v.string(),
     token: v.string(),
@@ -213,7 +213,7 @@ export const createVerificationToken = mutation({
   },
 });
 
-export const useVerificationToken = mutation({
+export const useVerificationToken = serverMutation({
   args: {
     identifier: v.string(),
     token: v.string(),

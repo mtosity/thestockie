@@ -1,4 +1,4 @@
-import { query, mutation } from "./_generated/server";
+import { query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
@@ -87,7 +87,7 @@ export const getAll = query({
 });
 
 // Create or update a post (upsert by symbol)
-export const createOrUpdate = mutation({
+export const createOrUpdate = internalMutation({
   args: {
     supabaseId: v.string(),
     prompt: v.optional(v.string()),
