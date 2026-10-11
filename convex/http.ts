@@ -75,8 +75,9 @@ export const handleInvestor = httpAction(async (ctx, req) => {
       }
 
       case "/aggregate": {
-        const body = await parseBody(req);
-        const result = await ctx.runMutation(internal.investors.aggregateConsensus, body);
+        // Rebuild the precomputed roster/consensus/notable-moves snapshot in the
+        // background (superInvestorSnapshot.rebuild); it reads every position.
+        const result = await ctx.runMutation(internal.superInvestorSnapshot.requestRebuild, {});
         return jsonResponse(200, { ok: true, result });
       }
 

@@ -1,5 +1,10 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import {
+  consensusRowValidator,
+  notableMoveValidator,
+  rosterEntryValidator,
+} from "./lib/superInvestorCompute";
 
 export default defineSchema({
   // thestockie_user → users
@@ -318,6 +323,21 @@ export default defineSchema({
     name: v.optional(v.string()),
   })
     .index("by_cusip", ["cusip"]),
+
+  // Precomputed roster / consensus / notable moves per 13F period, built by
+  // superInvestorSnapshot.rebuild so the read queries don't scan investorPositions.
+  superInvestorSnapshots: defineTable({
+    period: v.string(),
+    builtAt: v.number(),
+    positionsRead: v.number(),
+    roster: v.array(rosterEntryValidator),
+    consensusBought: v.array(consensusRowValidator),
+    consensusSold: v.array(consensusRowValidator),
+    newBuys: v.array(notableMoveValidator),
+    exits: v.array(notableMoveValidator),
+    adds: v.array(notableMoveValidator),
+    trims: v.array(notableMoveValidator),
+  }).index("by_period", ["period"]),
 
   investorConsensus: defineTable({
     period: v.string(),
