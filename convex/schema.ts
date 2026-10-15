@@ -362,4 +362,43 @@ export default defineSchema({
     .index("by_period", ["period"])
     .index("by_ticker", ["ticker"])
     .index("by_period_ticker", ["period", "ticker"]),
+
+  // Historical FMP market data, migrated from the retired ClickHouse `fmp` database
+  // (S&P 500 trading system, Feb–Jun 2026). Read-only archive; nothing writes here.
+  fmpQuoteSnapshots: defineTable({
+    capturedAt: v.number(),
+    symbol: v.string(),
+    price: v.number(),
+    open: v.number(),
+    high: v.number(),
+    low: v.number(),
+    prevClose: v.number(),
+    volume: v.number(),
+    avgVolume: v.number(),
+    changePct: v.number(),
+    marketCap: v.number(),
+    peRatio: v.number(),
+    batchId: v.string(),
+  })
+    .index("by_symbol_capturedAt", ["symbol", "capturedAt"])
+    .index("by_capturedAt", ["capturedAt"]),
+
+  fmpDailyBars: defineTable({
+    date: v.string(), // YYYY-MM-DD
+    symbol: v.string(),
+    open: v.number(),
+    high: v.number(),
+    low: v.number(),
+    close: v.number(),
+    volume: v.number(),
+    capturedAt: v.number(),
+  })
+    .index("by_symbol_date", ["symbol", "date"])
+    .index("by_date", ["date"]),
+
+  fmpConstituentSnapshots: defineTable({
+    capturedAt: v.number(),
+    count: v.number(),
+    symbols: v.array(v.string()),
+  }).index("by_capturedAt", ["capturedAt"]),
 });
