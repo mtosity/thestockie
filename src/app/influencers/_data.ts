@@ -34,7 +34,7 @@ export const getInfluencerPageData = cache(async () => {
 export const getSuperInvestorPageData = cache(async () => {
   const [consensus, moves, investors] = await Promise.all([
     convex
-      .query(api.superInvestorReads.consensus, { limit: 12 })
+      .query(api.superInvestorReads.consensus, { limit: 15 })
       .catch(() => null),
     convex
       .query(api.superInvestorReads.notableMoves, { limit: 8 })

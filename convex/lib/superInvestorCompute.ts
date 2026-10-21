@@ -183,12 +183,13 @@ export function rankConsensus(positions: Position[], namer: Namer) {
   };
 }
 
-/** Rows with more than 2 investors on one side always show; otherwise fill to n. */
+/** Prefer strong-consensus rows (>2 investors on one side), but ALWAYS cap at n. */
 export function pickConsensus(ranked: ConsensusRow[], side: "bought" | "sold", n: number) {
   const mine = (r: ConsensusRow) => (side === "bought" ? r.buyers : r.sellers);
   // `ranked` is sorted by `mine` descending, so the strong rows are a prefix.
   const strong = ranked.filter((r) => mine(r) > 2);
-  return strong.length >= n ? strong : ranked.slice(0, n);
+  const fill = ranked.filter((r) => mine(r) <= 2);
+  return [...strong, ...fill].slice(0, n);
 }
 
 /** Keep only what pickConsensus can return for any n <= CONSENSUS_MAX_LIMIT. */
