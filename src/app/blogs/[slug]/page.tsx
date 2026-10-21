@@ -66,7 +66,7 @@ export async function generateMetadata({
       title: blog.frontmatter.title,
       description: blog.frontmatter.excerpt,
       images: [blog.frontmatter.coverImage],
-      creator: "@mtosity",
+      creator: "@thestockie",
     },
   };
 }

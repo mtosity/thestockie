@@ -78,8 +78,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       images: data.influencer.avatar
         ? [data.influencer.avatar]
         : ["/thumbnail.png"],
-      creator: "@mtosity",
-      site: "@mtosity",
+      creator: "@thestockie",
+      site: "@thestockie",
     },
     robots: {
       index: true,

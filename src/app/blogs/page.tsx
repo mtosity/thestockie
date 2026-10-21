@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     description:
       "Investment insights, guides, and analysis to help you make smarter decisions.",
     images: ["/thumbnail.png"],
-    creator: "@mtosity",
+    creator: "@thestockie",
   },
 };
 

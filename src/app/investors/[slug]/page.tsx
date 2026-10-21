@@ -91,7 +91,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       title,
       description: desc,
       images: investor.avatar ? [investor.avatar] : ["/thumbnail.png"],
-      creator: "@mtosity",
+      creator: "@thestockie",
     },
   };
 }

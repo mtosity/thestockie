@@ -53,8 +53,8 @@ export const metadata: Metadata = {
     title: TITLE,
     description: DESCRIPTION,
     images: ["/thumbnail.png"],
-    creator: "@mtosity",
-    site: "@mtosity",
+    creator: "@thestockie",
+    site: "@thestockie",
   },
   robots: {
     index: true,

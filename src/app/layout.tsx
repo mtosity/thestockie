@@ -31,12 +31,12 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "thestockie - @mtosity",
+  title: "thestockie",
   description: "Advanced stock analysis tool with AI-powered insights",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
   metadataBase: new URL(SITE_URL),
   openGraph: {
-    title: "thestockie - @mtosity",
+    title: "thestockie",
     description: "Advanced stock analysis tool with AI-powered insights",
     images: [
       {
@@ -49,10 +49,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "thestockie - @mtosity",
+    title: "thestockie",
     description: "Advanced stock analysis tool with AI-powered insights",
     images: ["/thumbnail.png"],
-    creator: "@mtosity",
+    creator: "@thestockie",
   },
 };
 
@@ -89,12 +89,12 @@ export default function RootLayout({
                     &copy;{new Date().getFullYear()}
                   </p>
                   <a
-                    href="https://mtosity.com"
+                    href="https://www.thestockie.com"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline"
                   >
-                    @mtosity
+                    @thestockie
                   </a>
                   <a
                     href="https://github.com/mtosity/thestockie"

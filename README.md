@@ -49,4 +49,4 @@ GNU AGPL v3 — open source, because the market already takes enough from us.
 
 ---
 
-*Built by [@mtosity](https://mtosity.com) · [GitHub](https://github.com/mtosity/thestockie)*
+*Built by [@thestockie](https://www.thestockie.com) · [GitHub](https://github.com/{CORRECT}/thestockie)*
