@@ -11,7 +11,7 @@ const Section = ({
   children: React.ReactNode;
 }) => (
   <div className="w-48 shrink-0 space-y-0.5">
-    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[#5c6bc0]">
+    <p className="mb-1 text-xs font-semibold text-[var(--accent-text)]">
       {title}
     </p>
     {children}
@@ -32,10 +32,10 @@ const Row = ({
   <div className="flex items-baseline justify-between gap-1">
     <span className="shrink-0 text-xs text-muted-foreground">{label}</span>
     <div className="text-right">
-      <span className={`font-mono text-sm font-medium ${color ?? "text-muted-foreground"}`}>
+      <span className={`tabular-nums text-sm font-medium ${color ?? "text-muted-foreground"}`}>
         {value}
       </span>
-      {sub && <div className="text-[10px] text-muted-foreground">{sub}</div>}
+      {sub && <div className="text-[11px] text-muted-foreground">{sub}</div>}
     </div>
   </div>
 );

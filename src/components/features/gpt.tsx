@@ -25,7 +25,7 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
 
             if (text?.includes("Red")) {
               return (
-                <strong className="font-semibold text-red-500">
+                <strong className="font-semibold text-negative">
                   {children}
                 </strong>
               );
@@ -33,7 +33,7 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
 
             if (text?.includes("Green")) {
               return (
-                <strong className="font-semibold text-green-500">
+                <strong className="font-semibold text-positive">
                   {children}
                 </strong>
               );
@@ -139,7 +139,7 @@ export const GPT = () => {
       {data && data.supabaseId === symbol ? (
         <div className="mt-4">
           <div className="relative mt-2">
-            <div className="scrollbar-thin scrollbar-track-secondary scrollbar-thumb-border max-h-[500px] overflow-y-auto rounded-lg border border-border bg-card p-4 py-8">
+            <div className="scrollbar-thin scrollbar-track-secondary scrollbar-thumb-border max-h-[500px] overflow-y-auto rounded-2xl bg-card p-4 py-8">
               {data.response ? (
                 <MarkdownWithColor content={data.response} />
               ) : null}
@@ -182,7 +182,7 @@ export const GPT = () => {
       {!!error ? (
         <div className="mt-4 space-y-4">
           <div className="h-4 w-48 rounded-md bg-red-500" />
-          <div className="text-sm text-red-500">
+          <div className="text-sm text-negative">
             Sorry something went wrong here .-., try again later
           </div>
           <p>Report to: mtosity@gmail.com. Thank you!</p>

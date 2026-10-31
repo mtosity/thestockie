@@ -105,7 +105,7 @@ interface TooltipProps {
 const ChartTooltip = ({ active, payload, label, format }: TooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded border border-border bg-background p-3 text-sm shadow-lg">
+    <div className="rounded-xl border border-border bg-background p-3 text-sm shadow-lg">
       <p className="mb-1 font-medium text-muted-foreground">{formatQuarter(label)}</p>
       {payload.map((entry) => (
         <p key={entry.name} style={{ color: entry.fill ?? entry.stroke }}>

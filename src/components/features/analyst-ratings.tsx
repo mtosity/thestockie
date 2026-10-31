@@ -339,7 +339,7 @@ export const AnalystRatings = () => {
                   ),
               )}
             </div>
-            <div className="mt-1.5 flex justify-between text-[10px] text-muted-foreground">
+            <div className="mt-1.5 flex justify-between text-[11px] text-muted-foreground">
               <span>{bullish} Buy</span>
               <span>{hold} Hold</span>
               <span>{bearish} Sell</span>
@@ -350,7 +350,7 @@ export const AnalystRatings = () => {
         {/* Per-firm grades */}
         {displayGrades.length > 0 && (
           <div className="mt-2">
-            <div className="border-b border-border px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="border-b border-border px-4 py-1 text-[11px] font-semibold text-muted-foreground">
               Firm Ratings (latest per firm)
             </div>
             {displayGrades.map((grade, idx) => {
@@ -391,7 +391,7 @@ export const AnalystRatings = () => {
                         </span>
                       )}
                     </div>
-                    <div className="text-[10px] text-muted-foreground">
+                    <div className="text-[11px] text-muted-foreground">
                       {format(new Date(grade.date), "MMM d, yyyy")}
                     </div>
                   </div>

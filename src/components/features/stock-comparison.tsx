@@ -632,16 +632,16 @@ function StockHeader({
         </div>
       )}
       <span className="text-sm font-bold text-foreground">{stock.symbol}</span>
-      <span className="max-w-[160px] truncate text-center text-[10px] text-muted-foreground">
+      <span className="max-w-[160px] truncate text-center text-[11px] text-muted-foreground">
         {stock.name}
       </span>
       <div className="flex items-center gap-1">
-        <span className="font-mono text-xs text-muted-foreground">
+        <span className="tabular-nums text-xs text-muted-foreground">
           ${stock.price.toFixed(2)}
         </span>
         <span
           className={cn(
-            "font-mono text-[10px]",
+            "tabular-nums text-[11px]",
             stock.changesPercentage >= 0 ? "text-positive" : "text-negative",
           )}
         >
@@ -652,7 +652,7 @@ function StockHeader({
       <div className="flex gap-2 text-[9px] text-muted-foreground">
         <span>{stock.sector}</span>
       </div>
-      <span className="font-mono text-[10px] text-muted-foreground">
+      <span className="tabular-nums text-[11px] text-muted-foreground">
         MCap: {formatLargeNumber(stock.marketCap)}
       </span>
     </div>
@@ -688,7 +688,7 @@ function MetricCell({
     <td className="px-3 py-2 text-center">
       <div
         className={cn(
-          "inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-mono text-sm font-medium",
+          "inline-flex items-center gap-1 rounded-md px-2 py-0.5 tabular-nums text-sm font-medium",
           isBest && better !== "neutral" && "bg-positive-surface",
           isWorst && better !== "neutral" && "bg-negative-surface",
           textColor,
@@ -896,7 +896,7 @@ export function StockComparison() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border bg-foreground/5">
-                <th className="sticky left-0 z-10 min-w-[200px] bg-card px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <th className="sticky left-0 z-10 min-w-[200px] bg-card px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                   Metric
                 </th>
                 {symbols.map((s) => (
@@ -907,7 +907,7 @@ export function StockComparison() {
                     {s}
                   </th>
                 ))}
-                <th className="min-w-[180px] px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <th className="min-w-[180px] px-3 py-3 text-center text-xs font-semibold text-muted-foreground">
                   Benchmark
                 </th>
               </tr>
@@ -1000,7 +1000,7 @@ export function StockComparison() {
                                 <MetricCellSkeleton key={s} />
                               ),
                             )}
-                            <td className="px-3 py-2 text-center text-[10px] text-muted-foreground">
+                            <td className="px-3 py-2 text-center text-[11px] text-muted-foreground">
                               {BENCHMARKS[metric.key] ?? ""}
                             </td>
                           </tr>
@@ -1043,7 +1043,7 @@ export function StockComparison() {
                       label: "52W Range",
                       render: (s: CompareStock) =>
                         `$${s.yearLow.toFixed(0)} – $${s.yearHigh.toFixed(0)}`,
-                      className: "font-mono text-xs text-muted-foreground",
+                      className: "tabular-nums text-xs text-muted-foreground",
                     },
                     {
                       label: "50-Day Avg",
@@ -1090,7 +1090,7 @@ export function StockComparison() {
                           <td
                             key={s}
                             className={cn(
-                              "px-3 py-2 text-center font-mono text-sm text-muted-foreground",
+                              "px-3 py-2 text-center tabular-nums text-sm text-muted-foreground",
                               row.className,
                             )}
                           >
@@ -1100,7 +1100,7 @@ export function StockComparison() {
                           <MetricCellSkeleton key={s} />
                         ),
                       )}
-                      <td className="px-3 py-2 text-center text-[10px] text-muted-foreground" />
+                      <td className="px-3 py-2 text-center text-[11px] text-muted-foreground" />
                     </tr>
                   ))}
                 </>

@@ -123,11 +123,11 @@ export function MacroFedDataBlock() {
     new Date(d).toLocaleDateString("en-US", { month: "short", year: "2-digit" });
 
   return (
-    <div className="rounded-xl border border-border bg-background p-4">
+    <div className="rounded-2xl bg-card p-4">
       {/* Header: title + value on the left, Select switcher on the right */}
       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-sm font-semibold text-muted-foreground">
             Fed &amp; Economic Data
           </h2>
           <div className="mt-1 flex items-baseline gap-2">
@@ -193,7 +193,7 @@ export function MacroFedDataBlock() {
                   if (!active || !payload?.length) return null;
                   const v = payload[0]!.value as number;
                   return (
-                    <div className="rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs shadow-lg">
+                    <div className="rounded-2xl bg-card px-2.5 py-1.5 text-xs shadow-lg">
                       <div className="text-muted-foreground">
                         {new Date(label as string).toLocaleDateString("en-US", {
                           month: "short",

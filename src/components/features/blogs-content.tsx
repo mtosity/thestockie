@@ -44,7 +44,7 @@ export function BlogsContent({ blogs, tags }: BlogsContentProps) {
       <div className="mx-auto max-w-7xl px-4 py-12 md:px-8">
         {/* Tag Filter */}
         <div className="mb-8">
-          <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">
+          <h2 className="mb-4 text-sm font-medium text-muted-foreground">
             Filter by topic
           </h2>
           <BlogTagFilter

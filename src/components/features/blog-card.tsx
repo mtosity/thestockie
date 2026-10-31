@@ -26,7 +26,7 @@ export function BlogCard({ blog, className }: BlogCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
           <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
-          <span className="absolute bottom-2 right-2 text-[10px] text-foreground/40">
+          <span className="absolute bottom-2 right-2 text-[11px] text-foreground/40">
             Unsplash
           </span>
         </div>
