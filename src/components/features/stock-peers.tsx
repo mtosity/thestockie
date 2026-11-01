@@ -10,7 +10,7 @@ import { Users } from "lucide-react";
 function PeerLogo({ symbol }: { symbol: string }) {
   const [failed, setFailed] = useState(false);
   return failed ? (
-    <div className="flex h-8 w-8 items-center justify-center rounded bg-foreground/10 text-[10px] font-bold text-muted-foreground">
+    <div className="flex h-8 w-8 items-center justify-center rounded bg-foreground/10 text-[11px] font-bold text-muted-foreground">
       {symbol.slice(0, 2)}
     </div>
   ) : (
@@ -80,7 +80,7 @@ export const StockPeers = () => {
       <div className="flex-1 overflow-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border text-[11px] uppercase text-muted-foreground">
+            <tr className="border-b border-border text-[11px] text-muted-foreground">
               <th className="px-3 py-1.5 text-left">Company</th>
               <th className="px-3 py-1.5 text-right">Price</th>
               <th className="px-3 py-1.5 text-right">Change</th>
@@ -99,21 +99,21 @@ export const StockPeers = () => {
                   <div className="flex items-center gap-2">
                     <PeerLogo symbol={peer.symbol} />
                     <div className="min-w-0">
-                      <div className="font-mono text-xs font-semibold text-foreground">
+                      <div className="tabular-nums text-xs font-semibold text-foreground">
                         {peer.symbol}
                       </div>
-                      <div className="truncate text-[10px] text-muted-foreground">
+                      <div className="truncate text-[11px] text-muted-foreground">
                         {peer.name}
                       </div>
                     </div>
                   </div>
                 </td>
-                <td className="px-3 py-1.5 text-right font-mono text-xs text-muted-foreground">
+                <td className="px-3 py-1.5 text-right tabular-nums text-xs text-muted-foreground">
                   ${peer.price?.toFixed(2)}
                 </td>
                 <td className="px-3 py-1.5 text-right">
                   <span
-                    className={`font-mono text-xs ${
+                    className={`tabular-nums text-xs ${
                       peer.changesPercentage >= 0
                         ? "text-positive"
                         : "text-negative"
@@ -123,7 +123,7 @@ export const StockPeers = () => {
                     {peer.changesPercentage?.toFixed(2)}%
                   </span>
                 </td>
-                <td className="hidden px-3 py-1.5 text-right font-mono text-xs text-muted-foreground sm:table-cell">
+                <td className="hidden px-3 py-1.5 text-right tabular-nums text-xs text-muted-foreground sm:table-cell">
                   {formatLargeNumber(peer.marketCap)}
                 </td>
               </tr>

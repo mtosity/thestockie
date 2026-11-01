@@ -70,20 +70,20 @@ export const InsiderTrading = () => {
       {/* Summary bar */}
       <div className="grid grid-cols-2 gap-2 border-b border-border px-4 py-2">
         <div className="rounded-md bg-positive-surface px-3 py-1.5 text-center">
-          <div className="text-[10px] uppercase text-positive">Buys (12m)</div>
-          <div className="font-mono text-sm font-bold text-positive">
+          <div className="text-[11px] text-positive">Buys (12m)</div>
+          <div className="tabular-nums text-sm font-bold text-positive">
             {buys.length}
           </div>
-          <div className="font-mono text-[10px] text-positive/70">
+          <div className="tabular-nums text-[11px] text-positive/70">
             ${formatLargeNumber(totalBuyValue)}
           </div>
         </div>
         <div className="rounded-md bg-negative-surface px-3 py-1.5 text-center">
-          <div className="text-[10px] uppercase text-negative">Sells (12m)</div>
-          <div className="font-mono text-sm font-bold text-negative">
+          <div className="text-[11px] text-negative">Sells (12m)</div>
+          <div className="tabular-nums text-sm font-bold text-negative">
             {sells.length}
           </div>
-          <div className="font-mono text-[10px] text-negative/70">
+          <div className="tabular-nums text-[11px] text-negative/70">
             ${formatLargeNumber(totalSellValue)}
           </div>
         </div>
@@ -111,24 +111,24 @@ export const InsiderTrading = () => {
                   <span className="truncate text-xs font-medium text-muted-foreground">
                     {trade.reportingName}
                   </span>
-                  <span className="shrink-0 text-[10px] text-muted-foreground">
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
                     ({trade.typeOfOwner})
                   </span>
                 </div>
-                <div className="text-[10px] text-muted-foreground">
+                <div className="text-[11px] text-muted-foreground">
                   {trade.transactionType} &middot;{" "}
                   {format(new Date(trade.transactionDate), "MMM d, yyyy")}
                 </div>
               </div>
               <div className="shrink-0 text-right">
                 <div
-                  className={`font-mono text-xs font-medium ${
+                  className={`tabular-nums text-xs font-medium ${
                     isBuy ? "text-positive" : "text-negative"
                   }`}
                 >
                   {value > 0 ? `${isBuy ? "+" : "-"}$${formatLargeNumber(value)}` : "Unknown"}
                 </div>
-                <div className="font-mono text-[10px] text-muted-foreground">
+                <div className="tabular-nums text-[11px] text-muted-foreground">
                   {formatLargeNumber(trade.securitiesTransacted)} @{" "}
                   {trade.price > 0 ? `$${trade.price.toFixed(2)}` : "Unknown"}
                 </div>

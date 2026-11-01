@@ -76,9 +76,9 @@ function CardShell({
 }) {
   return (
     <div
-      className={`rounded-xl border border-border bg-background p-4 ${className}`}
+      className={`rounded-2xl bg-card p-4 ${className}`}
     >
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+      <h2 className="mb-3 text-sm font-semibold text-muted-foreground">
         {title}
       </h2>
       {children}
@@ -731,7 +731,7 @@ function SectorPerformanceCard() {
                     rotation.inflow.map((s) => (
                       <span key={s.name} className="text-positive">
                         {s.name}{" "}
-                        <span className="text-green-500/70">
+                        <span className="text-positive/70">
                           {fmtPct(s.value)}
                         </span>
                       </span>
@@ -746,7 +746,7 @@ function SectorPerformanceCard() {
                     rotation.outflow.map((s) => (
                       <span key={s.name} className="text-negative">
                         {s.name}{" "}
-                        <span className="text-red-500/70">
+                        <span className="text-negative/70">
                           {fmtPct(s.value)}
                         </span>
                       </span>
@@ -1006,7 +1006,7 @@ function EconomicCalendarCard() {
                   </td>
                   <td className="py-1.5 text-center">
                     <span
-                      className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                      className={`inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold ${
                         e.impact === "High"
                           ? "bg-negative-surface text-negative"
                           : "bg-warning-surface text-warning"
@@ -1102,14 +1102,14 @@ function NewsSummary({
   return (
     <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
       <div className="mb-1.5 flex items-center gap-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground">
+        <span className="text-[11px] font-semibold text-foreground">
           {source === "ai" ? "AI Summary" : "Key Headlines"}
         </span>
         {status === "summarizing" && (
-          <span className="text-[10px] text-muted-foreground">generating...</span>
+          <span className="text-[11px] text-muted-foreground">generating...</span>
         )}
         {status === "done" && source && (
-          <span className="ml-auto text-[10px] text-gray-600">
+          <span className="ml-auto text-[11px] text-gray-600">
             {source === "ai" ? "Chrome Built-in AI" : "Auto-generated"}
           </span>
         )}
@@ -1362,7 +1362,7 @@ export function MacroDashboard() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-64 animate-pulse rounded-xl border border-border bg-background"
+            className="h-64 animate-pulse rounded-2xl bg-card"
           />
         ))}
       </div>

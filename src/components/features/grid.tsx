@@ -38,7 +38,8 @@ const Grid = () => {
 
   if (!width || !height) return null;
 
-  const clx = "border border-sm border-border bg-background";
+  // Grouped-card panels (design-system 1.0): rounded, no outline.
+  const clx = "overflow-hidden rounded-2xl bg-card";
 
   return (
     <>

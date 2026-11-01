@@ -69,14 +69,14 @@ function NewsSummary({
   return (
     <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
       <div className="mb-1.5 flex items-center gap-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground">
+        <span className="text-[11px] font-semibold text-foreground">
           {source === "ai" ? "AI Summary" : "Key Headlines"}
         </span>
         {status === "summarizing" && (
-          <span className="text-[10px] text-muted-foreground">generating...</span>
+          <span className="text-[11px] text-muted-foreground">generating...</span>
         )}
         {status === "done" && source && (
-          <span className="ml-auto text-[10px] text-gray-600">
+          <span className="ml-auto text-[11px] text-gray-600">
             {source === "ai" ? "Chrome Built-in AI" : "Auto-generated"}
           </span>
         )}
@@ -113,7 +113,7 @@ const ArticleCard = ({
   source: string;
   text: string;
 }) => (
-  <div className="rounded-lg border border-gray-200 p-3 hover:bg-card/50">
+  <div className="rounded-xl bg-background p-3 transition-colors hover:bg-[var(--fill)]">
     <div className="flex gap-3 rounded-lg">
       {images?.[0] && (
         <div className="relative h-16 w-16 shrink-0">

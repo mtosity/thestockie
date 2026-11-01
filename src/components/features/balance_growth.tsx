@@ -23,7 +23,7 @@ interface CustomTooltipProps {
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded border border-border bg-background p-3 text-sm shadow-lg">
+    <div className="rounded-xl border border-border bg-background p-3 text-sm shadow-lg">
       <p className="mb-1 font-medium text-muted-foreground">{`Period: ${label}`}</p>
       {payload.map((pld) => (
         <p key={pld.name} style={{ color: pld.fill ?? pld.stroke }}>

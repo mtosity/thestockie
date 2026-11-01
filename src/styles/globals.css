@@ -41,6 +41,12 @@
   -webkit-animation-fill-mode: forwards;
 }
 
+/* Recharts draws its grid in a fixed #ccc, which glares on a dark
+   background — use the separator token so it follows the theme. */
+.recharts-cartesian-grid line {
+  stroke: var(--border-light);
+}
+
 /* The Fed-data Select sits at the right edge of a full-width card, so its
    dropdown is right-aligned to keep long option labels on-screen. */
 .macro-fed-select .ds-select-menu {

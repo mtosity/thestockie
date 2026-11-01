@@ -225,8 +225,8 @@ export function MacroLineCard({
   );
 
   return (
-    <div className="rounded-xl border border-border bg-background p-4">
-      <h2 className="mb-1 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+    <div className="rounded-2xl bg-card p-4">
+      <h2 className="mb-1 text-sm font-semibold text-muted-foreground">
         {title}
       </h2>
       <p className="mb-3 text-xs text-muted-foreground">% change, trailing 1Y</p>
@@ -246,7 +246,7 @@ export function MacroLineCard({
                 content={({ payload, active, label }) => {
                   if (!active || !payload?.length) return null;
                   return (
-                    <div className="rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs shadow-lg">
+                    <div className="rounded-2xl bg-card px-2.5 py-1.5 text-xs shadow-lg">
                       <div className="mb-1 text-muted-foreground">
                         {new Date(label as string).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </div>
@@ -257,7 +257,7 @@ export function MacroLineCard({
                           return (
                             <div key={p.name} className="flex items-center justify-between gap-3">
                               <span style={{ color: p.color }}>{s?.label ?? p.name}</span>
-                              <span className="font-mono tabular-nums text-foreground">{pct(p.value)}</span>
+                              <span className="tabular-nums text-foreground">{pct(p.value)}</span>
                             </div>
                           );
                         })}
@@ -288,7 +288,7 @@ export function MacroLineCard({
             <span className="inline-block h-0.5 w-3.5" style={{ background: PALETTE[i % PALETTE.length] }} />
             <span className="text-muted-foreground">{s.label}</span>
             {latest[s.symbol] != null && (
-              <span className={`font-mono tabular-nums ${latest[s.symbol]! >= 0 ? "text-positive" : "text-negative"}`}>
+              <span className={`tabular-nums ${latest[s.symbol]! >= 0 ? "text-positive" : "text-negative"}`}>
                 {pct(latest[s.symbol]!)}
               </span>
             )}
@@ -372,7 +372,7 @@ function SectorBump({ rows }: { rows: Row[] }) {
               content={({ payload, active, label }) => {
                 if (!active || !payload?.length) return null;
                 return (
-                  <div className="rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs shadow-lg">
+                  <div className="rounded-2xl bg-card px-2.5 py-1.5 text-xs shadow-lg">
                     <div className="mb-1 text-muted-foreground">
                       {new Date(label as string).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                     </div>
@@ -436,7 +436,7 @@ function SectorBump({ rows }: { rows: Row[] }) {
             onMouseEnter={() => setHovered(s.symbol)}
             onMouseLeave={() => setHovered(null)}
           >
-            <span className="font-mono text-muted-foreground">{s.rank}</span>
+            <span className="tabular-nums text-muted-foreground">{s.rank}</span>
             <span
               className="inline-block h-0.5 w-3"
               style={{ background: sectorColor(s.i) }}
@@ -711,9 +711,9 @@ export function SectorRotation() {
   }, [rows]);
 
   return (
-    <div className="rounded-xl border border-border bg-background p-4">
+    <div className="rounded-2xl bg-card p-4">
       <div className="mb-1 flex items-start justify-between gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="text-sm font-semibold text-muted-foreground">
           Sector Rotation
         </h2>
         <div className="shrink-0">
@@ -964,9 +964,9 @@ export function StockHeatmap() {
   }, [data]);
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-border bg-background p-4">
+    <div className="flex h-full flex-col rounded-2xl bg-card p-4">
       <div className="mb-1 flex items-start justify-between gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="text-sm font-semibold text-muted-foreground">
           Market Heatmap
         </h2>
         <div className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
@@ -1008,7 +1008,7 @@ export function StockHeatmap() {
                   height: `${rect.h}%`,
                 }}
               >
-                <span className="absolute left-1 top-0.5 rounded bg-background/80 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-foreground">
+                <span className="absolute left-1 top-0.5 rounded bg-background/80 px-1.5 py-0.5 text-xs font-bold text-foreground">
                   {sector}
                 </span>
               </div>

@@ -5,7 +5,8 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 /**
  * Theme provider wired to the @mtosity/design-system tokens, which key dark
- * mode off `[data-theme="dark"]` on <html>. Defaults to dark.
+ * mode off `[data-theme="dark"]` on <html>. Follows the OS appearance, as
+ * the 1.0 (Apple HIG) design system expects; the toggle still overrides it.
  */
 export function ThemeProvider({
   children,
@@ -14,8 +15,8 @@ export function ThemeProvider({
   return (
     <NextThemesProvider
       attribute="data-theme"
-      defaultTheme="dark"
-      enableSystem={false}
+      defaultTheme="system"
+      enableSystem
       disableTransitionOnChange
       {...props}
     >

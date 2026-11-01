@@ -36,7 +36,7 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
 
             if (text?.includes("Red")) {
               return (
-                <strong className="font-semibold text-red-500">
+                <strong className="font-semibold text-negative">
                   {children}
                 </strong>
               );
@@ -44,7 +44,7 @@ const MarkdownWithColor = ({ content }: { content: string }) => {
 
             if (text?.includes("Green")) {
               return (
-                <strong className="font-semibold text-green-500">
+                <strong className="font-semibold text-positive">
                   {children}
                 </strong>
               );
