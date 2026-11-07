@@ -32,6 +32,28 @@ function errorAttributes(err: unknown): Attributes {
   return err === undefined ? {} : { "exception.message": String(err) };
 }
 
+/**
+ * Serverless functions freeze as soon as the response is sent, so a batched
+ * log can be lost. Flush after each log and ask Vercel to wait for it
+ * (the same request-context hook @vercel/functions' waitUntil uses; a no-op
+ * outside Vercel).
+ */
+type Flushable = { forceFlush?: () => Promise<void>; getDelegate?: () => Flushable };
+function flushSoon() {
+  try {
+    const provider = logs.getLoggerProvider() as unknown as Flushable;
+    const real = provider.getDelegate?.() ?? provider;
+    const p = real.forceFlush?.();
+    if (!p) return;
+    const ctx = (globalThis as Record<symbol, { get?: () => { waitUntil?: (p: Promise<unknown>) => void } } | undefined>)[
+      Symbol.for("@vercel/request-context")
+    ]?.get?.();
+    ctx?.waitUntil?.(p.catch(() => undefined));
+  } catch {
+    // never let telemetry break a request
+  }
+}
+
 function emit(level: Level, message: string, attributes: Attributes = {}, err?: unknown) {
   const attrs = { ...attributes, ...errorAttributes(err) };
   try {
@@ -41,6 +63,7 @@ function emit(level: Level, message: string, attributes: Attributes = {}, err?: 
       body: message,
       attributes: attrs,
     });
+    flushSoon();
   } catch {
     // telemetry must never break a request
   }
