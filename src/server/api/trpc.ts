@@ -8,6 +8,7 @@
  */
 
 import { initTRPC, TRPCError } from "@trpc/server";
+import { logger, recordError, tracer } from "~/lib/telemetry";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { ConvexHttpClient } from "convex/browser";
@@ -124,26 +125,50 @@ export const createCallerFactory = t.createCallerFactory;
 export const createTRPCRouter = t.router;
 
 /**
- * Middleware for timing procedure execution and adding an artificial delay in development.
- *
- * You can remove this if you don't like it, but it can help catch unwanted waterfalls by simulating
- * network latency that would occur in production but not in local development.
+ * Tracing + timing middleware: one span per procedure (`trpc <path>`), with the
+ * failure recorded on the span and logged (errors for server faults, warnings
+ * for client errors like UNAUTHORIZED), plus a warning for slow calls. Shows up
+ * in SigNoz under service "thestockie". Also adds an artificial delay in dev to
+ * surface waterfalls.
  */
-const timingMiddleware = t.middleware(async ({ next, path }) => {
-  const start = Date.now();
+const SLOW_MS = 1000;
+const timingMiddleware = t.middleware(async ({ next, path, type }) => {
+  return tracer.startActiveSpan(`trpc ${path}`, async (span) => {
+    span.setAttributes({ "rpc.system": "trpc", "rpc.method": path, "trpc.type": type });
+    const start = Date.now();
+    try {
+      if (t._config.isDev) {
+        // artificial delay in dev
+        const waitMs = Math.floor(Math.random() * 400) + 100;
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+      }
 
-  if (t._config.isDev) {
-    // artificial delay in dev
-    const waitMs = Math.floor(Math.random() * 400) + 100;
-    await new Promise((resolve) => setTimeout(resolve, waitMs));
-  }
+      const result = await next();
+      const ms = Date.now() - start;
+      span.setAttribute("trpc.duration_ms", ms);
 
-  const result = await next();
-
-  const end = Date.now();
-  console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
-
-  return result;
+      if (!result.ok) {
+        const code = result.error.code;
+        span.setAttribute("trpc.error_code", code);
+        const attrs = { "rpc.method": path, "trpc.type": type, "trpc.error_code": code, "trpc.duration_ms": ms };
+        if (code === "INTERNAL_SERVER_ERROR" || code === "TIMEOUT") {
+          recordError(span, result.error.cause ?? result.error);
+          logger.error(`trpc ${path} failed`, attrs, result.error.cause ?? result.error);
+        } else {
+          logger.warn(`trpc ${path} rejected: ${code}`, attrs);
+        }
+      } else if (ms > SLOW_MS) {
+        logger.warn(`trpc ${path} slow`, { "rpc.method": path, "trpc.duration_ms": ms });
+      }
+      return result;
+    } catch (err) {
+      recordError(span, err);
+      logger.error(`trpc ${path} threw`, { "rpc.method": path }, err);
+      throw err;
+    } finally {
+      span.end();
+    }
+  });
 });
 
 /**
