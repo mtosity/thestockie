@@ -401,4 +401,18 @@ export default defineSchema({
     count: v.number(),
     symbols: v.array(v.string()),
   }).index("by_capturedAt", ["capturedAt"]),
+
+  // "How to say" lookup cache for home.mtosity.com/spell (not used by thestockie).
+  // key = normalised "text\u0000language"; result = the cleaned model answer.
+  spellCache: defineTable({
+    key: v.string(),
+    text: v.string(),
+    language: v.string(), // "" when the language was auto-detected
+    model: v.string(), // which LLM produced it, e.g. "ollama/deepseek-v4.1-flash"
+    result: v.any(),
+    hits: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    lastHitAt: v.optional(v.number()),
+  }).index("by_key", ["key"]),
 });

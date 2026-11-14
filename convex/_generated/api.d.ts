@@ -17,6 +17,7 @@ import type * as lib_serverAuth from "../lib/serverAuth.js";
 import type * as lib_superInvestorCompute from "../lib/superInvestorCompute.js";
 import type * as maintenance from "../maintenance.js";
 import type * as posts from "../posts.js";
+import type * as spellCache from "../spellCache.js";
 import type * as superInvestorReads from "../superInvestorReads.js";
 import type * as superInvestorSnapshot from "../superInvestorSnapshot.js";
 
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   "lib/superInvestorCompute": typeof lib_superInvestorCompute;
   maintenance: typeof maintenance;
   posts: typeof posts;
+  spellCache: typeof spellCache;
   superInvestorReads: typeof superInvestorReads;
   superInvestorSnapshot: typeof superInvestorSnapshot;
 }>;
