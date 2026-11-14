@@ -187,8 +187,8 @@ importers:
         specifier: 1.0.0
         version: 1.0.0(@types/react-dom@18.3.2)(@types/react@19.0.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       convex:
-        specifier: ^1.32.0
-        version: 1.32.0(react@19.0.0)
+        specifier: ^1.50.0
+        version: 1.50.0(react@19.0.0)
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -2562,18 +2562,21 @@ packages:
   confbox@0.1.8:
     resolution: {integrity: sha512-RMtmw0iFkeR4YV+fUOSucriAQNb9g8zFR52MWCtl+cCZOFRNL6zeB395vPzFhEjjn4fMxXudmELnl/KF/WrK6w==}
 
-  convex@1.32.0:
-    resolution: {integrity: sha512-5FlajdLpW75pdLS+/CgGH5H6yeRuA+ru50AKJEYbJpmyILUS+7fdTvsdTaQ7ZFXMv0gE8mX4S+S3AtJ94k0mfw==}
-    engines: {node: '>=18.0.0', npm: '>=7.0.0'}
+  convex@1.50.0:
+    resolution: {integrity: sha512-WzzCad5hyzU4zzW0ChyUGB3Mil4LgRYMYii9cyQtC24WQnfaRgkZB0IKyhIIgRm1a2IXiGJoZnVYYSfttiap3Q==}
+    engines: {node: '>=22.0.0', npm: '>=7.0.0'}
     hasBin: true
     peerDependencies:
       '@auth0/auth0-react': ^2.0.1
       '@clerk/clerk-react': ^4.12.8 || ^5.0.0
+      '@clerk/react': ^6.4.3
       react: ^18.0.0 || ^19.0.0-0 || ^19.0.0
     peerDependenciesMeta:
       '@auth0/auth0-react':
         optional: true
       '@clerk/clerk-react':
+        optional: true
+      '@clerk/react':
         optional: true
       react:
         optional: true
@@ -5018,6 +5021,18 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
+  ws@8.21.0:
+    resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   ws@8.22.0:
     resolution: {integrity: sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg==}
     engines: {node: '>=10.0.0'}
@@ -7155,11 +7170,11 @@ snapshots:
 
   confbox@0.1.8: {}
 
-  convex@1.32.0(react@19.0.0):
+  convex@1.50.0(react@19.0.0):
     dependencies:
       esbuild: 0.27.0
       prettier: 3.4.2
-      ws: 8.22.0
+      ws: 8.21.0
     optionalDependencies:
       react: 19.0.0
     transitivePeerDependencies:
@@ -10274,7 +10289,10 @@ snapshots:
 
   wrappy@1.0.2: {}
 
-  ws@8.22.0: {}
+  ws@8.21.0: {}
+
+  ws@8.22.0:
+    optional: true
 
   xtend@4.0.2: {}
 
