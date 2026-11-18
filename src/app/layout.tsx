@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import { Inter, Crimson_Text, Lora } from "next/font/google";
 import { type Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { ConvexClientProvider } from "~/components/ConvexClientProvider";
@@ -111,6 +112,7 @@ export default function RootLayout({
           </ConvexClientProvider>
         </ThemeProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
