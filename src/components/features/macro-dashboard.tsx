@@ -895,7 +895,7 @@ function TreasuryCard() {
                       <div className="rounded bg-primary px-2 py-1 text-xs text-black shadow-sm">
                         <div className="font-semibold">{label as string}</div>
                         {(
-                          payload as {
+                          payload as unknown as {
                             name: string;
                             value: number;
                             color: string;

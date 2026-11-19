@@ -250,7 +250,7 @@ export function MacroLineCard({
                       <div className="mb-1 text-muted-foreground">
                         {new Date(label as string).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </div>
-                      {[...(payload as { name: string; value: number; color: string }[])]
+                      {[...(payload as unknown as { name: string; value: number; color: string }[])]
                         .sort((a, b) => b.value - a.value)
                         .map((p) => {
                           const s = syms.find((x) => x.symbol === p.name);
@@ -376,7 +376,7 @@ function SectorBump({ rows }: { rows: Row[] }) {
                     <div className="mb-1 text-muted-foreground">
                       {new Date(label as string).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                     </div>
-                    {[...(payload as { name: string; value: number; color: string }[])]
+                    {[...(payload as unknown as { name: string; value: number; color: string }[])]
                       .sort((a, b) => a.value - b.value)
                       .map((p) => {
                         const s = SECTOR_ETFS.find((x) => x.symbol === p.name);
