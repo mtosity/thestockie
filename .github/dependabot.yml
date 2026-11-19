@@ -14,6 +14,21 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # @vercel/otel (2.3.0) only supports the OpenTelemetry JS 2.x line:
+      # api <1.10, SDK 2.x, experimental packages 0.2xx. Drop this once a
+      # @vercel/otel release accepts OTel 3 (sdk 3.x / 0.3xx / api 1.10).
+      - dependency-name: "@opentelemetry/api"
+        versions: [">=1.10.0"]
+      - dependency-name: "@opentelemetry/*"
+        versions: [">=3.0.0", ">=0.300.0 <1.0.0"]
+      # TypeScript 7 ships only the native compiler, without the JS API that
+      # typescript-eslint needs. Drop once typescript-eslint supports TS 7.
+      - dependency-name: "typescript"
+        versions: [">=7.0.0"]
+      # Keep Node types at or below the runtime (Vercel project: Node 22.x).
+      - dependency-name: "@types/node"
+        versions: [">=23.0.0"]
     commit-message:
       prefix: "chore"
       prefix-development: "chore"
