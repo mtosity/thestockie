@@ -14,6 +14,7 @@ import {
   ResponsiveContainer,
   XAxis,
   YAxis,
+  type MouseHandlerDataParam,
 } from "recharts";
 
 import { ChartTooltip } from "~/components/ui/chart";
@@ -366,12 +367,16 @@ export function Chart() {
   }, [hoveredIndex, dragSelection, isDragging]);
 
   const handleMouseMove = useCallback(
-    (state: { activeTooltipIndex?: number }) => {
-      const index = state.activeTooltipIndex;
-      if (index !== undefined && index !== null) {
+    (state: MouseHandlerDataParam) => {
+      // recharts 3 may report the index as a string (TooltipIndex); the drag
+      // selection does arithmetic on it, so normalise to a number.
+      const raw = state.activeTooltipIndex;
+      const parsed = raw === undefined || raw === null ? null : Number(raw);
+      const index = parsed === null || Number.isNaN(parsed) ? null : parsed;
+      if (index !== null) {
         setHoveredIndex(index);
       }
-      if (!isDragging || !dragSelection || index === undefined || index === null) return;
+      if (!isDragging || !dragSelection || index === null) return;
       setDragSelection({
         startIndex: dragSelection.startIndex,
         endIndex: index,
@@ -573,7 +578,6 @@ export function Chart() {
                 x={lastLivePoint.date}
                 y={lastLivePoint.price}
                 ifOverflow="extendDomain"
-                isFront
                 shape={(props) => (
                   <LivePulseDot
                     cx={(props as { cx?: number }).cx}

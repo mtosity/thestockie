@@ -93,7 +93,7 @@
     "react-use": "^17.6.1",
     "react-virtualized": "^9.22.5",
     "reading-time": "^1.5.0",
-    "recharts": "^2.14.1",
+    "recharts": "^3.11.0",
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",
