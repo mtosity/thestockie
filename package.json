@@ -115,7 +115,7 @@
     "@typescript-eslint/eslint-plugin": "^8.73.0",
     "@typescript-eslint/parser": "^8.73.0",
     "eslint": "^8.57.1",
-    "eslint-config-next": "^15.5.28",
+    "eslint-config-next": "^15.5.29",
     "pg": "^8.23.1",
     "postcss": "^8.5.33",
     "prettier": "^3.10.1",
