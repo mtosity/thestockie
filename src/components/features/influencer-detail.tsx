@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Youtube } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { Youtube } from "~/components/icons/youtube";
 import { type RouterOutputs } from "~/trpc/react";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
