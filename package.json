@@ -88,7 +88,7 @@
     "react-hook-form": "^7.92.0",
     "react-markdown": "^10.1.0",
     "react-resizable": "^4.0.2",
-    "react-resizable-panels": "^2.1.7",
+    "react-resizable-panels": "^4.24.0",
     "react-spinners": "^0.17.1",
     "react-use": "^17.6.1",
     "react-virtualized": "^10.0.1",
