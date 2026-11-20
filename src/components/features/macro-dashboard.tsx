@@ -1185,6 +1185,7 @@ function GeneralNewsCard() {
                     <div className="relative h-16 w-16 shrink-0">
                       <Image
                         src={article.image}
+                        unoptimized
                         alt={article.title}
                         fill
                         className="rounded object-cover"
