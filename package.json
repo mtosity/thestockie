@@ -91,7 +91,7 @@
     "react-resizable-panels": "^2.1.7",
     "react-spinners": "^0.17.1",
     "react-use": "^17.6.1",
-    "react-virtualized": "^9.22.5",
+    "react-virtualized": "^10.0.1",
     "reading-time": "^1.5.0",
     "recharts": "^3.11.0",
     "rehype-highlight": "^7.0.2",
