@@ -16,6 +16,7 @@ function PeerLogo({ symbol }: { symbol: string }) {
   ) : (
     <Image
       src={`https://financialmodelingprep.com/image-stock/${symbol}.png`}
+      unoptimized
       alt={symbol}
       width={32}
       height={32}

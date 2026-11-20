@@ -620,6 +620,7 @@ function StockHeader({
       {stock.image && !imgFailed ? (
         <Image
           src={stock.image}
+          unoptimized
           alt={stock.symbol}
           width={40}
           height={40}

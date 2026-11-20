@@ -71,6 +71,7 @@ function CompanyLogo({ symbol }: { symbol: string }) {
       ) : (
         <Image
           src={`https://financialmodelingprep.com/image-stock/${symbol}.png`}
+          unoptimized
           alt={symbol}
           width={40}
           height={40}

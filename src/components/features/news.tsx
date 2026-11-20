@@ -119,6 +119,7 @@ const ArticleCard = ({
         <div className="relative h-16 w-16 shrink-0">
           <Image
             src={images[0].url}
+            unoptimized
             alt={title}
             fill
             className="rounded object-cover"
