@@ -74,7 +74,7 @@
     "gray-matter": "^4.0.3",
     "input-otp": "^1.5.0",
     "jotai": "^3.0.2",
-    "lucide-react": "^0.468.0",
+    "lucide-react": "^1.73.0",
     "mermaid": "^12.3.0",
     "next": "^16.4.6",
     "next-auth": "5.0.0-beta.32",
